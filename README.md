@@ -36,7 +36,7 @@ $μ_k$ is The mean of the random distribution, $σ_k$ is the standard deviation 
 
 ### directed
 
-Instead, "directed" mode is a derived version of "mixed", referenced from \link{https://github.com/wangpeng407/ReporterScore}. This approach is based on the same assumption of many differential analysis methods: the expression of most genes has no significant change.
+Instead, "directed" mode is a derived version of "mixed", referenced from https://github.com/wangpeng407/ReporterScore. This approach is based on the same assumption of many differential analysis methods: the expression of most genes has no significant change.
 
 1.  Use the Wilcoxon rank sum test to obtain the P value of the significance of each KO difference between the two groups (ie $P_{koi}$, i represents a certain KO), and then divide the P value by 2, that is, the range of (0,1] becomes (0,0.5], $P_{koi}=P_{koi}/2$;
 
