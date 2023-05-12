@@ -111,7 +111,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
 #' @export
 #' @details
 #' "\strong{mixed}" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
-#' In this mode, the reporter score is \strong{non-directional}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+#' In this mode, the reporter score is \strong{Undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 #'
 #' steps:
 #'
@@ -166,7 +166,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
 #' \eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
 #'
 #' The finally obtained \eqn{Z_{adjustedpathway}} is the Reporter score value enriched for each pathway.
-#' In this mode, the Reporter score is directional, and a larger positive value represents a significant up-regulation enrichment, and a smaller Negative values represent significant down-regulation enrichment.
+#' In this mode, the Reporter score is directed, and a larger positive value represents a significant up-regulation enrichment, and a smaller negative values represent significant down-regulation enrichment.
 #'
 #' However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 #'
@@ -222,6 +222,15 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
     return(res.dt)
 }
 
+#' @export
+load_KOlist=function(KOlist_file=NULL){
+    if(is.null(KOlist_file)){
+        KOlist_file=system.file("data","new_KOlist.rda",package = "ReporterScore")
+        if(!file.exists(KOlist_file))KOlist_file=system.file("data","KOlist.rda",package = "ReporterScore")
+    }
+    if(file.exists(KOlist_file))load(KOlist_file,envir = .GlobalEnv)
+}
+
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
@@ -246,11 +255,7 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
     rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
     if(!all(rowname_check))warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!")
 
-    if(is.null(KOlist_file)){
-        KOlist_file=system.file("data","new_KOlist.rda",package = "ReporterScore")
-        if(!file.exists(KOlist_file))KOlist_file=system.file("data","KOlist.rda",package = "ReporterScore")
-    }
-    if(file.exists(KOlist_file))load(KOlist_file)
+    load_KOlist(KOlist_file)
 
     if(verbose){
         dabiao("load KOlist")
@@ -332,9 +337,9 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
 #'
 #' @param reporter_res result of `get_reporter_score`
 #' @param rs_threshold plot threshold vector, default:1.64
-#' @param color color vector c('#e31a1c','#47B0D9')
 #' @param y_text_size y_text_size
 #' @param str_width str_width to wrap
+#' @param mode 1～2
 #'
 #' @return ggplot
 #' @export
@@ -390,4 +395,73 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 
     if(attributes(reporter_res)$mode=="directed")p=p+geom_hline(yintercept = rs_threshold[2], linetype = 2)
     return(p)
+}
+
+
+
+#' @export
+get_KOs=function(map_id="map00010",ko_stat=NULL,module_list=NULL){
+    if(is.null(module_list)){
+        load_KOlist()
+        if(grepl("map",map_id))module_list=KOlist$pathway
+        if(grepl("M",map_id))module_list=KOlist$module
+    }
+    kos=module_list[which(module_list$id==map_id),"KOs"]
+    kos=strsplit(kos, ',')[[1]]
+    if(!is.null(ko_stat)){return(ko_stat[ko_stat$KO_id%in%kos,])}
+    return(kos)
+}
+
+
+#' Plot KOs trend in one pathway or module
+#'
+#' @param map_id the pathway or module id
+#' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
+#' @param box_color box and point color
+#' @param line_color line color
+#'
+#' @return ggplot
+#' @export
+#'
+#' @examples
+#' plot_KOs_in_pathway(map_id="map00780",ko_stat = ko_stat)
+plot_KOs_in_pathway=function(map_id="map00780",ko_stat = ko_stat,
+                             box_color=get_cols(2),line_color=c("skyblue3","red2","grey")){
+    A=get_KOs(map_id =map_id ,ko_stat = ko_stat)
+
+    A=mutate(A,Significantly=ifelse(q.value<0.05,type,"None"))
+    vs_group=grep("avg",colnames(A),value = T)
+    box_df=reshape2::melt(A[,c("KO_id",vs_group)],id.vars="KO_id",variable.name ="Group")
+    box_df$Group=factor(box_df$Group,levels = rev(vs_group))
+    line_df=A[,c("KO_id",vs_group,"Significantly")]
+    colnames(line_df)=c("KO_id","value1","value2","Significantly")
+    line_df$Group1=vs_group[1];    line_df$Group2=vs_group[2]
+
+    ggplot()+
+        geom_boxplot(data =box_df,aes(x=Group,y=value,color=Group),show.legend = F)+
+        geom_point(data =box_df,aes(x=Group,y=value,color=Group),show.legend = F)+
+        scale_fill_manual(values = box_color)+
+        labs(title = paste0("KOs in ",map_id),x=NULL,y="Abundance")+
+        ggnewscale::new_scale_color()+
+        geom_segment(data = line_df,
+                     aes(x=Group2,y=value2,xend=Group1,yend=value1,color=Significantly))+
+        scale_color_manual(values = line_color )+
+        ggpubr::theme_pubr(legend = "right")
+}
+
+#' @export
+#'
+plot_KOs_box=function(KO_abundance,Group,Group_tab,map_id="map00780",select_ko=NULL,...){
+    if(!is.null(select_ko))select_ko=get_KOs(map_id =map_id)
+    tkodf=KO_abundance[]%>%t()%>%as.data.frame()
+    cols=which(colnames(tkodf)%in%select_ko)
+    if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
+    if(length(cols)>36){
+        print(("Too many KOs, do you still want to plot?"))
+        flag=readline("yes/no(y/n)?")
+        if(!tolower(flag)%in%c("yes","y"))return(NULL)
+    }
+
+    pcutils::group_box(tkodf[,cols],Group,Group_tab,p_value1 = T,trend_line = T,...)+
+        ggpubr::theme_pubr(legend = "right")
 }

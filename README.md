@@ -14,7 +14,7 @@ The original reporter-score method from Patil, K. R. et al. PNAS 2005. In this p
 
 "mixed" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
 
-In this mode, the reporter score is **non-directional**, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+In this mode, the reporter score is **Undirected**, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 
 steps: 1. Use the Wilcoxon rank sum test to obtain the P value of the significance of each KO difference between the two groups (ie $P_{koi}$, i represents a certain KO);
 
@@ -46,17 +46,27 @@ $$Z_{koi}=\theta ^{-1}(1-P_{koi})$$
 
 since the above P value is less than 0.5, all Z values will be greater than 0;
 
-3.  Considering whether each KO is up-regulated or down-regulated, calculate $diff\_KO$,
+3.  Considering whether each KO is up-regulated or down-regulated, calculate $\Delta KO_i$,
 
-$$Z_{koi}=-Z_{koi}\ \ \ \ (diff\_KO<0)$$
+$$\Delta KO_i=\overline {KO_{i_{g1}}}-\overline {KO_{i_{g2}}}$$
 
-so $Z_{koi}$ is greater than 0 Up-regulation, $Z_{koi}$ less than 0 is down-regulation.
+$\overline {KO_{i_{g1}}}$ is average abundance of $KO_i$ in group1, $\overline {KO_{i_{g2}}}$ is average abundance of $KO_i$ in group2. Then,
+
+$$
+Z_{koi} =
+\begin{cases} 
+-Z_{koi},  & (\Delta KO_i<0) \\
+Z_{koi}, & (\Delta KO_i \ge 0)
+\end{cases}
+$$
+
+so $Z_{koi}$ is greater than 0 Up-regulation, $Z_{koi}$ less than 0 is down-regulation;
 
 4.  "Upgrade" KO to pathway: $Z_{koi}$, calculate the Z value of the pathway,
 
 $$Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}$$
 
-where k means A total of k KOs were annotated to the corresponding pathway;
+where k means a total of k KOs were annotated to the corresponding pathway;
 
 5.  Evaluate the degree of significance: permutation (permutation) 1000 times, get the random distribution of $Z_{pathway}$, the formula:
 
@@ -64,9 +74,9 @@ $$Z_{adjustedpathway}=(Z_{pathway}-\mu _k)/\sigma _k$$
 
 $μ_k$ is The mean of the random distribution, $σ_k$ is the standard deviation of the random distribution.
 
-The finally obtained $Z_{adjustedpathway}$ is the Reporter score value enriched for each metabolic pathway.
+The finally obtained $Z_{adjustedpathway}$ is the Reporter score value enriched for each pathway.
 
-In this mode, the Reporter score is non-directional, and a larger positive value represents a significant up-regulation enrichment, and a smaller Negative values represent significant down-regulation enrichment.
+In this mode, the Reporter score is **directed**, and a larger positive value represents a significant up-regulation enrichment, and a smaller negative values represent significant down-regulation enrichment.
 
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 
