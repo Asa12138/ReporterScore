@@ -1,11 +1,11 @@
 Package: ReporterScore
 Type: Package
-Title: ReporterScore Functional Enrich Method for Microbiome
+Title: ReporterScore Functional Enrichment Method for Microbiome
 Version: 0.1.0
 Author: Peng Chen
 Maintainer: The package maintainer <pengchen2001@zju.edu.cn>
 Description: The original reporter-score method from Patil, K. R. et al. PNAS 2005.
-    In this package, we provide two methods (mixed/directed)
+    In this package, we provide two methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
