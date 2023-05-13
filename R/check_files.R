@@ -43,7 +43,7 @@ update_KO_file=function(pack_dir=NULL){
 make_KO_list=function(dir,output=NULL){
     dd=dir
     pathway2ko=read.table(paste0(dd,"/pathway-KO.list"),sep = "\t",col.names =c("KO","Pathway"))
-    pathway2ko=filter(pathway2ko,grepl("map",Pathway))
+    pathway2ko=dplyr::filter(pathway2ko,grepl("map",Pathway))
     pathway2ko$KO=sub("^ko:","",pathway2ko$KO);pathway2ko$Pathway=sub("^path:","",pathway2ko$Pathway)
     pathway2ko_num=pathway2ko%>%count(Pathway,name = "K_num")
     pathway_desc=read.table(paste0(dd,"/pathway.desc.list"),sep = "\t",col.names =c("Pathway","Description"))

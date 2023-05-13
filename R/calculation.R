@@ -17,7 +17,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
     t1 <- Sys.time()
     if(verbose)pcutils::dabiao("Checking rownames")
     rowname_check=grepl("K\\d{5}",rownames(kodf))
-    if(!all(rowname_check))warning("Some of your kodf are not KO id, check the format! (e.g. K00001)")
+    if(!all(rowname_check))warning("Some of your kodf are not KO id, check the format! (e.g. K00001)\n")
 
     if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){
@@ -204,7 +204,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
         res.dt$q.value <- p.adjust(res.dt$p.value, method = p.adjust.method)
 
         #这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？
-        up_down_ratio=table(res.dt%>%filter(abs(q.value)<=quantile(res.dt$q.value,0.05))%>%pull(type))
+        up_down_ratio=table(res.dt%>%dplyr::filter(abs(q.value)<=quantile(res.dt$q.value,0.05))%>%pull(type))
         kafang_res=chisq.test(up_down_ratio)
         pcutils::dabiao("")
         print(kafang_res)
@@ -253,7 +253,7 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
     if(verbose)pcutils::dabiao("Checking file")
     if(!all(c("KO_id","")%in%colnames(ko_stat)))
     rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
-    if(!all(rowname_check))warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!")
+    if(!all(rowname_check))warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!\n")
 
     load_KOlist(KOlist_file)
 
@@ -372,7 +372,8 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     if(mode==1){
         p=ggplot(reporter_res2, aes(reorder(Description, ReporterScore), ReporterScore, fill = Group)) +
             geom_bar(stat = 'identity', position='dodge')+
-            scale_fill_manual(values=c('P'='#e31a1c','N'='#47B0D9'))
+            scale_fill_manual(values=c('P'='#e31a1c','N'='#47B0D9'))+
+            theme(legend.position = "none")
     }
     if(mode==2){
         p=ggplot(reporter_res2, aes(reorder(Description, ReporterScore),
@@ -387,7 +388,6 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         scale_x_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
         theme_light()+
         theme(
-            legend.position = "none",
             axis.title.y=element_blank(),
             axis.text.x = element_text(colour='black',size=13),
             axis.text.y = element_text(colour='black',size=y_text_size)
@@ -398,7 +398,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 }
 
 
-
+#' get KOs
 #' @export
 get_KOs=function(map_id="map00010",ko_stat=NULL,module_list=NULL){
     if(is.null(module_list)){
@@ -426,7 +426,7 @@ get_KOs=function(map_id="map00010",ko_stat=NULL,module_list=NULL){
 #' @examples
 #' plot_KOs_in_pathway(map_id="map00780",ko_stat = ko_stat)
 plot_KOs_in_pathway=function(map_id="map00780",ko_stat = ko_stat,
-                             box_color=get_cols(2),line_color=c("skyblue3","red2","grey")){
+                             box_color=pcutils::get_cols(2),line_color=c("skyblue3","red2","grey")){
     A=get_KOs(map_id =map_id ,ko_stat = ko_stat)
 
     A=mutate(A,Significantly=ifelse(q.value<0.05,type,"None"))
@@ -449,8 +449,8 @@ plot_KOs_in_pathway=function(map_id="map00780",ko_stat = ko_stat,
         ggpubr::theme_pubr(legend = "right")
 }
 
+#' plot KOs boxplot
 #' @export
-#'
 plot_KOs_box=function(KO_abundance,Group,Group_tab,map_id="map00780",select_ko=NULL,...){
     if(!is.null(select_ko))select_ko=get_KOs(map_id =map_id)
     tkodf=KO_abundance[]%>%t()%>%as.data.frame()

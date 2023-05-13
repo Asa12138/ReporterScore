@@ -21,7 +21,7 @@ Transfer p-value of KOs to Z-score
 }
 \details{
 "\strong{mixed}" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
-In this mode, the reporter score is \strong{non-directional}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+In this mode, the reporter score is \strong{Undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 
 steps:
 
@@ -76,7 +76,7 @@ so \eqn{Z_{koi}} is greater than 0 Up-regulation, \eqn{Z_{koi}} less than 0 is d
 \eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
 
 The finally obtained \eqn{Z_{adjustedpathway}} is the Reporter score value enriched for each pathway.
-In this mode, the Reporter score is directional, and a larger positive value represents a significant up-regulation enrichment, and a smaller Negative values represent significant down-regulation enrichment.
+In this mode, the Reporter score is directed, and a larger positive value represents a significant up-regulation enrichment, and a smaller negative values represent significant down-regulation enrichment.
 
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 }

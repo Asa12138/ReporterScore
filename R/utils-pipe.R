@@ -13,8 +13,26 @@
 #' @return The result of calling `rhs(lhs)`.
 NULL
 
-
+#' Some functions from other packages
 #' @import ggplot2
 #' @import dplyr
 #' @import pcutils
 #' @import reshape2
+#' @importFrom pcutils lib_ps
+#' @importFrom pcutils get_cols
+#' @importFrom pcutils mmscale
+#' @importFrom vegan decostand
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#' @importFrom dplyr left_join
+#' @importFrom dplyr arrange
+#' @importFrom dplyr count
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
+#' @importFrom dplyr rename
+#' @importFrom dplyr distinct
+#' @importFrom tibble rownames_to_column
+#' @importFrom tibble column_to_rownames
+#' @importFrom reshape2 acast
+#' @importFrom reshape2 melt
+pcutils::lib_ps("dplyr","ggplot2","reshape2")

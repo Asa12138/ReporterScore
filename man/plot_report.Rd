@@ -17,11 +17,11 @@ plot_report(
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
+\item{mode}{1～2}
+
 \item{y_text_size}{y_text_size}
 
 \item{str_width}{str_width to wrap}
-
-\item{color}{color vector c('#e31a1c','#47B0D9')}
 }
 \value{
 ggplot
