@@ -15,11 +15,11 @@
 #' ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
 ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
     t1 <- Sys.time()
-    if(verbose)dabiao("Checking rownames")
+    if(verbose)pcutils::dabiao("Checking rownames")
     rowname_check=grepl("K\\d{5}",rownames(kodf))
     if(!all(rowname_check))warning("Some of your kodf are not KO id, check the format! (e.g. K00001)")
 
-    if(verbose)dabiao("Checking group")
+    if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){
         if(length(group)!=1)stop("'group' should be one column name of metadata when metadata exsit!")
         idx = rownames(metadata) %in% colnames(kodf)
@@ -37,7 +37,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
     if(!is.null(vs_group)&(!setequal(levels(factor(sampFile$group)),vs_group)))stop("vs_group should contains group levels")
     if(is.null(vs_group)){vs_group=levels(factor(sampFile$group))}
     #calculate each
-    if(verbose)dabiao("Calculating each KO")
+    if(verbose)pcutils::dabiao("Calculating each KO")
 
     #parallel
     reps=nrow(kodf)
@@ -206,7 +206,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
         #这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？
         up_down_ratio=table(res.dt%>%filter(abs(q.value)<=quantile(res.dt$q.value,0.05))%>%pull(type))
         kafang_res=chisq.test(up_down_ratio)
-        dabiao("")
+        pcutils::dabiao("")
         print(kafang_res)
         #if p-value>0.05，正负一致。
         if(kafang_res$p.value<0.05){
@@ -250,7 +250,7 @@ load_KOlist=function(KOlist_file=NULL){
 get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,threads=1,KOlist_file=NULL){
     mode=match.arg(mode,c("pathway","module"))
     t1 <- Sys.time()
-    if(verbose)dabiao("Checking file")
+    if(verbose)pcutils::dabiao("Checking file")
     if(!all(c("KO_id","")%in%colnames(ko_stat)))
     rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
     if(!all(rowname_check))warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!")
@@ -258,9 +258,9 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
     load_KOlist(KOlist_file)
 
     if(verbose){
-        dabiao("load KOlist")
+        pcutils::dabiao("load KOlist")
         if(!is.null(attributes(KOlist)$"download_time")){
-            dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
+            pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
             message("If you want to update KOlist, use `update_KO_file()`")
         }
     }
@@ -279,7 +279,7 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
     }
 
     #calculate each pathway
-    if(verbose)dabiao("Calculating each pathway")
+    if(verbose)pcutils::dabiao("Calculating each pathway")
 
     #parallel
     reps=nrow(modulelist)

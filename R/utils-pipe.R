@@ -13,6 +13,8 @@
 #' @return The result of calling `rhs(lhs)`.
 NULL
 
-library(pcutils)
-library(dplyr)
-library(ggplot2)
+
+#' @import ggplot2
+#' @import dplyr
+#' @import pcutils
+#' @import reshape2

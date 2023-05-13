@@ -22,7 +22,7 @@ update_KO_file=function(pack_dir=NULL){
     dd="ReporterScore_temp_download"
     dir.create(dd)
 
-    dabiao("Trying to download files from https://rest.kegg.jp/ ")
+    pcutils::dabiao("Trying to download files from https://rest.kegg.jp/ ")
 
     download.file("https://rest.kegg.jp/link/pathway/ko",destfile = paste0(dd,"/pathway-KO.list"),method = "curl")
     download.file("https://rest.kegg.jp/list/pathway",destfile = paste0(dd,"/pathway.desc.list"),method = "curl")
@@ -30,7 +30,7 @@ update_KO_file=function(pack_dir=NULL){
     download.file("https://rest.kegg.jp/link/module/ko",destfile = paste0(dd,"/module-KO.list"),method = "curl")
     download.file("https://rest.kegg.jp/list/module",destfile = paste0(dd,"/module.desc.list"),method = "curl")
     make_KO_list(dd,paste0(pack_dir,"/data/new_KOlist.rda"))
-    dabiao(paste0("Update done at ",Sys.time()))
+    pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
 #' Prepare KOlist
