@@ -32,8 +32,9 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
         if(length(group)!=ncol(kodf))stop("'group' length should equal to columns number of kodf!")
         sampFile =data.frame(row.names =colnames(kodf),group=group)
     }
+    kodf=kodf[rowSums(kodf)>0,]
 
-    if(!nlevels(factor(sampFile$group))==2)stop()
+    if(!nlevels(factor(sampFile$group))==2)stop("'group' should be two element factor")
     if(!is.null(vs_group)&(!setequal(levels(factor(sampFile$group)),vs_group)))stop("vs_group should contains group levels")
     if(is.null(vs_group)){vs_group=levels(factor(sampFile$group))}
     #calculate each
@@ -204,7 +205,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
         res.dt$q.value <- p.adjust(res.dt$p.value, method = p.adjust.method)
 
         #这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？
-        up_down_ratio=table(res.dt%>%dplyr::filter(abs(q.value)<=quantile(res.dt$q.value,0.05))%>%pull(type))
+        up_down_ratio=table(res.dt%>%dplyr::filter(abs(q.value)<=quantile(res.dt$q.value,0.05,na.rm=T))%>%pull(type))
         kafang_res=chisq.test(up_down_ratio)
         pcutils::dabiao("")
         print(kafang_res)
@@ -372,21 +373,21 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     if(mode==1){
         p=ggplot(reporter_res2, aes(reorder(Description, ReporterScore), ReporterScore, fill = Group)) +
             geom_bar(stat = 'identity', position='dodge')+
-            scale_fill_manual(values=c('P'='#e31a1c','N'='#47B0D9'))+
+            scale_fill_manual(values=c('P'='orange','N'='seagreen'))+
+            theme_light()+
             theme(legend.position = "none")
     }
     if(mode==2){
         p=ggplot(reporter_res2, aes(reorder(Description, ReporterScore),
                                   ReporterScore,size=K_num, fill =K_num)) +
             geom_point(shape=21)+
-            scale_fill_gradient(low = "#FF000033",high = "red",guide = "legend")
+            scale_fill_gradient(low = "#FF000033",high = "red",guide = "legend")+theme_light()
     }
 
     p <-p+
         geom_hline(yintercept = rs_threshold[1], linetype =2)+
         coord_flip()+
         scale_x_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
-        theme_light()+
         theme(
             axis.title.y=element_blank(),
             axis.text.x = element_text(colour='black',size=13),
@@ -426,9 +427,12 @@ get_KOs=function(map_id="map00010",ko_stat=NULL,module_list=NULL){
 #' @examples
 #' plot_KOs_in_pathway(map_id="map00780",ko_stat = ko_stat)
 plot_KOs_in_pathway=function(map_id="map00780",ko_stat = ko_stat,
-                             box_color=pcutils::get_cols(2),line_color=c("skyblue3","red2","grey")){
+                             box_color=pcutils::get_cols(2),
+                             line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey")){
     A=get_KOs(map_id =map_id ,ko_stat = ko_stat)
-
+    if(grepl("map",map_id))Description=KOlist$pathway[KOlist$pathway$id==map_id,"Description"]
+    else if(grepl("M",map_id))Description=KOlist$module[KOlist$module$id==map_id,"Description"]
+    else Description=""
     A=mutate(A,Significantly=ifelse(q.value<0.05,type,"None"))
     vs_group=grep("avg",colnames(A),value = T)
     box_df=reshape2::melt(A[,c("KO_id",vs_group)],id.vars="KO_id",variable.name ="Group")
@@ -440,12 +444,12 @@ plot_KOs_in_pathway=function(map_id="map00780",ko_stat = ko_stat,
     ggplot()+
         geom_boxplot(data =box_df,aes(x=Group,y=value,color=Group),show.legend = F)+
         geom_point(data =box_df,aes(x=Group,y=value,color=Group),show.legend = F)+
-        scale_fill_manual(values = box_color)+
-        labs(title = paste0("KOs in ",map_id),x=NULL,y="Abundance")+
+        scale_color_manual(values = box_color)+
+        labs(title = paste0("KOs in ",map_id," (",Description,")"),x=NULL,y="Abundance")+
         ggnewscale::new_scale_color()+
         geom_segment(data = line_df,
                      aes(x=Group2,y=value2,xend=Group1,yend=value1,color=Significantly))+
-        scale_color_manual(values = line_color )+
+        scale_color_manual(values = line_color)+
         ggpubr::theme_pubr(legend = "right")
 }
 
