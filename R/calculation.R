@@ -13,7 +13,7 @@
 #' @examples
 #' data(KO_test)
 #' ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
-ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
+ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1,p.adjust.method='BH'){
     t1 <- Sys.time()
     if(verbose)pcutils::dabiao("Checking rownames")
     rowname_check=grepl("K\\d{5}",rownames(kodf))
@@ -99,6 +99,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
                       'Time use: ', stime, attr(stime, 'units'), "\n")
 
     cat(resinfo)
+    res.dt$q.value <- p.adjust(res.dt$p.value, method = p.adjust.method)
     return(res.dt)
 }
 
@@ -175,7 +176,7 @@ ko_test=function(kodf,group,metadata=NULL,vs_group=NULL,verbose=T,threads=1){
 #' @references
 #' 1. Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology. Proc Natl Acad Sci U S A 102, 2685–2689 (2005).
 #' 2. Liu, L., Zhu, R. & Wu, D. Misuse of reporter score in microbial enrichment analysis. iMeta n/a, e95.
-#'
+#' 3. \link{https://github.com/wangpeng407/ReporterScore}
 #'
 #' @examples
 #' data(KO_test)
@@ -248,7 +249,7 @@ load_KOlist=function(KOlist_file=NULL){
 #' ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 #' reporter_s=get_reporter_score(ko_stat)
-get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,threads=1,KOlist_file=NULL){
+get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,threads=1,KOlist_file=NULL,perm =1000){
     mode=match.arg(mode,c("pathway","module"))
     t1 <- Sys.time()
     if(verbose)pcutils::dabiao("Checking file")
@@ -294,7 +295,7 @@ get_reporter_score=function(ko_stat,mode=c("pathway","module")[1],verbose=T,thre
         KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
 
         #以整个输入ko文件作为背景
-        mean_sd <- random_mean_sd(clean.KO, KOnum, 1000)
+        mean_sd <- random_mean_sd(clean.KO, KOnum, perm =perm)
 
         reporter_score <- (sum(z) / sqrt(KOnum) - mean_sd[1])/mean_sd[2]
         reporter_score
@@ -469,3 +470,4 @@ plot_KOs_box=function(KO_abundance,Group,Group_tab,map_id="map00780",select_ko=N
     pcutils::group_box(tkodf[,cols],Group,Group_tab,p_value1 = T,trend_line = T,...)+
         ggpubr::theme_pubr(legend = "right")
 }
+

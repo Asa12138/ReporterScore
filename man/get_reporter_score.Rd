@@ -9,7 +9,8 @@ get_reporter_score(
   mode = c("pathway", "module")[1],
   verbose = T,
   threads = 1,
-  KOlist_file = NULL
+  KOlist_file = NULL,
+  perm = 1000
 )
 }
 \arguments{

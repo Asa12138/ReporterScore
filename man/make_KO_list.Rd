@@ -14,3 +14,7 @@ make_KO_list(dir, output = NULL)
 \description{
 Prepare KOlist
 }
+\examples{
+make_KO_list("ReporterScore_temp_download/")
+
+}

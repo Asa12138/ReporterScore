@@ -88,4 +88,5 @@ ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 \references{
 1. Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology. Proc Natl Acad Sci U S A 102, 2685–2689 (2005).
 2. Liu, L., Zhu, R. & Wu, D. Misuse of reporter score in microbial enrichment analysis. iMeta n/a, e95.
+3. \link{https://github.com/wangpeng407/ReporterScore}
 }

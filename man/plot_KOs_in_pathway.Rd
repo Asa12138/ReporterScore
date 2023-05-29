@@ -7,8 +7,8 @@
 plot_KOs_in_pathway(
   map_id = "map00780",
   ko_stat = ko_stat,
-  box_color = get_cols(2),
-  line_color = c("skyblue3", "red2", "grey")
+  box_color = pcutils::get_cols(2),
+  line_color = c(Depleted = "seagreen", Enriched = "orange", None = "grey")
 )
 }
 \arguments{

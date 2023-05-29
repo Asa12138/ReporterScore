@@ -35,4 +35,5 @@ NULL
 #' @importFrom tibble column_to_rownames
 #' @importFrom reshape2 acast
 #' @importFrom reshape2 melt
+#' @name init
 pcutils::lib_ps("dplyr","ggplot2","reshape2")

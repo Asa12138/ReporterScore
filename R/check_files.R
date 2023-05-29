@@ -10,6 +10,7 @@
 #' \link{https://rest.kegg.jp/list/pathway}
 #' \link{https://rest.kegg.jp/link/module/ko}
 #' \link{https://rest.kegg.jp/list/module}
+#' \link{https://rest.kegg.jp/list/ko}
 #'
 #' you can also download yourself the use \code{\link{make_KO_list}} to get a KOlist object
 #' @examples
@@ -20,7 +21,7 @@ update_KO_file=function(pack_dir=NULL){
     if(!dir.exists(pack_dir))stop("check your package location: ",pack_dir)
 
     dd="ReporterScore_temp_download"
-    dir.create(dd)
+    if(!dir.exists(dd))dir.create(dd)
 
     pcutils::dabiao("Trying to download files from https://rest.kegg.jp/ ")
 
@@ -29,7 +30,11 @@ update_KO_file=function(pack_dir=NULL){
 
     download.file("https://rest.kegg.jp/link/module/ko",destfile = paste0(dd,"/module-KO.list"),method = "curl")
     download.file("https://rest.kegg.jp/list/module",destfile = paste0(dd,"/module.desc.list"),method = "curl")
+
+    download.file("https://rest.kegg.jp/list/ko",destfile = paste0(dd,"/ko.desc.list"),method = "curl")
+
     make_KO_list(dd,paste0(pack_dir,"/data/new_KOlist.rda"))
+
     pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
@@ -39,6 +44,8 @@ update_KO_file=function(pack_dir=NULL){
 #' @param output default, dir/KOlist.rda
 #'
 #' @export
+#' @examples
+#' make_KO_list("ReporterScore_temp_download/")
 #'
 make_KO_list=function(dir,output=NULL){
     dd=dir
@@ -63,6 +70,10 @@ make_KO_list=function(dir,output=NULL){
 
     attributes(KOlist)$download_time=file.info(paste0(dd,"/pathway-KO.list"))$mtime
     attributes(KOlist)$build_time=Sys.time()
+
+    ko_desc=read.table(paste0(dd,"//ko.desc.list"),sep = "\t",col.names =c("KO","Description"),quote = "")
+
     if(is.null(output))output=paste0(dd,"/KOlist.rda")
-    save(KOlist,file =output)
+    save(KOlist,ko_desc,file =output)
 }
+

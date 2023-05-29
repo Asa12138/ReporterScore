@@ -10,7 +10,8 @@ ko_test(
   metadata = NULL,
   vs_group = NULL,
   verbose = T,
-  threads = 1
+  threads = 1,
+  p.adjust.method = "BH"
 )
 }
 \arguments{
