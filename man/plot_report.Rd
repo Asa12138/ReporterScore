@@ -17,7 +17,7 @@ plot_report(
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
-\item{mode}{1～2}
+\item{mode}{1～2 plot style.}
 
 \item{y_text_size}{y_text_size}
 
@@ -30,9 +30,6 @@ ggplot
 Plot the reporter_res
 }
 \examples{
-data(KO_test)
-ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
-ko_stat=pvalue2zs(ko_pvalue,mode="directed")
-reporter_s=get_reporter_score(ko_stat)
-plot_report(reporter_s,rs_threshold=c(2,-7),y_text_size=10,str_width=40)
+data("reporter_score_res")
+plot_report(reporter_score_res,rs_threshold=c(7,-2),y_text_size=10,str_width=40)
 }

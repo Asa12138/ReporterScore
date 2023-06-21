@@ -4,17 +4,36 @@
 \alias{KO_gsea}
 \title{Perform KO gene set enrichment analysis}
 \usage{
-KO_gsea(ko_pvalue, p.adjust.method = "BH")
+KO_gsea(
+  ko_pvalue,
+  p.adjust.method = "BH",
+  type = c("pathway", "module")[1],
+  KOlist_file = NULL,
+  modulelist = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko_test}}.}
+\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}}.}
 
 \item{p.adjust.method}{The method used for p-value adjustment (default: "BH").}
+
+\item{type}{"pathway" or "module"}
+
+\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
+
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
+\item{verbose}{logical}
 }
 \description{
 This function performs KO enrichment analysis using the clusterProfiler package.
 }
 \examples{
-a=KO_gsea(ko_pvalue)
-gseaplot(e,geneSetID = e@result$ID[1])
+\donttest{
+data("reporter_score_res")
+ko_pvalue=reporter_score_res$ko_pvalue
+enrich_res2=KO_gsea(ko_pvalue)
+enrichplot::gseaplot(enrich_res2,geneSetID = enrich_res2@result$ID[1])
+}
 }

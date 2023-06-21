@@ -2,10 +2,27 @@
 % Please edit documentation in R/calculation.R
 \name{get_KOs}
 \alias{get_KOs}
-\title{get KOs}
+\title{get KOs in a modulelist}
 \usage{
-get_KOs(map_id = "map00010", ko_stat = NULL, module_list = NULL)
+get_KOs(
+  map_id = "map00010",
+  KOlist_file = NULL,
+  ko_stat = NULL,
+  modulelist = NULL
+)
+}
+\arguments{
+\item{map_id}{map_id in modulelist}
+
+\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
+
+\item{ko_stat}{NULL or ko_stat result from \code{\link{pvalue2zs}}}
+
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+}
+\value{
+koids, or dataframe with these koids
 }
 \description{
-get KOs
+get KOs in a modulelist
 }

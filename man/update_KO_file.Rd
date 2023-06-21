@@ -4,23 +4,19 @@
 \alias{update_KO_file}
 \title{Update the KO2Pathway and KO2Module files}
 \usage{
-update_KO_file(pack_dir = NULL)
+update_KO_file(download_dir = NULL)
 }
 \arguments{
-\item{pack_dir}{the ReporterScore package location, detect automatically.}
+\item{download_dir}{the ReporterScore user dir location, detect automatically by `tools::R_user_dir("ReporterScore")`.}
 }
 \description{
 Download links:
 
-\link{https://rest.kegg.jp/link/pathway/ko}
-\link{https://rest.kegg.jp/list/pathway}
-\link{https://rest.kegg.jp/link/module/ko}
-\link{https://rest.kegg.jp/list/module}
-\link{https://rest.kegg.jp/list/ko}
+\code{https://rest.kegg.jp/link/pathway/ko}
+\code{https://rest.kegg.jp/list/pathway}
+\code{https://rest.kegg.jp/link/module/ko}
+\code{https://rest.kegg.jp/list/module}
+\code{https://rest.kegg.jp/list/ko}
 
 you can also download yourself the use \code{\link{make_KO_list}} to get a KOlist object
-}
-\examples{
-update_KO_file()
-
 }

@@ -4,17 +4,13 @@
 \alias{make_KO_list}
 \title{Prepare KOlist}
 \usage{
-make_KO_list(dir, output = NULL)
+make_KO_list(download_dir, output = NULL)
 }
 \arguments{
-\item{dir}{directory of your download file}
+\item{download_dir}{directory of your download file}
 
-\item{output}{default, dir/KOlist.rda}
+\item{output}{default, download_dir/KOlist.rda}
 }
 \description{
 Prepare KOlist
-}
-\examples{
-make_KO_list("ReporterScore_temp_download/")
-
 }

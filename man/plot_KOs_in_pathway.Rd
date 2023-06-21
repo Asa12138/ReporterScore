@@ -5,20 +5,26 @@
 \title{Plot KOs trend in one pathway or module}
 \usage{
 plot_KOs_in_pathway(
+  ko_stat,
   map_id = "map00780",
-  ko_stat = ko_stat,
-  box_color = pcutils::get_cols(2),
+  KOlist_file = NULL,
+  modulelist = NULL,
+  box_color = c("#e31a1c", "#1f78b4"),
   line_color = c(Depleted = "seagreen", Enriched = "orange", None = "grey")
 )
 }
 \arguments{
-\item{map_id}{the pathway or module id}
-
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{box_color}{box and point color}
+\item{map_id}{the pathway or module id}
 
-\item{line_color}{line color}
+\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
+
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
+\item{box_color}{box and point color, default: c("#e31a1c","#1f78b4")}
+
+\item{line_color}{line color, default: c("Depleted"="seagreen","Enriched"="orange","None"="grey")}
 }
 \value{
 ggplot
@@ -27,5 +33,6 @@ ggplot
 Plot KOs trend in one pathway or module
 }
 \examples{
-plot_KOs_in_pathway(map_id="map00780",ko_stat = ko_stat)
+data("reporter_score_res")
+plot_KOs_in_pathway(ko_stat = reporter_score_res,map_id="map00780")
 }

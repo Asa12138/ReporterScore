@@ -4,12 +4,14 @@
 \alias{plot.enrich_res}
 \title{Plot enrich_res}
 \usage{
-\method{plot}{enrich_res}(GO, mode = 1, str_width = 50)
+\method{plot}{enrich_res}(x, ..., mode = 1, str_width = 50)
 }
 \arguments{
-\item{GO}{enrich_res object}
+\item{x}{enrich_res object}
 
-\item{mode}{mode}
+\item{...}{add}
+
+\item{mode}{plot style}
 
 \item{str_width}{default: 50}
 }

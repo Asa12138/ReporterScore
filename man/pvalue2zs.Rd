@@ -7,7 +7,7 @@
 pvalue2zs(ko_pvalue, mode = c("mixed", "directed")[1], p.adjust.method = "BH")
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko_test}}}
+\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}}}
 
 \item{mode}{"mixed" or "directed", see details}
 
@@ -43,7 +43,7 @@ where k means A total of k KOs were annotated to the corresponding pathway;
 
 \eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
 
-Instead, "\strong{directed}" mode is a derived version of "mixed", referenced from \link{https://github.com/wangpeng407/ReporterScore}.
+Instead, "\strong{directed}" mode is a derived version of "mixed", referenced from \code{https://github.com/wangpeng407/ReporterScore}.
 
 This approach is based on the same assumption of many differential analysis methods: the expression of most genes has no significant change.
 
@@ -81,12 +81,14 @@ In this mode, the Reporter score is directed, and a larger positive value repres
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 }
 \examples{
-data(KO_test)
-ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
+\donttest{
+data(KO_abundance_test)
+ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 ko_stat=pvalue2zs(ko_pvalue,mode="directed")
+}
 }
 \references{
 1. Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology. Proc Natl Acad Sci U S A 102, 2685–2689 (2005).
 2. Liu, L., Zhu, R. & Wu, D. Misuse of reporter score in microbial enrichment analysis. iMeta n/a, e95.
-3. \link{https://github.com/wangpeng407/ReporterScore}
+3. \code{https://github.com/wangpeng407/ReporterScore}
 }

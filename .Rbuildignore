@@ -1,4 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ReporterScore_temp*/
+ReporterScore_temp*
 .gitgnore
+^test\.R

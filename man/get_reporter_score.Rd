@@ -6,23 +6,28 @@
 \usage{
 get_reporter_score(
   ko_stat,
-  mode = c("pathway", "module")[1],
-  verbose = T,
+  type = c("pathway", "module")[1],
   threads = 1,
   KOlist_file = NULL,
-  perm = 1000
+  modulelist = NULL,
+  perm = 1000,
+  verbose = TRUE
 )
 }
 \arguments{
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{mode}{"pathway" or "module"}
-
-\item{verbose}{logical}
+\item{type}{"pathway" or "module"}
 
 \item{threads}{threads}
 
 \item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
+
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
+\item{perm}{permutation number, default:1000}
+
+\item{verbose}{logical}
 }
 \value{
 reporter_res dataframe
@@ -31,8 +36,10 @@ reporter_res dataframe
 Calculate reporter score
 }
 \examples{
-data(KO_test)
-ko_pvalue=ko_test(KO_abundance,"Group",Group_tab)
+\donttest{
+data(KO_abundance_test)
+ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 reporter_s=get_reporter_score(ko_stat)
+}
 }

@@ -4,12 +4,27 @@
 \alias{KO_enrich}
 \title{Perform KO enrichment analysis}
 \usage{
-KO_enrich(ko_pvalue, p.adjust.method = "BH")
+KO_enrich(
+  ko_pvalue,
+  p.adjust.method = "BH",
+  type = c("pathway", "module")[1],
+  KOlist_file = NULL,
+  modulelist = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko_test}}.}
+\item{ko_pvalue}{ko_pvalue dataframe from \code{\link[ReporterScore]{ko.test}}.}
 
 \item{p.adjust.method}{The method used for p-value adjustment (default: "BH").}
+
+\item{type}{"pathway" or "module"}
+
+\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
+
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
+\item{verbose}{logical}
 }
 \value{
 A data frame containing the enrichment results.
@@ -18,7 +33,10 @@ A data frame containing the enrichment results.
 This function performs KO enrichment analysis using the clusterProfiler package.
 }
 \examples{
-a=KO_enrich(ko_pvalue)
-plot(a)
-
+\donttest{
+data("reporter_score_res")
+ko_pvalue=reporter_score_res$ko_pvalue
+enrich_res=KO_enrich(ko_pvalue)
+plot(enrich_res)
+}
 }

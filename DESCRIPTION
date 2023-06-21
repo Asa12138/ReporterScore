@@ -2,10 +2,10 @@ Package: ReporterScore
 Type: Package
 Title: ReporterScore Functional Enrichment Method for Microbiome
 Version: 0.1.0
-Author: Peng Chen
-Maintainer: The package maintainer <pengchen2001@zju.edu.cn>
-Description: The original reporter-score method from Patil, K. R. et al. PNAS 2005.
-    In this package, we provide two methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
+Authors@R:
+    person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"))
+Description: The original reporter-score method comes from Patil, K. R. et al. PNAS 2005.
+    In this package, we provide two reporter-score methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -15,10 +15,26 @@ Imports:
     ggplot2 (>= 3.2.0),
     magrittr,
     pcutils,
-    ggpubr,
+    utils,
+    stats,
     ggnewscale,
-    reshape2
+    reshape2,
+    stringr,
+    foreach
+Suggests: 
+    knitr,
+    rmarkdown,
+    ggpubr,
+    tibble,
+    vegan,
+    clusterProfiler,
+    snow,
+    doSNOW,
+    enrichplot
 Remotes: 
     github::Asa12138/pcutils
 Depends: 
-    R (>= 3.5.0)
+    R (>= 4.0.0)
+VignetteBuilder: knitr
+BugReports: https://github.com/Asa12138/ReporterScore/issues
+URL: https://github.com/Asa12138/ReporterScore
