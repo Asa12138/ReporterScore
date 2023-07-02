@@ -7,6 +7,7 @@
 #' @importFrom utils tail
 #' @importFrom stats p.adjust reorder
 #' @importFrom foreach %dopar%
+#' @importFrom pcutils lib_ps get_cols
 #' @import dplyr
 #' @import ggplot2
 ## usethis namespace: end

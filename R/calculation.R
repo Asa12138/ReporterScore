@@ -320,13 +320,16 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
 
 
 random_mean_sd <- function(vec, Knum, perm = 1000){
-    set.seed((Knum + 1))
+    #set.seed((Knum + 1))
     #我认为应该repalce=TRUE，否则当vec长度小于Knum时，每次取到的都是同一个结果，sd就会非常小！
+    #修改Knum为exist_Knum就不会有这个问题了
     #但是Permutation就是不放回抽样😭，Bootstrap才是有放回
     #建议输入的KO表的ko数量多一些，保证sd正确。
-    replace=(length(vec)<=Knum)
+    #replace=(length(vec)<=Knum)
+
+    replace=FALSE
     temp=sapply(1:perm, \(i){sum(sample(vec, Knum,replace = replace))/sqrt(Knum)})
-    c(mean(temp), stats::sd(temp))
+    list(vec=temp,mean_sd=c(mean(temp), stats::sd(temp)))
 }
 
 #' Calculate reporter score
@@ -347,7 +350,7 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 #' data(KO_abundance_test)
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
-#' reporter_s=get_reporter_score(ko_stat)
+#' reporter_s1=get_reporter_score(ko_stat)
 #' }
 get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOlist_file=NULL,modulelist=NULL,perm =1000,verbose=TRUE){
     KOlist=i=NULL
@@ -355,7 +358,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
     t1 <- Sys.time()
 
     if(verbose)pcutils::dabiao("Checking file")
-    if(!all(c("KO_id","")%in%colnames(ko_stat)))
+    if(!all(c("KO_id","Z_score")%in%colnames(ko_stat)))stop("Some wrong with ko_stat")
     rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
     if(!all(rowname_check)){if(verbose)warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!\n")}
 
@@ -378,19 +381,33 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
     #parallel
     reps=nrow(modulelist)
 
+    p_th=ifelse(attributes(ko_stat)$mode=="mixed",0.05,0.025)
+    clean.KO <- ko_stat$Z_score[!is.na(ko_stat$Z_score)]
     #main function
     loop=function(i){
         #找到在该pathway里的所有ko的zs
-        z <- ko_stat$Z_score[ko_stat$KO_id %in% strsplit(modulelist$KOs[i], ',')[[1]]]
-        KOnum <- modulelist$K_num[i]
-        clean.KO <- ko_stat$Z_score[!is.na(ko_stat$Z_score)]
-        KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
+        tmp_kos=strsplit(modulelist$KOs[i], ',')[[1]]
 
-        #以整个输入ko文件作为背景
+        z <- ko_stat[ko_stat$KO_id %in% tmp_kos,]
+        exist_KO=nrow(z)
+
+        significant_KO=sum(z$q.value<p_th)
+
+        #如果一条通路里压根没找到几个ko，就不应该有reporterscore
+        if(exist_KO<3)return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
+
+        #KOnum <- modulelist$K_num[i]
+        #KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
+
+        KOnum=exist_KO
+        #以整个输入ko文件作为背景,抽取KOnum应该是exist_KO，而不是所有的KOnum，可以在iMeta文章看到
         mean_sd <- random_mean_sd(clean.KO, KOnum, perm =perm)
+        Z_score=sum(z$Z_score) / sqrt(KOnum)
 
-        reporter_score <- (sum(z) / sqrt(KOnum) - mean_sd[1])/mean_sd[2]
-        reporter_score
+        reporter_score <- (Z_score - mean_sd$mean_sd[1])/mean_sd$mean_sd[2]
+        p.value=sum(mean_sd$vec>Z_score)/length(mean_sd$vec)
+        p.value=ifelse(p.value>0.5,1-p.value,p.value)
+        c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value)
     }
     {
     if(threads>1){
@@ -411,12 +428,12 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
         res <-lapply(1:reps, loop)
     }}
     #simplify method
-    res=do.call(c,res)
-
+    res=do.call(rbind,res)
+    colnames(res)=c("Exist_K_num","Significant_K_num","Z_score","BG_Mean","BG_Sd","ReporterScore","p.value")
+    res=as.data.frame(res)
     reporter_res <- data.frame(ID = modulelist$id,
-                               ReporterScore = res,
                                Description = modulelist$Description,
-                               K_num=modulelist$K_num)
+                               K_num=modulelist$K_num,res)
 
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
     t2 <- Sys.time()
@@ -465,11 +482,11 @@ get_KOs=function(map_id="map00010",KOlist_file=NULL,ko_stat=NULL,modulelist=NULL
 #'
 #' @examples
 #' data("reporter_score_res")
-#' plot_report(reporter_score_res,rs_threshold=c(7,-2),y_text_size=10,str_width=40)
+#' plot_report(reporter_score_res,rs_threshold=c(2,-2),y_text_size=10,str_width=40)
 plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_width=50){
     if(inherits(reporter_res,"reporter_score"))reporter_res=reporter_res$reporter_s
-
-    Group=Description=ReporterScore=K_num=NULL
+    reporter_res=na.omit(reporter_res)
+    Group=Description=ReporterScore=Exist_K_num=NULL
     if(length(rs_threshold)==1)rs_threshold=c(rs_threshold,-rs_threshold)
     rs_threshold=sort(rs_threshold)
     if(rs_threshold[2]>max((reporter_res$ReporterScore))){
@@ -499,7 +516,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     }
     if(mode==2){
         p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore),
-                                  size=K_num, fill =K_num)) +
+                                  size=Exist_K_num, fill =Exist_K_num)) +
             geom_point(shape=21)+
             scale_fill_gradient(low = "#FF000033",high = "red",guide = "legend")+theme_light()
     }
@@ -556,7 +573,9 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
     if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
     Description=modulelist[modulelist$id==map_id,"Description"]
 
-    A=dplyr::mutate(A,Significantly=ifelse(q.value<0.05,type,"None"))
+    p_th=ifelse(attributes(ko_stat)$mode=="mixed",0.05,0.025)
+    A=dplyr::mutate(A,Significantly=ifelse(q.value<p_th,type,"None"))
+
     vs_group=grep("avg",colnames(A),value = TRUE)
     box_df=reshape2::melt(A[,c("KO_id",vs_group)],id.vars="KO_id",variable.name ="Group")
     box_df$Group=factor(box_df$Group,levels = rev(vs_group))
@@ -591,7 +610,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
 #' @export
 #' @examples
 #' data("reporter_score_res")
-#' plot_KOs_box(reporter_score_res,"Group",metadata,map_id="map00780",
+#' plot_KOs_box(reporter_score_res,"Group",metadata,
 #'      select_ko=c("K00059","K00208","K00647","K00652","K00833","K01012"))
 #'
 plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
@@ -626,3 +645,41 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
         scale_fill_manual(values = c("#e31a1c","#1f78b4"))+scale_color_manual(values = c("#e31a1c","#1f78b4"))
 }
 
+#' Plot KOs heatmap
+#'
+#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples
+#' @param group The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf.
+#' @param metadata metadata
+#' @param map_id the pathway or module id
+#' @param select_ko select which ko
+#' @param heatmap_param parameters pass to \code{\link[pheatmap]{pheatmap}}
+#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
+#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
+#'
+#' @export
+#' @examples
+#' data("reporter_score_res")
+#' plot_KOs_heatmap(reporter_score_res,"Group",metadata,map_id="map00780")
+#'
+plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
+                          map_id="map00780",select_ko=NULL,
+                          KOlist_file = NULL,modulelist = NULL,heatmap_param=list()){
+    pcutils::lib_ps("pheatmap",library = FALSE)
+    if(inherits(kodf,"reporter_score")){
+        reporter_res=kodf
+        kodf=reporter_res$kodf
+        group=reporter_res$group
+        metadata=reporter_res$metadata
+        modulelist=reporter_res$modulelist
+    }
+
+    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist)
+    cols=which(rownames(kodf)%in%select_ko)
+
+    metadata[,group]=factor(metadata[,group],levels = rev(levels(factor(metadata[,group]))))
+    if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
+
+    do.call(pheatmap::pheatmap,
+            pcutils::update_param(list(mat = kodf[cols,],cluster_cols = F,annotation_col = metadata,scale = "row"),
+                                  heatmap_param))
+}
