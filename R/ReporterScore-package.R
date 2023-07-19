@@ -5,7 +5,7 @@
 #' @importFrom utils data
 #' @importFrom utils head
 #' @importFrom utils tail
-#' @importFrom stats p.adjust reorder
+#' @importFrom stats p.adjust reorder sd cor cor.test
 #' @importFrom foreach %dopar%
 #' @importFrom pcutils lib_ps get_cols
 #' @import dplyr

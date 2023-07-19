@@ -1,0 +1,16 @@
+citHeader("To cite ReporterScore in publications use:")
+
+citEntry(
+    entry  = "article",
+    title = "ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome",
+    author = personList(
+        as.person("Chen Peng"),
+        as.person("Chao Jiang")
+    ),
+    journal = "NA",
+    year = "2023",
+    url = "https://github.com/Asa12138/ReporterScore",
+    textVersion = paste("Chen Peng, Chao Jiang.",
+                        "ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome.",
+                        "R package (2023), https://github.com/Asa12138/ReporterScore")
+)

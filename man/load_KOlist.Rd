@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{load_KOlist}
 \alias{load_KOlist}
-\title{Load the KOlist}
+\title{Load the KOlist (from KEGG)}
 \usage{
 load_KOlist(KOlist_file = NULL, envir = .GlobalEnv)
 }
@@ -15,5 +15,5 @@ load_KOlist(KOlist_file = NULL, envir = .GlobalEnv)
 KOlist in `.GlobalEnv`
 }
 \description{
-Load the KOlist
+Load the KOlist (from KEGG)
 }

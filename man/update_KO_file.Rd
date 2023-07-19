@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{update_KO_file}
 \alias{update_KO_file}
-\title{Update the KO2Pathway and KO2Module files}
+\title{Update the KO2Pathway and KO2Module files from KEGG}
 \usage{
 update_KO_file(download_dir = NULL)
 }

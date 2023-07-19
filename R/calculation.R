@@ -1,4 +1,3 @@
-
 #' Print reporter_score
 #'
 #' @param x reporter_score
@@ -13,22 +12,34 @@ print.reporter_score=function(x,...){
     pcutils::dabiao("KO abundance table",print=TRUE)
     cat("With ", nrow(reporter_score_res$kodf)," KOs and ",ncol(reporter_score_res$kodf)," samples.\n")
     pcutils::dabiao("group",print=TRUE)
-    vs_group=grep("avg",colnames(reporter_score_res$ko_stat),value = TRUE)
-    cat("vs group: ",sub("avg_","",vs_group[1])," vs ",sub("avg_","",vs_group[2]),
-        "; use mode: ",attributes(reporter_score_res$reporter_s)$mode,sep = "")
+    vs_group=attributes(reporter_score_res$reporter_s)$vs_group
+    if(length(vs_group)==2){
+        cat("vs group: ",vs_group[1]," vs ",vs_group[2],
+            "; use mode: ",attributes(reporter_score_res$reporter_s)$mode,
+            "; use method: ",attributes(reporter_score_res$reporter_s)$method,sep = "")
+    }
+    if(length(vs_group)>2){
+        cat("vs group: ",paste(vs_group,collapse = "/"),
+            "; use mode: ",attributes(reporter_score_res$reporter_s)$mode,
+            "; use method: ",attributes(reporter_score_res$reporter_s)$method,sep = "")
+    }
 }
-
 
 #' One step to get the reporter score of your KO abundance table.
 #'
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
-#' @param group The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
-#' @param metadata sample information dataframe contains group.
-#' @param mode "mixed" or "directed", see details in \code{\link{pvalue2zs}}.
+#' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
+#' @param metadata sample information data.frame contains group
+#' @param mode "mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.
 #' @param verbose logical
+#' @param method the type of test. Default is `wilcox.test`. Allowed values include:
+#' \itemize{
+#' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
+#' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
+#' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
 #' @param threads default 1
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
-#' @param type "pathway" or "module"
+#' @param type "pathway" or "module" for default KOlist_file.
 #' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param perm permutation number, default: 1000.
@@ -39,15 +50,18 @@ print.reporter_score=function(x,...){
 #' \item{ko_stat}{ko statistics result contains p.value and z_score}
 #' \item{reporter_s}{the reporter score in each pathway}
 #' \item{modulelist}{default KOlist or customized modulelist dataframe}
-#' \item{group}{The compare group (two category) in your data}
+#' \item{group}{The comparison groups in your data}
 #' \item{metadata}{sample information dataframe contains group}
 #' @export
 #' @examples
 #' \donttest{
+#' data("KO_abundance_test")
 #' reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
+#' reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
+#'      method = "kruskal.test",p.adjust.method = "none")
 #' }
 reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
-                        verbose=TRUE,threads=1,p.adjust.method='BH',
+                        verbose=TRUE,method="wilcox.test",threads=1,p.adjust.method='BH',
                         type=c("pathway","module")[1],perm =1000,
                         KOlist_file=NULL,modulelist=NULL){
     KOlist=NULL
@@ -66,9 +80,8 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
     }
     if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
 
-
     if(verbose)pcutils::dabiao("1.KO test")
-    ko_pvalue=ko.test(kodf,group,metadata,threads =threads,p.adjust.method =p.adjust.method,verbose = verbose)
+    ko_pvalue=ko.test(kodf,group,metadata,method = method,threads =threads,p.adjust.method =p.adjust.method,verbose = verbose)
     if(verbose)pcutils::dabiao("2.Transfer p.value to z-score")
     ko_stat=pvalue2zs(ko_pvalue,mode=mode,p.adjust.method =p.adjust.method)
     if(verbose)pcutils::dabiao("3.Calculating reporter score")
@@ -82,14 +95,19 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 }
 
 
-#' Wilcox-test or t.test for KO-abundance table
+#' Differential analysis or Correlation analysis for KO-abundance table
 #'
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001), colnames is samples
-#' @param group The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf.
-#' @param metadata sample information dataframe contains group
+#' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
+#' @param metadata sample information data.frame contains group
+#' @param method the type of test. Default is `wilcox.test`. Allowed values include:
+#' \itemize{
+#' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
+#' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
+#' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
 #' @param threads default 1
-#' @param verbose logical
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
+#' @param verbose logical
 #'
 #' @return ko_pvalue dataframe
 #' @export
@@ -99,13 +117,13 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' data("KO_abundance_test")
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' }
-ko.test=function(kodf,group,metadata=NULL,threads=1,p.adjust.method='BH',verbose=TRUE){
+ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjust.method='BH',verbose=TRUE){
     i=NULL
     t1 <- Sys.time()
 
     if(verbose)pcutils::dabiao("Checking rownames")
     rowname_check=grepl("K\\d{5}",rownames(kodf))
-    if(!all(rowname_check))warning("Some of your kodf are not KO id, check the format! (e.g. K00001)\n")
+    if(!all(rowname_check))message("Some of your kodf are not KO id, check the format! (e.g. K00001)\n")
 
     if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){
@@ -122,87 +140,118 @@ ko.test=function(kodf,group,metadata=NULL,threads=1,p.adjust.method='BH',verbose
         sampFile =data.frame(row.names =colnames(kodf),group=group)
     }
 
-    kodf=kodf[rowSums(kodf)>0,]
+    if(verbose)pcutils::dabiao("Removing all-zero rows: ",sum(rowSums(abs(kodf))==0))
+    kodf=kodf[rowSums(abs(kodf))>0,]
 
-    if(!nlevels(factor(sampFile$group))==2)stop("'group' should be two elements factor")
-    {vs_group=levels(factor(sampFile$group))}
+    vs_group=levels(factor(sampFile$group))
+
+    if(length(vs_group)==1)stop("'group' should be at least two elements factor")
+    if(length(vs_group)>2){
+        if(method%in%c("t.test","wilcox.test"))stop("'group' more than two elements, try 'kruskal.test' or 'anova'")}
+
     #calculate each
     if(verbose)pcutils::dabiao("Calculating each KO")
+    if(verbose)pcutils::dabiao("Using method: ",method)
+    tkodf=t(kodf)%>%as.data.frame()
+    group=sampFile$group
+    if(method%in%c("pearson", "kendall", "spearman")){
+        if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor level of group.")
+        group2=as.numeric(factor(group))
+    }
+
+    res.dt=data.frame("KO_id"=rownames(kodf))
+
+    for (i in vs_group) {
+        tmpdf=data.frame(average=apply(kodf[,which(group==i)],1,mean),sd=apply(kodf[,which(group==i)],1,sd))
+        colnames(tmpdf)=paste0(colnames(tmpdf),"_",i)
+        res.dt=cbind(res.dt,tmpdf)
+    }
+    if(length(vs_group)==2){
+        res.dt$diff_mean=res.dt[,paste0("average_",vs_group[1])]-res.dt[,paste0("average_",vs_group[2])]
+    }
+    if(method%in%c("pearson", "kendall", "spearman")){
+        res.dt$cor=-cor(tkodf,group2,method = method)
+    }
+
+    high_group <- apply(res.dt[,paste0("average_",vs_group)], 1, function(a) which(a == max(a))[[1]])
+    res.dt$Highest=vs_group[high_group]
 
     #parallel
     reps=nrow(kodf)
 
     tkodf=t(kodf)
-    g1=(sampFile$group==vs_group[1])
-    g2=(sampFile$group==vs_group[2])
-    exact <- (sum(g1) < 50) && (sum(g2) < 50)
     #main function
     loop=function(i){
-        val1 <- tkodf[g1,i]
-        val2 <- tkodf[g2,i]
-
-        r <- rank(c(val1, val2))
-        TIES <- (length(r) != length(unique(r)))
-
-        if((!exact)|TIES){
-            pval <- stats::t.test(val1, val2)$p.value
-            #resinfo <- paste0(s, ": Ties exists or exact is false in ", kn, ", using t.test insead!")
-        }else{
-            pval <- stats::wilcox.test(val1, val2)$p.value
+        val <- tkodf[,i]
+        if(method=="wilcox.test"){
+            pval <- stats::wilcox.test(val~group)$p.value
         }
-        if(verbose&(i%%100==0))message(paste(i,"done."))
-        data.frame(colnames(tkodf)[i],mean(val1), stats::sd(val1), mean(val2), stats::sd(val2), mean(val1) - mean(val2), pval)
+        if(method=="t.test"){
+            pval <- stats::t.test(val~group)$p.value
+        }
+        if(method=="kruskal.test"){
+            pval <- stats::kruskal.test(val~group)$p.value
+        }
+        if(method=="anova"){
+            pval <- stats::lm(val~group) %>% stats::anova(.) %>%.$`Pr(>F)` %>% .[1]
+        }
+        if(method%in%c("pearson", "kendall", "spearman")){
+            pval <- stats::cor.test(val,group2,method = method)$p.value
+        }
+        if(verbose&(i%%1000==0))message(paste(i,"done."))
+        pval
     }
-    {
-    if(threads>1){
-        pcutils::lib_ps("foreach","doSNOW","snow")
-        pb <- utils::txtProgressBar(max =reps, style = 3)
-        opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
-        cl <- snow::makeCluster(threads)
-        doSNOW::registerDoSNOW(cl)
-        res <- foreach::foreach(i = 1:reps,.options.snow = opts
-                                ) %dopar% {
-                                    loop(i)
-                                }
-        snow::stopCluster(cl)
-        gc()
-        pcutils::del_ps("doSNOW","snow","foreach")
-    }
-    else {
-        res <-lapply(1:reps, loop)
-    }}
-    #simplify method
-    res=do.call(rbind,res)
-    res.dt <- data.frame(res, stringsAsFactors = FALSE)
 
-    colnames(res.dt) <- c('KO_id',
-                          paste0('avg_', vs_group[1]),
-                          paste0('sd_', vs_group[1]),
-                          paste0('avg_', vs_group[2]),
-                          paste0('sd_', vs_group[2]),
-                          'diff_mean', 'p.value')
+    {
+        if(threads>1){
+            pcutils::lib_ps("foreach","doSNOW","snow")
+            pb <- utils::txtProgressBar(max =reps, style = 3)
+            opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            cl <- snow::makeCluster(threads)
+            doSNOW::registerDoSNOW(cl)
+            res <- foreach::foreach(i = 1:reps,.options.snow = opts
+            ) %dopar% {
+                loop(i)
+            }
+            snow::stopCluster(cl)
+            gc()
+            pcutils::del_ps("doSNOW","snow","foreach")
+        }
+        else {
+            res <-lapply(1:reps, loop)
+        }}
+    #simplify method
+    res=do.call(c,res)
+    res.dt$p.value=res
+
     t2 <- Sys.time()
     stime <- sprintf("%.3f", t2 - t1)
-    resinfo <- paste0('Compared groups: ', vs_group[1], ' and ', vs_group[2], "\n",
-                      'Total KO number: ', reps, "\n",
-                      'Time use: ', stime, attr(stime, 'units'), "\n")
 
+    res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+
+    resinfo <- paste0('Compared groups: ', paste(vs_group,collapse = ' and '), "\n",
+                      'Total KO number: ', reps, "\n",
+                      'Compare method: ', method, "\n",
+                      'Time use: ', stime, attr(stime, 'units'), "\n")
     message(resinfo)
-    res.dt$q.value <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+
+    attributes(res.dt)$vs_group=vs_group
+    attributes(res.dt)$method=method
+    attributes(res.dt)$p.adjust.method=p.adjust.method
     return(res.dt)
 }
 
 #' Transfer p-value of KOs to Z-score
 #'
-#' @param ko_pvalue ko_pvalue dataframe from \code{\link{ko.test}}
-#' @param mode "mixed" or "directed", see details
+#' @param ko_pvalue ko_pvalue dataframe from \code{\link{ko.test}} or your statistics test data.frame contains column: `p.value`
+#' @param mode "mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
 #'
 #' @return ko_stat dataframe
 #' @export
 #' @details
 #' "\strong{mixed}" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
-#' In this mode, the reporter score is \strong{Undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+#' In this mode, the reporter score is \strong{undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 #'
 #' steps:
 #'
@@ -274,50 +323,64 @@ ko.test=function(kodf,group,metadata=NULL,threads=1,p.adjust.method='BH',verbose
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 #' }
 pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH'){
-    q.value=type=NULL
+    p.adjust=type=NULL
     res.dt=ko_pvalue
     if(!all(c("p.value")%in%colnames(res.dt))){stop("check if `p.value` in your ko_stat dataframe!")}
+
     stopifnot(mode%in%c("mixed","directed"))
 
     if("diff_mean"%in%colnames(res.dt)){
         res.dt$sign <- ifelse(res.dt$diff_mean < 0, -1, 1)
         res.dt$type <- ifelse(res.dt$diff_mean < 0, paste0('Depleted'), paste0('Enriched'))
     }
+    if("cor"%in%colnames(res.dt)){
+        res.dt$sign <- ifelse(res.dt$cor < 0, -1, 1)
+        res.dt$type <- ifelse(res.dt$cor < 0, paste0('Depleted'), paste0('Enriched'))
+    }
 
-    #mixed不考虑正负号，q.value不除以2，考虑的话除以2
+    #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2
     if(mode=="mixed"){
-        res.dt$q.value <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+        res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
         #逆正态分布
-        zs <- stats::qnorm(1-(res.dt$q.value))
+        zs <- stats::qnorm(1-(res.dt$p.adjust))
         res.dt$Z_score <- ifelse( zs < -8.209536, -8.209536, zs)
         attributes(res.dt)$mode="mixed"
     }
     if(mode=="directed"){
-        if(!"diff_mean"%in%colnames(res.dt))stop("directed mode only use for two group and get the `diff_mean`.")
+        if(!"type"%in%colnames(res.dt))stop("directed mode only use for two groups differential analysis or multi-groups correlation analysis.")
         pn_sign=2
         res.dt$p.value=res.dt$p.value/pn_sign
-        res.dt$q.value <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+        res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
 
         #这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？
-        up_down_ratio=table(res.dt%>%dplyr::filter(abs(q.value)<=stats::quantile(res.dt$q.value,0.05,na.rm=TRUE))%>%dplyr::pull(type))
-        kafang_res=stats::chisq.test(up_down_ratio)
-        pcutils::dabiao("")
-        pcutils::dabiao("Chi-squared test for up and down ko ratio")
-        message("X-squared = ",round(kafang_res$statistic,4), "   p-value = ",round(kafang_res$p.value,4))
-        #if p-value>0.05，正负一致。
-        if(kafang_res$p.value<0.05){
-            warning("The overall up-down ratio of ko abundance is unbalanced!\n Continuing to use the directed mode may lead to wrong conclusions")
-        }
+        # up_down_ratio=table(res.dt%>%dplyr::filter(abs(p.adjust)<=stats::quantile(res.dt$p.adjust,0.05,na.rm=TRUE))%>%dplyr::pull(type))
+        # kafang_res=stats::chisq.test(up_down_ratio)
+        # pcutils::dabiao("")
+        # pcutils::dabiao("Chi-squared test for up and down ko ratio")
+        # message("X-squared = ",round(kafang_res$statistic,4), "   p-value = ",round(kafang_res$p.value,4))
+        #
+        # #if p-value>0.05，正负一致。
+        # if(kafang_res$p.value<0.05){
+        #     message("The overall up-down ratio of ko abundance is unbalanced!\n Continuing to use the directed mode may lead to wrong conclusions")
+        # }
+
         #逆正态分布
-        zs <- stats::qnorm(1-(res.dt$q.value))
+        zs <- stats::qnorm(1-(res.dt$p.adjust))
         res.dt$Z_score <- ifelse( zs < -8, -8, zs)
+
         #通过判断上下调给予z-score正负号，让最后的reporter-score正负号作为上下调标志
         res.dt$Z_score <- ifelse(res.dt$sign < 0, -res.dt$Z_score, res.dt$Z_score)
         attributes(res.dt)$mode="directed"
     }
+
+    if(is.null(attributes(res.dt)$mode))p_th=0.05
+    else p_th=ifelse(attributes(res.dt)$mode=="directed",0.025,0.05)
+
+    if("type"%in%colnames(res.dt)&mode=="directed")res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,type,"None"))
+    else res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,"Significant","None"))
+
     return(res.dt)
 }
-
 
 random_mean_sd <- function(vec, Knum, perm = 1000){
     #set.seed((Knum + 1))
@@ -335,10 +398,10 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
-#' @param type "pathway" or "module"
+#' @param type "pathway" or "module" for default KOlist_file.
 #' @param threads threads
 #' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
-#' @param perm permutation number, default:1000
+#' @param perm permutation number, default: 1000
 #' @param verbose logical
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #'
@@ -360,7 +423,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
     if(verbose)pcutils::dabiao("Checking file")
     if(!all(c("KO_id","Z_score")%in%colnames(ko_stat)))stop("Some wrong with ko_stat")
     rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
-    if(!all(rowname_check)){if(verbose)warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!\n")}
+    if(!all(rowname_check)){if(verbose)message("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!\n")}
 
     if(is.null(modulelist)){
         load_KOlist(KOlist_file,envir = environment())
@@ -381,7 +444,9 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
     #parallel
     reps=nrow(modulelist)
 
-    p_th=ifelse(attributes(ko_stat)$mode=="mixed",0.05,0.025)
+    if(is.null(attributes(ko_stat)$mode))p_th=0.05
+    else p_th=ifelse(attributes(ko_stat)$mode=="directed",0.025,0.05)
+
     clean.KO <- ko_stat$Z_score[!is.na(ko_stat$Z_score)]
     #main function
     loop=function(i){
@@ -391,10 +456,10 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
         z <- ko_stat[ko_stat$KO_id %in% tmp_kos,]
         exist_KO=nrow(z)
 
-        significant_KO=sum(z$q.value<p_th)
+        significant_KO=sum(z$p.adjust<p_th)
 
         #如果一条通路里压根没找到几个ko，就不应该有reporterscore
-        if(exist_KO<3)return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
+        if((exist_KO<3)&(exist_KO/modulelist$K_num[i]<0.2))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
 
         #KOnum <- modulelist$K_num[i]
         #KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
@@ -407,6 +472,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
         reporter_score <- (Z_score - mean_sd$mean_sd[1])/mean_sd$mean_sd[2]
         p.value=sum(mean_sd$vec>Z_score)/length(mean_sd$vec)
         p.value=ifelse(p.value>0.5,1-p.value,p.value)
+        if(verbose&(i%%100==0))message(paste(i,"done."))
         c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value)
     }
     {
@@ -436,6 +502,10 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
                                K_num=modulelist$K_num,res)
 
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
+    attributes(reporter_res)$method=attributes(ko_stat)$method
+    attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group
+    rownames(reporter_res)=reporter_res$ID
+
     t2 <- Sys.time()
 
     stime <- sprintf("%.3f", t2 - t1)
@@ -448,7 +518,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
 #' get KOs in a modulelist
 #'
 #' @param map_id map_id in modulelist
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
+#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
 #' @param ko_stat NULL or ko_stat result from \code{\link{pvalue2zs}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #'
@@ -458,228 +528,79 @@ get_KOs=function(map_id="map00010",KOlist_file=NULL,ko_stat=NULL,modulelist=NULL
     KOlist=NULL
     if(is.null(modulelist)){
         load_KOlist(KOlist_file,envir = environment())
-        if(grepl("map",map_id))modulelist=KOlist$pathway
-        if(grepl("M",map_id))modulelist=KOlist$module
+        if(grepl("map",map_id[1]))modulelist=KOlist$pathway
+        if(grepl("M",map_id[1]))modulelist=KOlist$module
     }
     if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
-    kos=modulelist[which(modulelist$id==map_id),"KOs"]
-    kos=strsplit(kos, ',')[[1]]
+    kos=modulelist[which(modulelist$id%in%map_id),"KOs"]
+    if(length(kos)>0)kos=lapply(kos, strsplit,",")%>%unlist()
+    else kos=NULL
     if(!is.null(ko_stat)){return(ko_stat[ko_stat$KO_id%in%kos,])}
     return(kos)
 }
 
-#' Plot the reporter_res
+
+#' Upgrade the KO level
 #'
-#' @param reporter_res result of `get_reporter_score`
-#' @param rs_threshold plot threshold vector, default:1.64
-#' @param y_text_size y_text_size
-#' @param str_width str_width to wrap
-#' @param mode 1～2 plot style.
+#' @param KO_abundance KO_abundance
+#' @param level one of "pathway", "module", "level1", "level2", "level3"
+#' @param show_name logical
+#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
+#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
+#' @param verbose logical
 #'
-#' @import ggplot2
-#' @return ggplot
+#' @return data.frame
 #' @export
 #'
 #' @examples
-#' data("reporter_score_res")
-#' plot_report(reporter_score_res,rs_threshold=c(2,-2),y_text_size=10,str_width=40)
-plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_width=50){
-    if(inherits(reporter_res,"reporter_score"))reporter_res=reporter_res$reporter_s
-    reporter_res=na.omit(reporter_res)
-    Group=Description=ReporterScore=Exist_K_num=NULL
-    if(length(rs_threshold)==1)rs_threshold=c(rs_threshold,-rs_threshold)
-    rs_threshold=sort(rs_threshold)
-    if(rs_threshold[2]>max((reporter_res$ReporterScore))){
-        rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
-        warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1])
-    }
+#' KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
+#' pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])
+up_level_KO=function(KO_abundance,level="pathway",show_name=FALSE,
+                     KOlist_file=NULL,modulelist=NULL,verbose=TRUE){
+    a=KO_abundance
+    a$KO_id=rownames(a)
 
-    if(attributes(reporter_res)$mode=="directed"){
-        if(rs_threshold[1]<min((reporter_res$ReporterScore))){
-            rs_threshold[1]=head(sort((reporter_res$ReporterScore)))[5]%>%round(.,4)
-            warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1])
+    if(level%in%c("pathway", "module")){
+        KOlist=NULL
+        if(is.null(modulelist)){
+            load_KOlist(KOlist_file,envir = environment())
+            modulelist=KOlist[[level]]
+            if(verbose){
+                pcutils::dabiao("load KOlist")
+                if(!is.null(attributes(KOlist)$"download_time")){
+                    pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
+                    message("If you want to update KOlist, use `update_KO_file()`")
+                }
+            }
         }
-
-        reporter_res2 <- reporter_res[(reporter_res$ReporterScore >= rs_threshold[2])|(reporter_res$ReporterScore <= rs_threshold[1]), ]
+        if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+        path2ko=pcutils::explode(modulelist[,c("id","KOs")],2,split = ",")
+        path2name=setNames(modulelist$Description,modulelist$id)
     }
-    else reporter_res2 <- reporter_res[reporter_res$ReporterScore >= rs_threshold[2],]
+    else if (level%in%c("level1", "level2", "level3")){
+        KO_htable=NULL
+        load_KO_htable(envir = environment())
+        if(verbose){
+            pcutils::dabiao("load KO_htable")
+            if(!is.null(attributes(KO_htable)$"download_time")){
+                pcutils::dabiao(paste0("KO_htable download time: ",attributes(KOlist)$"download_time"))
+                message("If you want to update KO_htable, use `update_KO_htable()`")
+            }
+        }
+        path2ko=KO_htable[,c(paste0(level,"_id"),"KO_id")]
 
-    reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0, 'P', 'N')
-    reporter_res2 <- reporter_res2[stats::complete.cases(reporter_res2), ]
-
-    if(mode==1){
-        p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore), fill = Group)) +
-            geom_bar(stat = 'identity', position='dodge')+
-            scale_fill_manual(values=c('P'='orange','N'='seagreen'))+
-            theme_light()+
-            theme(legend.position = "none")
+        path2name=KO_htable[,paste0(level,c("_id","_name"))]%>%dplyr::distinct()
+        path2name=setNames(path2name[,paste0(level,"_name"),drop=TRUE],
+                           path2name[,paste0(level,"_id"),drop=TRUE])
     }
-    if(mode==2){
-        p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore),
-                                  size=Exist_K_num, fill =Exist_K_num)) +
-            geom_point(shape=21)+
-            scale_fill_gradient(low = "#FF000033",high = "red",guide = "legend")+theme_light()
-    }
+    else stop('level should be one of "pathway", "module", "level1", "level2", "level3".')
 
-    p <-p+labs(y="")+
-        geom_vline(xintercept = rs_threshold[2], linetype =2)+
-        scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
-        theme(
-            axis.text.x = element_text(colour='black',size=13),
-            axis.text.y = element_text(colour='black',size=y_text_size)
-        )
+    colnames(path2ko)=c("Pathway","KO_id")
+    path2ko=dplyr::distinct_all(path2ko)
+    dplyr::left_join(a,path2ko,by="KO_id")->aa
+    aa$Pathway[is.na(aa$Pathway)]="Unknown"
 
-    if(attributes(reporter_res)$mode=="directed")p=p+geom_vline(xintercept = rs_threshold[1], linetype = 2)
-    return(p)
-}
-
-
-#' Plot KOs trend in one pathway or module
-#'
-#' @param map_id the pathway or module id
-#' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
-#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#' @param box_color box and point color, default: c("#e31a1c","#1f78b4")
-#' @param line_color line color, default: c("Depleted"="seagreen","Enriched"="orange","None"="grey")
-#'
-#' @import ggplot2
-#' @return ggplot
-#' @export
-#'
-#' @examples
-#' data("reporter_score_res")
-#' plot_KOs_in_pathway(ko_stat = reporter_score_res,map_id="map00780")
-plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
-                             KOlist_file=NULL,modulelist=NULL,
-                             box_color=c("#e31a1c","#1f78b4"),
-                             line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey")){
-    Group=value=Group2=value2=Group1=value1=type=Significantly=KOlist=q.value=NULL
-    pcutils::lib_ps("ggnewscale","reshape2",library = FALSE)
-
-    if(inherits(ko_stat,"reporter_score")){
-        reporter_res=ko_stat
-        ko_stat=reporter_res$ko_stat
-        modulelist=reporter_res$modulelist
-    }
-
-    A=get_KOs(map_id =map_id ,ko_stat = ko_stat)
-
-    if(is.null(modulelist)){
-        load_KOlist(KOlist_file,envir = environment())
-        if(grepl("map",map_id))modulelist=KOlist$pathway
-        if(grepl("M",map_id))modulelist=KOlist$module
-    }
-    if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
-    Description=modulelist[modulelist$id==map_id,"Description"]
-
-    p_th=ifelse(attributes(ko_stat)$mode=="mixed",0.05,0.025)
-    A=dplyr::mutate(A,Significantly=ifelse(q.value<p_th,type,"None"))
-
-    vs_group=grep("avg",colnames(A),value = TRUE)
-    box_df=reshape2::melt(A[,c("KO_id",vs_group)],id.vars="KO_id",variable.name ="Group")
-    box_df$Group=factor(box_df$Group,levels = rev(vs_group))
-
-    line_df=A[,c("KO_id",vs_group,"Significantly")]
-    colnames(line_df)=c("KO_id","value1","value2","Significantly")
-    line_df$Group1=vs_group[1];    line_df$Group2=vs_group[2]
-
-    ggplot()+
-        geom_boxplot(data =box_df,aes(x=Group,y=value,color=Group),show.legend = FALSE)+
-        geom_point(data =box_df,aes(x=Group,y=value,color=Group),show.legend = FALSE)+
-        scale_color_manual(values = box_color)+
-        labs(title = paste0("KOs in ",map_id," (",Description,")"),x=NULL,y="Abundance")+
-        ggnewscale::new_scale_color()+
-        geom_segment(data = line_df,
-                     aes(x=Group2,y=value2,xend=Group1,yend=value1,color=Significantly))+
-        scale_color_manual(values = line_color)+
-        theme_classic(base_size = 13)+theme(axis.text = element_text(color = "black"))
-}
-
-#' Plot KOs boxplot
-#'
-#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples
-#' @param group The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf.
-#' @param metadata metadata
-#' @param map_id the pathway or module id
-#' @param select_ko select which ko
-#' @param box_param parameters pass to \code{\link[pcutils]{group_box}}
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
-#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#'
-#' @export
-#' @examples
-#' data("reporter_score_res")
-#' plot_KOs_box(reporter_score_res,"Group",metadata,
-#'      select_ko=c("K00059","K00208","K00647","K00652","K00833","K01012"))
-#'
-plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
-                      map_id="map00780",select_ko=NULL,box_param=NULL,
-                      KOlist_file = NULL,modulelist = NULL){
-    if(inherits(kodf,"reporter_score")){
-        reporter_res=kodf
-        kodf=reporter_res$kodf
-        group=reporter_res$group
-        metadata=reporter_res$metadata
-        modulelist=reporter_res$modulelist
-    }
-
-    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist )
-
-    tkodf=kodf[]%>%t()%>%as.data.frame()
-    cols=which(colnames(tkodf)%in%select_ko)
-
-    if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
-    if(length(cols)>36){
-        print(("Too many KOs, do you still want to plot?"))
-        flag=readline("yes/no(y/n)?")
-        if(!tolower(flag)%in%c("yes","y"))return(NULL)
-    }
-
-    metadata[,group]=factor(metadata[,group],levels = rev(levels(factor(metadata[,group]))))
-
-    do.call(pcutils::group_box,
-            append(list(tab = tkodf[,cols],group = group,metadata = metadata),
-                   pcutils::update_param(list(p_value1 = TRUE,trend_line = TRUE),box_param)))+
-        theme_classic(base_size = 13)+theme(axis.text = element_text(color = "black"))+
-        scale_fill_manual(values = c("#e31a1c","#1f78b4"))+scale_color_manual(values = c("#e31a1c","#1f78b4"))
-}
-
-#' Plot KOs heatmap
-#'
-#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples
-#' @param group The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf.
-#' @param metadata metadata
-#' @param map_id the pathway or module id
-#' @param select_ko select which ko
-#' @param heatmap_param parameters pass to \code{\link[pheatmap]{pheatmap}}
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
-#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#'
-#' @export
-#' @examples
-#' data("reporter_score_res")
-#' plot_KOs_heatmap(reporter_score_res,"Group",metadata,map_id="map00780")
-#'
-plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
-                          map_id="map00780",select_ko=NULL,
-                          KOlist_file = NULL,modulelist = NULL,heatmap_param=list()){
-    pcutils::lib_ps("pheatmap",library = FALSE)
-    if(inherits(kodf,"reporter_score")){
-        reporter_res=kodf
-        kodf=reporter_res$kodf
-        group=reporter_res$group
-        metadata=reporter_res$metadata
-        modulelist=reporter_res$modulelist
-    }
-
-    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist)
-    cols=which(rownames(kodf)%in%select_ko)
-
-    metadata[,group]=factor(metadata[,group],levels = rev(levels(factor(metadata[,group]))))
-    if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
-
-    do.call(pheatmap::pheatmap,
-            pcutils::update_param(list(mat = kodf[cols,],cluster_cols = F,annotation_col = metadata,scale = "row"),
-                                  heatmap_param))
+    b=pcutils::hebing(dplyr::select(aa,-c("KO_id","Pathway")),aa$Pathway,1)
+    if(show_name)rownames(b)=c(path2name,"Unknown"="Unknown")[rownames(b)]
+    b
 }

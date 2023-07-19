@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{custom_modulelist}
 \alias{custom_modulelist}
-\title{Build a customize moduleist}
+\title{Build a custom moduleist}
 \usage{
 custom_modulelist(pathway2ko, pathway2desc = NULL)
 }
@@ -12,8 +12,13 @@ custom_modulelist(pathway2ko, pathway2desc = NULL)
 \item{pathway2desc}{user input of Pathway TO Description mapping, a data.frame of 2 column with pathway and description.}
 }
 \value{
-a customize modulelist
+a custom modulelist
 }
 \description{
-Build a customize moduleist
+Build a custom moduleist
+}
+\examples{
+mydat=data.frame(pathway=paste0("PATHWAY",rep(1:2,each=5)),ko=paste0("K",1:10))
+mymodulelist=custom_modulelist(mydat)
+mymodulelist
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{make_KO_list}
 \alias{make_KO_list}
-\title{Prepare KOlist}
+\title{Prepare KOlist from KEGG}
 \usage{
 make_KO_list(download_dir, output = NULL)
 }
@@ -12,5 +12,5 @@ make_KO_list(download_dir, output = NULL)
 \item{output}{default, download_dir/KOlist.rda}
 }
 \description{
-Prepare KOlist
+Prepare KOlist from KEGG
 }

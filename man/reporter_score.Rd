@@ -10,6 +10,7 @@ reporter_score(
   metadata = NULL,
   mode = c("mixed", "directed")[1],
   verbose = TRUE,
+  method = "wilcox.test",
   threads = 1,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
@@ -21,19 +22,25 @@ reporter_score(
 \arguments{
 \item{kodf}{KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.}
 
-\item{group}{The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.}
+\item{group}{The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.}
 
-\item{metadata}{sample information dataframe contains group.}
+\item{metadata}{sample information data.frame contains group}
 
-\item{mode}{"mixed" or "directed", see details in \code{\link{pvalue2zs}}.}
+\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
 
 \item{verbose}{logical}
+
+\item{method}{the type of test. Default is `wilcox.test`. Allowed values include:
+\itemize{
+\item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
+\item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
+\item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
 
 \item{threads}{default 1}
 
 \item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 
-\item{type}{"pathway" or "module"}
+\item{type}{"pathway" or "module" for default KOlist_file.}
 
 \item{perm}{permutation number, default: 1000.}
 
@@ -48,7 +55,7 @@ reporter_score object：
 \item{ko_stat}{ko statistics result contains p.value and z_score}
 \item{reporter_s}{the reporter score in each pathway}
 \item{modulelist}{default KOlist or customized modulelist dataframe}
-\item{group}{The compare group (two category) in your data}
+\item{group}{The comparison groups in your data}
 \item{metadata}{sample information dataframe contains group}
 }
 \description{
@@ -56,6 +63,9 @@ One step to get the reporter score of your KO abundance table.
 }
 \examples{
 \donttest{
+data("KO_abundance_test")
 reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
+reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
+     method = "kruskal.test",p.adjust.method = "none")
 }
 }

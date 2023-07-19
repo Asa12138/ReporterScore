@@ -17,7 +17,7 @@ get_reporter_score(
 \arguments{
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{type}{"pathway" or "module"}
+\item{type}{"pathway" or "module" for default KOlist_file.}
 
 \item{threads}{threads}
 
@@ -25,7 +25,7 @@ get_reporter_score(
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
-\item{perm}{permutation number, default:1000}
+\item{perm}{permutation number, default: 1000}
 
 \item{verbose}{logical}
 }

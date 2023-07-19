@@ -4,16 +4,18 @@
 \alias{plot.enrich_res}
 \title{Plot enrich_res}
 \usage{
-\method{plot}{enrich_res}(x, ..., mode = 1, str_width = 50)
+\method{plot}{enrich_res}(x, ..., mode = 1, str_width = 50, padj_threshold = 0.05)
 }
 \arguments{
 \item{x}{enrich_res object}
 
 \item{...}{add}
 
-\item{mode}{plot style}
+\item{mode}{plot style: 1~2}
 
 \item{str_width}{default: 50}
+
+\item{padj_threshold}{p.adjust threshold}
 }
 \value{
 ggplot

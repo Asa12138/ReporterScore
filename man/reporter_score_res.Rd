@@ -3,6 +3,7 @@
 \docType{data}
 \name{reporter_score_res}
 \alias{reporter_score_res}
+\alias{reporter_score_res2}
 \title{`reporter_score()` result from KO_abundance_test}
 \format{
 a list contain 7 elements.
@@ -17,5 +18,7 @@ a list contain 7 elements.
 }
 }
 \description{
+`reporter_score()` result from KO_abundance_test
+
 `reporter_score()` result from KO_abundance_test
 }

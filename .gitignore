@@ -4,3 +4,8 @@
 .Ruserdata
 ReporterScore_temp*/
 inst/doc
+article
+article/*
+README.Rmd
+README.html
+README_*/

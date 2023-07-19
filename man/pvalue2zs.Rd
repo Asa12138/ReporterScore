@@ -7,9 +7,9 @@
 pvalue2zs(ko_pvalue, mode = c("mixed", "directed")[1], p.adjust.method = "BH")
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}}}
+\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}} or your statistics test data.frame contains column: `p.value`}
 
-\item{mode}{"mixed" or "directed", see details}
+\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details}
 
 \item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 }
@@ -21,7 +21,7 @@ Transfer p-value of KOs to Z-score
 }
 \details{
 "\strong{mixed}" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
-In this mode, the reporter score is \strong{Undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+In this mode, the reporter score is \strong{undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 
 steps:
 

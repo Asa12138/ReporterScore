@@ -14,7 +14,7 @@ get_KOs(
 \arguments{
 \item{map_id}{map_id in modulelist}
 
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
+\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
 
 \item{ko_stat}{NULL or ko_stat result from \code{\link{pvalue2zs}}}
 

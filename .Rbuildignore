@@ -4,3 +4,9 @@ ReporterScore_temp*/
 ReporterScore_temp*
 .gitgnore
 ^test\.R
+article
+article/*
+README\.Rmd
+README\.html
+README_*/
+README_*

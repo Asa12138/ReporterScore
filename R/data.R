@@ -13,6 +13,13 @@
 #'
 NULL
 
+#'@title KO htable from KEGG
+#'
+#'@docType data
+#'@name KO_htable
+#'
+NULL
+
 #'@title KO Description
 #'
 #'@docType data
@@ -55,4 +62,11 @@ NULL
 #' \item{group}{The compare group (two category) in your data}
 #' \item{metadata}{sample information dataframe contains group}
 #' }
+NULL
+
+#'@title `reporter_score()` result from KO_abundance_test
+#'
+#'@docType data
+#'@name reporter_score_res2
+#'@rdname reporter_score_res
 NULL
