@@ -10,6 +10,8 @@ output:
         toc_float: true
 ---
 
+
+
 # ReporterScore
 
 ReporterScore Functional Enrichment Method for Microbiome
@@ -18,13 +20,13 @@ ReporterScore Functional Enrichment Method for Microbiome
 
 To cite ReporterScore in publications use:
 
-Chen Peng, Chao Jiang.
-ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome.
-R package (2023), <https://github.com/Asa12138/ReporterScore>
+  Chen Peng, Chao Jiang. ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome. R package (2023),
+  <https://github.com/Asa12138/ReporterScore>
 
 ## Install
 
-``` r
+
+```r
 if(!require("devtools"))install.packages("devtools")
 devtools::install_github('Asa12138/pcutils',dependencies=T)
 devtools::install_github('Asa12138/ReporterScore',dependencies=T)
@@ -41,12 +43,13 @@ Specific methods include using blast to compare the KEGG sequence database, usin
 
 So that we can get a KO abundance table (rows are KOs, columns are samples) for our enrichment analysis:
 
-``` r
+
+```r
 data("KO_abundance_test")
 head(KO_abundance[,1:6])
 ```
 
-```         
+```
 ##                WT1         WT2         WT3         WT4         WT5         WT6
 ## K03169 0.002653545 0.005096380 0.002033923 0.000722349 0.003468322 0.001483028
 ## K07133 0.000308237 0.000280458 0.000596527 0.000859854 0.000308719 0.000878098
@@ -58,11 +61,12 @@ head(KO_abundance[,1:6])
 
 And you should also offer a experimental metadata (rows are samples, columns are groups).
 
-``` r
+
+```r
 head(metadata)
 ```
 
-```         
+```
 ##     Group Group2
 ## WT1    WT     G1
 ## WT2    WT     G1
@@ -80,7 +84,8 @@ You can use `load_KOlist()` to have a look and use `update_KO_file()` to update 
 
 Or you can just customize your own pathway databases (gene set of interest) by using `custom_modulelist()`.
 
-``` r
+
+```r
 load_KOlist()
 head(KOlist$pathway)
 ```
@@ -103,7 +108,8 @@ The last level will be set as the **control group**, you can change the factor l
 
 For example, we want to compare two groups 'OE vs WT', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
 
-``` r
+
+```r
 cat("Comparison: ",levels(factor(metadata$Group)))
 ## Comparison:  OE WT
 
@@ -141,7 +147,7 @@ reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
 
 The result is a "reporter_score" object:
 
-|              |                                                   |
+|  elements    |  description                                      |
 |--------------|---------------------------------------------------|
 | `kodf`       | your input KO_abundance table                     |
 | `ko_pvalue`  | ko statistics result contains p.value             |
@@ -155,7 +161,8 @@ The result is a "reporter_score" object:
 
 Plot the most significantly enriched pathways:
 
-``` r
+
+```r
 #View(reporter_score_res$reporter_s)
 plot_report(reporter_score_res,rs_threshold = c(-2,2))
 ```
@@ -164,7 +171,8 @@ plot_report(reporter_score_res,rs_threshold = c(-2,2))
 
 When we focus on one pathway, e.g. "map00780":
 
-``` r
+
+```r
 plot_KOs_in_pathway(reporter_score_res,map_id = "map00780")
 ```
 
@@ -172,15 +180,16 @@ plot_KOs_in_pathway(reporter_score_res,map_id = "map00780")
 
 Or display as a network:
 
-``` r
+
+```r
 plot_KOs_network(reporter_score_res,map_id = "map00780",main="")
 ```
 
-```         
+```
 ## Loading required namespace: MetaNet
 ```
 
-```         
+```
 ## Loading required namespace: tidyr
 ```
 
@@ -188,15 +197,16 @@ plot_KOs_network(reporter_score_res,map_id = "map00780",main="")
 
 And we also look at the KOs abundance in a pathway:
 
-``` r
+
+```r
 plot_KOs_box(reporter_score_res,map_id = "map00780",only_sig = TRUE)
 ```
 
-```         
+```
 ## Loading required namespace: ggpubr
 ```
 
-```         
+```
 ## `geom_smooth()` using formula = 'y ~ x'
 ```
 
@@ -204,11 +214,12 @@ plot_KOs_box(reporter_score_res,map_id = "map00780",only_sig = TRUE)
 
 Or display as a heatmap:
 
-``` r
+
+```r
 plot_KOs_heatmap(reporter_score_res,map_id = "map00780",only_sig = TRUE,heatmap_param = list(cutree_rows=2))
 ```
 
-```         
+```
 ## Loading required namespace: pheatmap
 ```
 
@@ -218,7 +229,8 @@ plot_KOs_heatmap(reporter_score_res,map_id = "map00780",only_sig = TRUE,heatmap_
 
 If our experimental design is more than two groups, we can choose multi-groups comparison and "mixed" mode:
 
-``` r
+
+```r
 cat("Comparison: ",levels(factor(metadata$Group2)))
 ## Comparison:  G1 G2 G3
 
@@ -275,7 +287,8 @@ So that you can get reporterscore step by step.
 
 `ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), The inputdata is from `reporter_score`, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:
 
-``` r
+
+```r
 set.seed(12)
 data("KO_abundance_test")
 reporter_score_res2=reporter_score(KO_abundance,"Group",metadata,mode="mixed")
@@ -301,7 +314,7 @@ venn(venn_res)
 
 ![](README_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
-``` r
+```r
 venn(venn_res,"network",vertex.label.cex=c(rep(1,4),rep(0.5,22)))
 ```
 
@@ -311,16 +324,15 @@ venn(venn_res,"network",vertex.label.cex=c(rep(1,4),rep(0.5,22)))
 
 [KEGG BRITE](https://www.genome.jp/kegg/brite.html) is a collection of hierarchical classification systems capturing functional hierarchies of various biological objects, especially those represented as KEGG objects.
 
-We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance.
-Use `load_KO_htable` to get KO_htable and use `update_KO_htable` to update.
-Use `up_level_KO` can upgrade to specific level in one of "pathway", "module", "level1", "level2", "level3".
+We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use `load_KO_htable` to get KO_htable and use `update_KO_htable` to update. Use `up_level_KO` can upgrade to specific level in one of "pathway", "module", "level1", "level2", "level3".
 
-``` r
+
+```r
 load_KO_htable()
 head(KO_htable)
 ```
 
-```         
+```
 ## # A tibble: 6 × 8
 ##   level1_id level1_name level2_id level2_name        level3_id level3_name KO_id
 ##   <chr>     <chr>       <chr>     <chr>              <chr>     <chr>       <chr>
@@ -333,33 +345,22 @@ head(KO_htable)
 ## # ℹ 1 more variable: KO_name <chr>
 ```
 
-``` r
+```r
 plot_KO_htable()
 ```
 
 ![](README_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
-``` r
+```r
 KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
-```
-
-```         
 ## =================================load KO_htable=================================
-```
-
-```         
 ## ==================KO_htable download time: 2023-05-12 00:07:41==================
-```
-
-```         
 ## If you want to update KO_htable, use `update_KO_htable()`
-```
-
-``` r
 pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])
 ```
 
 ![](README_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+
 
 # Reference
 
