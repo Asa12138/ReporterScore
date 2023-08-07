@@ -8,6 +8,10 @@ reporter_color=c("#e31a1c","#1f78b4","#b15928","#b2df8a","#810f7c")
 #' @param str_width str_width to wrap
 #' @param mode 1～2 plot style.
 #' @param Pathway_description show KO description rather than KO id.
+#' @param facet_level facet plot if the type is "pathway" or "module"
+#' @param facet_str_width str width for facet label
+#' @param facet_anno annotation table for facet, two columns, first is level summary, second is pathway id.
+#' @param show_ID show pathway id
 #'
 #' @import ggplot2
 #' @return ggplot
@@ -16,7 +20,8 @@ reporter_color=c("#e31a1c","#1f78b4","#b15928","#b2df8a","#810f7c")
 #' @examples
 #' data("reporter_score_res")
 #' plot_report(reporter_score_res,rs_threshold=c(2,-2),y_text_size=10,str_width=40)
-plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_width=50,Pathway_description=TRUE){
+plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_width=50,show_ID=FALSE,
+                      Pathway_description=TRUE,facet_level=FALSE,facet_anno=NULL,facet_str_width=15){
     if(inherits(reporter_res,"reporter_score"))reporter_res=reporter_res$reporter_s
 
     reporter_res=na.omit(reporter_res)
@@ -26,33 +31,79 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     rs_threshold=sort(rs_threshold)
     if(rs_threshold[2]>max((reporter_res$ReporterScore))){
         rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
-        warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1])
+        warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1],"\n")
     }
-
+    vs_group=attributes(reporter_res)$vs_group
     if(attributes(reporter_res)$mode=="directed"){
         if(rs_threshold[1]<min((reporter_res$ReporterScore))){
             rs_threshold[1]=head(sort((reporter_res$ReporterScore)))[5]%>%round(.,4)
-            warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1])
+            warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1],"\n")
         }
-
         reporter_res2 <- reporter_res[(reporter_res$ReporterScore >= rs_threshold[2])|(reporter_res$ReporterScore <= rs_threshold[1]), ]
-        reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0, 'P', 'N')
+
+        if(length(vs_group)==2){
+            reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0,
+                                          paste0("Enrich in ",vs_group[2]),
+                                          paste0("Enrich in ",vs_group[1]))
+            cols1=setNames(c('P'='orange','N'='seagreen'), paste0("Enrich in ",vs_group[2:1]))
+            title=paste0(vs_group,collapse = "/ ")
+        }
+        else {
+            reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0,"Increase","Decrease")
+            cols1=setNames(c('P'='orange','N'='seagreen'), c("Increase","Decrease"))
+            title=paste0(vs_group,collapse = "/ ")
+        }
         breaks=c(scales::breaks_extended(3)(range(reporter_res2$ReporterScore)),rs_threshold)
     }
     else {
         reporter_res2 <- reporter_res[reporter_res$ReporterScore >= rs_threshold[2],]
-        reporter_res2$Group="S"
+        reporter_res2$Group="Significant"
+        cols1=c("Significant"='red2')
+        title=paste0(vs_group,collapse = "/")
         breaks=c(scales::breaks_extended(3)(range(reporter_res2$ReporterScore)),rs_threshold[2])
     }
+
+    if(facet_level){
+        if(!is.null(facet_anno)){
+            tmpdf=facet_anno
+            colnames(tmpdf)=c("facet_level","ID")
+            reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
+        }
+        else{
+            if(is.null(attributes(reporter_res)$type)){
+                warning("No attributes(reporter_res)$type found.")
+                facet_level=FALSE
+            }
+            else if(attributes(reporter_res)$type=="pathway"){
+                load_Pathway_htable(envir = environment())
+                tmpdf=Pathway_htable[,c("level1_name","Pathway_id")]
+                colnames(tmpdf)=c("facet_level","ID")
+                reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
+            }
+            else if(attributes(reporter_res)$type=="module"){
+                load_Module_htable(envir = environment())
+                tmpdf=Module_htable[c("module2_name","Module_id")]
+                colnames(tmpdf)=c("facet_level","ID")
+                reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
+            }
+            else {
+                warning("No attributes(reporter_res)$type found.")
+                facet_level=FALSE
+            }
+        }
+    }
+
     reporter_res2 <- reporter_res2[stats::complete.cases(reporter_res2), ]
+
+    if(show_ID)reporter_res2$Description=paste0(reporter_res2$ID,": ",reporter_res2$Description)
     if(!Pathway_description)reporter_res2$Description=reporter_res2$ID
+
 
     if(mode==1){
         p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore), fill = Group)) +
             geom_bar(stat = 'identity', position='dodge')+
-            scale_fill_manual(values=c('P'='orange','N'='seagreen',"S"='red2'))+
-            theme_light()+
-            theme(legend.position = "none")
+            scale_fill_manual(values=cols1)+
+            theme_light()
     }
     if(mode==2){
         p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore),
@@ -63,16 +114,17 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 
     p <-p+labs(y="")+
         geom_vline(xintercept = rs_threshold[2], linetype =2)+
-        scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
+        scale_y_discrete(labels = label_wrap_gen(width = str_width))+
         scale_x_continuous(breaks = breaks)+
         theme(
             axis.text.x = element_text(colour='black',size=13),
             axis.text.y = element_text(colour='black',size=y_text_size)
         )
-
+    if(facet_level)p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
+        theme(strip.text.y = element_text(angle = 0))
     if(attributes(reporter_res)$mode=="directed")p=p+geom_vline(xintercept = rs_threshold[1], linetype = 2)
-    if(length(attributes(reporter_res)$vs_group)==2)p=p+labs(title = paste(attributes(reporter_res)$vs_group,collapse = " vs "))
-    else p=p+labs(title = paste(attributes(reporter_res)$vs_group,collapse = "/ "))
+    #if(length(attributes(reporter_res)$vs_group)==2)p=p+labs(title = paste(attributes(reporter_res)$vs_group,collapse = " vs "))
+    p=p+labs(title = title)
     return(p)
 }
 
@@ -98,6 +150,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
                              box_color=reporter_color,show_number=TRUE,
                              line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")){
     Group=value=Group2=value2=Group1=value1=type=Significantly=KOlist=p.adjust=NULL
+    if(is.null(names(line_color)))names(line_color)=c("Depleted","Enriched","None","Significant")[seq_along(line_color)]
     pcutils::lib_ps("ggnewscale","reshape2",library = FALSE)
     flag=FALSE
     if(inherits(ko_stat,"reporter_score")){
@@ -120,9 +173,10 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
     if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
     Description=modulelist[modulelist$id==map_id,"Description"]
 
-    vs_group=grep("average",colnames(A),value = TRUE)
+    vs_group=attributes(ko_stat)$vs_group
+    colnames(A)[colnames(A)%in%paste0("average_",vs_group)]=vs_group
     box_df=reshape2::melt(A[,c("KO_id",vs_group)],id.vars="KO_id",variable.name ="Group")
-    box_df$Group=factor(box_df$Group,levels = rev(vs_group))
+    box_df$Group=factor(box_df$Group,levels = (vs_group))
     line_df=data.frame()
 
     for (i in 1:(length(vs_group)-1)) {
@@ -134,7 +188,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
     if(show_number){
         num=dplyr::count(line_df,Significantly)%>%dplyr::mutate(label=paste0(Significantly,": ",n))
         line_df$Significantly=setNames(num$label,num$Significantly)[line_df$Significantly]
-        line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
+        #line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
         names(line_color)=setNames(num$label,num$Significantly)[names(line_color)]
     }
 
@@ -187,7 +241,7 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
         flag=TRUE
     }
 
-    metadata[,group]=factor(metadata[,group],levels = rev(levels(factor(metadata[,group]))))
+    metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
 
     if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist )
     if(only_sig&flag){
@@ -207,8 +261,8 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
     plotdat=tkodf[,cols,drop=FALSE]
 
     if(KO_description){
-        load_KOlist(envir = environment())
-        colnames(plotdat)=ko_desc[match(colnames(plotdat),ko_desc$KO),"Description"]%>%stringr::str_wrap(., width = str_width)
+        load_ko_desc(envir = environment())
+        colnames(plotdat)=ko_desc[match(colnames(plotdat),ko_desc$KO_id),"KO_name"]%>%stringr::str_wrap(., width = str_width)
     }
 
     do.call(pcutils::group_box,
@@ -262,7 +316,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 
     cols=which(rownames(kodf)%in%select_ko)
 
-    metadata[,group]=factor(metadata[,group],levels = rev(levels(factor(metadata[,group]))))
+    metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
     if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
     plotdat=kodf[cols,,drop=FALSE]
 
@@ -271,8 +325,8 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
     names(annotation_colors[[group]])=levels(factor(metadata[,group]))
 
     if(KO_description){
-        load_KOlist(envir = environment())
-        rownames(plotdat)=ko_desc[match(rownames(plotdat),ko_desc$KO),"Description"]%>%stringr::str_wrap(., width = str_width)
+        load_ko_desc(envir = environment())
+        colnames(plotdat)=ko_desc[match(colnames(plotdat),ko_desc$KO_id),"KO_name"]%>%stringr::str_wrap(., width = str_width)
     }
 
     do.call(pheatmap::pheatmap,
@@ -289,8 +343,14 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 #' @param map_id the pathway or module id
 #' @param kos_color default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
 #' @param near_pathway show the near_pathway if any KOs exist.
+#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param ... additional arguments for \code{\link[MetaNet]{c_net_plot}}
+#' @param pathway_label show pathway_label?
+#' @param kos_label show kos_label?
+#' @param mark_module mark the modules?
+#' @param mark_color mark colors, default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
+#' @param return_net return the network
 #'
 #' @export
 #' @examples
@@ -298,19 +358,20 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 #' plot_KOs_network(reporter_score_res,map_id="map05230")
 #' plot_KOs_network(reporter_score_res,map_id="map00780",near_pathway=TRUE)
 plot_KOs_network=function(ko_stat,map_id="map00780",
-                          near_pathway=FALSE,
+                          near_pathway=FALSE,KOlist_file=NULL,
                           modulelist=NULL,
                           kos_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2","Pathway"="#80b1d3"),
+                          pathway_label=TRUE,kos_label=TRUE,
+                          mark_module=FALSE,mark_color=NULL,
+                          return_net=FALSE,
                           ...){
     pcutils::lib_ps("ggnewscale","reshape2","MetaNet",library = FALSE)
 
-    flag=FALSE
     if(inherits(ko_stat,"reporter_score")){
         reporter_res=ko_stat
         ko_stat=reporter_res$ko_stat[,c("KO_id","Significantly")]
         modulelist=reporter_res$modulelist
-        flag=TRUE
-        reporter_s=reporter_res$reporter_s[,c("ID","ReporterScore")]
+        reporter_s=reporter_res$reporter_s
     }
     else stop("Need reporter_score object")
 
@@ -337,5 +398,28 @@ plot_KOs_network=function(ko_stat,map_id="map00780",
     ko_net=MetaNet::twocol_edgelist(id2ko)
     ko_net=MetaNet::c_net_set(ko_net,ko_stat,vertex_class = "Significantly")
     igraph::graph.attributes(ko_net)$n_type="ko_net"
-    plot(ko_net,vertex.color=kos_color,...)
+    igraph::vertex.attributes(ko_net)[["color"]]=MetaNet::tidai(igraph::vertex.attributes(ko_net)[["v_class"]],kos_color)
+    tmp_v=MetaNet::get_v(ko_net)
+    if(!pathway_label)tmp_v$label=ifelse(tmp_v$v_group=="Pathway",NA,tmp_v$label)
+    if(!kos_label)tmp_v$label=ifelse(tmp_v$v_group=="KOs",NA,tmp_v$label)
+    if(mark_module){
+        ko_net_m=MetaNet::modu_dect(ko_net,method = "cluster_walktrap")
+        if(return_net)return(ko_net_m)
+        tmp_v2=MetaNet::get_v(ko_net_m)
+
+        tmp_v2=dplyr::left_join(tmp_v2,reporter_s,by=c("name"="ID"))
+        modules=dplyr::group_by(tmp_v2,module)%>%dplyr::summarise(RS=mean(ReporterScore,na.rm = T))%>%as.data.frame()
+        if(is.null(mark_color))mark_color=kos_color
+        if(attributes(reporter_res$ko_stat)$mode=="directed"){
+            modules$color=ifelse(modules$RS>1.64,kos_color["Enriched"],
+                                 ifelse(modules$RS<(-1.64),kos_color["Depleted"],kos_color["None"]))
+        }
+        else modules$color=ifelse(modules$RS>1.64,kos_color["Significant"],kos_color["None"])
+        modules_col=setNames(modules$color,modules$module)
+        plot(ko_net_m,vertex.color=kos_color,vertex.label=tmp_v$label,mark_module=T,mark_color=modules_col,...)
+    }
+    else {
+        if(return_net)return(ko_net)
+        plot(ko_net,vertex.color=kos_color,vertex.label=tmp_v$label,...)
+    }
 }

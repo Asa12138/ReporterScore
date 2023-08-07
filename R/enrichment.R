@@ -13,7 +13,7 @@
 #' fisher_res=KO_fisher(ko_pvalue)
 #' plot(fisher_res)
 #' }
-KO_fisher=function(ko_pvalue,p.adjust.method="BH",type=c("pathway","module")[1],
+KO_fisher=function(ko_pvalue,padj_threshold=0.05,p.adjust.method="BH",type=c("pathway","module")[1],
                    KOlist_file=NULL,modulelist=NULL,verbose=TRUE){
     res.dt=ko_pvalue
     if(!all(c("p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
@@ -33,7 +33,7 @@ KO_fisher=function(ko_pvalue,p.adjust.method="BH",type=c("pathway","module")[1],
     if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
 
 
-    sig_K_num = length(unique(res.dt[res.dt$p.adjust<0.05,]$KO_id))
+    sig_K_num = length(unique(res.dt[res.dt$p.adjust<padj_threshold,]$KO_id))
     nosig_K_num = nrow(res.dt)-sig_K_num
 
     reps=nrow(modulelist)
@@ -43,7 +43,7 @@ KO_fisher=function(ko_pvalue,p.adjust.method="BH",type=c("pathway","module")[1],
 
         z <- res.dt[res.dt$KO_id %in% tmp_kos,]
         exist_KO=nrow(z)
-        significant_KO=sum(z$p.adjust<0.05)
+        significant_KO=sum(z$p.adjust<padj_threshold)
 
         p_value = stats::fisher.test(matrix(c(significant_KO,exist_KO-significant_KO,
                              sig_K_num-significant_KO,nosig_K_num-(exist_KO-significant_KO)), 2, 2, byrow = T), alternative = "greater")
@@ -69,6 +69,7 @@ KO_fisher=function(ko_pvalue,p.adjust.method="BH",type=c("pathway","module")[1],
 #' This function performs KO enrichment analysis using the clusterProfiler package.
 #'
 #' @param ko_pvalue ko_pvalue dataframe from \code{\link[ReporterScore]{ko.test}}.
+#' @param padj_threshold p.adjust threshold to determine whether significant or not.
 #' @param p.adjust.method The method used for p-value adjustment (default: "BH").
 #' @param type "pathway" or "module" for default KOlist_file.
 #' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
@@ -84,7 +85,7 @@ KO_fisher=function(ko_pvalue,p.adjust.method="BH",type=c("pathway","module")[1],
 #' enrich_res=KO_enrich(ko_pvalue)
 #' plot(enrich_res)
 #' }
-KO_enrich=function(ko_pvalue,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_enrich=function(ko_pvalue,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
                    KOlist_file=NULL,modulelist=NULL,verbose=TRUE){
     KO_id=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
@@ -110,7 +111,7 @@ KO_enrich=function(ko_pvalue,p.adjust.method='BH',type=c("pathway","module")[1],
     #set background
     {path2ko=dplyr::filter(path2ko,KOs%in%res.dt$KO_id)}
 
-    sig_KO=dplyr::filter(res.dt,p.adjust<0.05)%>%dplyr::pull(KO_id)
+    sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold)%>%dplyr::pull(KO_id)
 
     e <- clusterProfiler::enricher(sig_KO,TERM2GENE = path2ko,TERM2NAME = path2name,
                   pAdjustMethod = p.adjust.method, pvalueCutoff = 1, qvalueCutoff = 1)
@@ -185,7 +186,7 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
 #' gsea_res=KO_gsea(ko_pvalue)
 #' enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
 #' }
-KO_gsea=function(ko_pvalue,add_mini=NULL,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_gsea=function(ko_pvalue,add_mini=NULL,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
                  KOlist_file=NULL,modulelist=NULL,verbose=TRUE){
     FC=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
@@ -208,7 +209,7 @@ KO_gsea=function(ko_pvalue,add_mini=NULL,p.adjust.method='BH',type=c("pathway","
     if(length(vs_group)>2)stop("GESA only available for two groups")
     res.dt=ko_pvalue
     if(!all(c("p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
-    res.dt=dplyr::filter(res.dt,p.adjust<0.05)
+    res.dt=dplyr::filter(res.dt,p.adjust<padj_threshold)
 
     tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
     if (is.null(add_mini))

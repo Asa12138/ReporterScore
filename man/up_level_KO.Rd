@@ -16,7 +16,7 @@ up_level_KO(
 \arguments{
 \item{KO_abundance}{KO_abundance}
 
-\item{level}{one of "pathway", "module", "level1", "level2", "level3"}
+\item{level}{one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".}
 
 \item{show_name}{logical}
 

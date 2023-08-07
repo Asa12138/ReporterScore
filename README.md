@@ -39,7 +39,7 @@ library(ReporterScore)
 
 Typically, we can use [KEGG database](https://www.kegg.jp/kegg/) to annotate our microbiome sequencing data, especially environmental microbiome because KEGG is more comprehensive.
 
-Specific methods include using blast to compare the KEGG sequence database, using KEGG official comparison software, or using the [EggNOG database](http://eggnog5.embl.de/#/app/home) and converting the results into KEGG annotations.
+Specific methods include using blast to compare the KEGG sequence database, using KEGG official comparison software, and using the [EggNOG database](http://eggnog5.embl.de/#/app/home) and converting the results into KEGG annotations.
 
 So that we can get a KO abundance table (rows are KOs, columns are samples) for our enrichment analysis:
 
@@ -68,11 +68,11 @@ head(metadata)
 
 ```
 ##     Group Group2
-## WT1    WT     G1
-## WT2    WT     G1
-## WT3    WT     G1
-## WT4    WT     G1
-## WT5    WT     G1
+## WT1    WT     G3
+## WT2    WT     G3
+## WT3    WT     G3
+## WT4    WT     G3
+## WT5    WT     G3
 ## WT6    WT     G1
 ```
 
@@ -104,19 +104,16 @@ there are some important arguments for analysis:
 -   **p.adjust.method**: p.adjust.method used for test result, see `p.adjust`.
 -   **type**/**modulelist**: choose the pathway database, "pathway" or "module" for default database, or use a customized modulelist.
 
-The last level will be set as the **control group**, you can change the factor level to change your comparison.
+The first level will be set as the **control group**, you can change the factor level to change your comparison.
 
-For example, we want to compare two groups 'OE vs WT', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
+For example, we want to compare two groups 'WT-OE', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
 
 
 ```r
 cat("Comparison: ",levels(factor(metadata$Group)))
-## Comparison:  OE WT
+## Comparison:  WT OE
 
 reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
-## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-05-12 00:07:41====================
-## If you want to update KOlist, use `update_KO_file()`
 ## ===================================1.KO test====================================
 ## ===============================Checking rownames================================
 ## Some of your kodf are not KO id, check the format! (e.g. K00001)
@@ -129,20 +126,26 @@ reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
 ## 2000 done.
 ## 3000 done.
 ## 4000 done.
-## Compared groups: OE and WT
+## Compared groups: WT, OE
 ## Total KO number: 4535
 ## Compare method: wilcox.test
-## Time use: 1.076
+## Time use: 1.142
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## =================================Checking file==================================
 ## Some of your ko_stat are not KO id, check the format! (e.g. K00001)!
+## ==================================load KOlist===================================
+## ===================KOlist download time: 2023-07-28 14:07:08====================
+## If you want to update KOlist, use `update_KO_file()`
 ## ============================Calculating each pathway============================
 ## 100 done.
 ## 400 done.
-## ID number: 479
-## Time use: 1.574
+## ID number: 481
+## Time use: 1.583
 ## ====================================All done====================================
+## ==================================load KOlist===================================
+## ===================KOlist download time: 2023-07-28 14:07:08====================
+## If you want to update KOlist, use `update_KO_file()`
 ```
 
 The result is a "reporter_score" object:
@@ -235,10 +238,7 @@ cat("Comparison: ",levels(factor(metadata$Group2)))
 ## Comparison:  G1 G2 G3
 
 reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
-      method = "kruskal.test",p.adjust.method = "none")
-## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-05-12 00:07:41====================
-## If you want to update KOlist, use `update_KO_file()`
+      method = "kruskal.test",p.adjust.method1 = "none")
 ## ===================================1.KO test====================================
 ## ===============================Checking rownames================================
 ## Some of your kodf are not KO id, check the format! (e.g. K00001)
@@ -251,20 +251,26 @@ reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
 ## 2000 done.
 ## 3000 done.
 ## 4000 done.
-## Compared groups: G1 and G2 and G3
+## Compared groups: G1, G2, G3
 ## Total KO number: 4535
 ## Compare method: kruskal.test
-## Time use: 1.189
+## Time use: 1.195
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## =================================Checking file==================================
 ## Some of your ko_stat are not KO id, check the format! (e.g. K00001)!
+## ==================================load KOlist===================================
+## ===================KOlist download time: 2023-07-28 14:07:08====================
+## If you want to update KOlist, use `update_KO_file()`
 ## ============================Calculating each pathway============================
 ## 100 done.
 ## 400 done.
-## ID number: 479
-## Time use: 1.451
+## ID number: 481
+## Time use: 1.597
 ## ====================================All done====================================
+## ==================================load KOlist===================================
+## ===================KOlist download time: 2023-07-28 14:07:08====================
+## If you want to update KOlist, use `update_KO_file()`
 
 plot_KOs_in_pathway(reporter_score_res2,map_id = "map00541")
 ```
@@ -277,7 +283,7 @@ plot_KOs_in_pathway(reporter_score_res2,map_id = "map00541")
 
 The one step function `reporter_score` consists of three parts：
 
-1.  `ko.test`: this function help to calculate *p-value* for KO_abundance by various built-in methods such as differential analysis (t.test, wilcox.test, kruskal.test, anova) or correlation analysis (pearson, spearman, kendall). **You can also calculate this *p-value* for KO_abundance by other methods** like "deseq2", "edger", "limma", "ALDEX", "ANCOM" and do a p.adjust yourself, then skip `ko.test` step go to step2...
+1.  `ko.test`: this function help to calculate *p-value* for KO_abundance by various built-in methods such as differential analysis (t.test, wilcox.test, kruskal.test, anova) or correlation analysis (pearson, spearman, kendall). **You can also calculate this *p-value* for KO_abundance by other methods** like "DESeq2", "Edger", "Limma", "ALDEX", "ANCOM" and do a p.adjust yourself, then skip `ko.test` step go to step2...
 2.  `pvalue2zs`: this function transfers p-value of KOs to Z-score (select mode: "mixed" or "directed").
 3.  `get_reporter_score` this function calculate reporter score of each pathways in a specific database. You can use a custom database here.
 
@@ -291,7 +297,7 @@ So that you can get reporterscore step by step.
 ```r
 set.seed(12)
 data("KO_abundance_test")
-reporter_score_res2=reporter_score(KO_abundance,"Group",metadata,mode="mixed")
+reporter_score_res2=reporter_score(KO_abundance,"Group",metadata,mode="mixed",method = "t.test")
 #View(reporter_score_res2$reporter_s)
 #reporter_score
 reporter_score_res2$reporter_s$p.adjust=p.adjust(reporter_score_res2$reporter_s$p.value,"BH")
@@ -329,6 +335,21 @@ We collected k00001 KEGG Orthology (KO) table so that you can summaries each lev
 
 ```r
 load_KO_htable()
+```
+
+```
+## =================================load KO_htable=================================
+```
+
+```
+## ==================KO_htable download time: 2023-07-31 11:21:54==================
+```
+
+```
+## If you want to update KO_htable, use `update_KO_htable()`
+```
+
+```r
 head(KO_htable)
 ```
 
@@ -336,12 +357,12 @@ head(KO_htable)
 ## # A tibble: 6 × 8
 ##   level1_id level1_name level2_id level2_name        level3_id level3_name KO_id
 ##   <chr>     <chr>       <chr>     <chr>              <chr>     <chr>       <chr>
-## 1 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K008…
-## 2 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K124…
-## 3 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K008…
-## 4 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K250…
-## 5 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K018…
-## 6 A09100    Metabolism  09101     Carbohydrate meta… 00010     Glycolysis… K068…
+## 1 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K008…
+## 2 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K124…
+## 3 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K008…
+## 4 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K250…
+## 5 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K018…
+## 6 A09100    Metabolism  B09101    Carbohydrate meta… map00010  Glycolysis… K068…
 ## # ℹ 1 more variable: KO_name <chr>
 ```
 
@@ -349,12 +370,24 @@ head(KO_htable)
 plot_KO_htable()
 ```
 
+```
+## =================================load KO_htable=================================
+```
+
+```
+## ==================KO_htable download time: 2023-07-31 11:21:54==================
+```
+
+```
+## If you want to update KO_htable, use `update_KO_htable()`
+```
+
 ![](README_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
 ```r
 KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
 ## =================================load KO_htable=================================
-## ==================KO_htable download time: 2023-05-12 00:07:41==================
+## ==================KO_htable download time: 2023-07-31 11:21:54==================
 ## If you want to update KO_htable, use `update_KO_htable()`
 pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])
 ```

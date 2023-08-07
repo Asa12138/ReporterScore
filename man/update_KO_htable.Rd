@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{update_KO_htable}
 \alias{update_KO_htable}
-\title{update_KO_htable from KEGG}
+\title{update KO_htable from KEGG}
 \usage{
 update_KO_htable(file = NULL, download_dir = NULL)
 }
@@ -15,5 +15,5 @@ update_KO_htable(file = NULL, download_dir = NULL)
 KO_htable
 }
 \description{
-update_KO_htable from KEGG
+update KO_htable from KEGG
 }

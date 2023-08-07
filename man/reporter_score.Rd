@@ -12,7 +12,8 @@ reporter_score(
   verbose = TRUE,
   method = "wilcox.test",
   threads = 1,
-  p.adjust.method = "BH",
+  p.adjust.method1 = "BH",
+  p.adjust.method2 = "BH",
   type = c("pathway", "module")[1],
   perm = 1000,
   KOlist_file = NULL,
@@ -38,7 +39,9 @@ reporter_score(
 
 \item{threads}{default 1}
 
-\item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
+
+\item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
 \item{type}{"pathway" or "module" for default KOlist_file.}
 
@@ -66,6 +69,6 @@ One step to get the reporter score of your KO abundance table.
 data("KO_abundance_test")
 reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
 reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
-     method = "kruskal.test",p.adjust.method = "none")
+     method = "kruskal.test",p.adjust.method1 = "none")
 }
 }

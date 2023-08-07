@@ -16,7 +16,6 @@ Download links:
 \code{https://rest.kegg.jp/list/pathway}
 \code{https://rest.kegg.jp/link/module/ko}
 \code{https://rest.kegg.jp/list/module}
-\code{https://rest.kegg.jp/list/ko}
 
 you can also download yourself the use \code{\link{make_KO_list}} to get a KOlist object
 }

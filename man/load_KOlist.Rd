@@ -4,12 +4,14 @@
 \alias{load_KOlist}
 \title{Load the KOlist (from KEGG)}
 \usage{
-load_KOlist(KOlist_file = NULL, envir = .GlobalEnv)
+load_KOlist(KOlist_file = NULL, envir = .GlobalEnv, verbose = TRUE)
 }
 \arguments{
 \item{KOlist_file}{NULL or your `KOlist.rda` results from `make_KO_list`}
 
 \item{envir}{`.GlobalEnv` (default) or `environment()`}
+
+\item{verbose}{logical}
 }
 \value{
 KOlist in `.GlobalEnv`

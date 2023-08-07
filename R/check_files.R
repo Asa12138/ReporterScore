@@ -1,3 +1,15 @@
+
+#' Update files from KEGG
+#' @export
+update_KEGG=function(){
+    pcutils::dabiao("1.`update_KO_file`")
+    update_KO_file()
+    pcutils::dabiao("2.`update_KO_htable`")
+    update_KO_htable()
+    pcutils::dabiao("3.`update_Module_htable`")
+    update_Module_htable()
+}
+
 #' Update the KO2Pathway and KO2Module files from KEGG
 #'
 #' @param download_dir the ReporterScore user dir location, detect automatically by `tools::R_user_dir("ReporterScore")`.
@@ -10,7 +22,6 @@
 #' \code{https://rest.kegg.jp/list/pathway}
 #' \code{https://rest.kegg.jp/link/module/ko}
 #' \code{https://rest.kegg.jp/list/module}
-#' \code{https://rest.kegg.jp/list/ko}
 #'
 #' you can also download yourself the use \code{\link{make_KO_list}} to get a KOlist object
 update_KO_file=function(download_dir=NULL){
@@ -31,7 +42,7 @@ update_KO_file=function(download_dir=NULL){
     utils::download.file("https://rest.kegg.jp/link/module/ko",destfile = paste0(dd,"/module-KO.list"),method = "curl")
     utils::download.file("https://rest.kegg.jp/list/module",destfile = paste0(dd,"/module.desc.list"),method = "curl")
 
-    utils::download.file("https://rest.kegg.jp/list/ko",destfile = paste0(dd,"/ko.desc.list"),method = "curl")
+    #utils::download.file("https://rest.kegg.jp/list/ko",destfile = paste0(dd,"/ko.desc.list"),method = "curl")
 
     make_KO_list(dd,paste0(pack_dir,"/new_KOlist.rda"))
 
@@ -69,7 +80,7 @@ make_KO_list=function(download_dir,output=NULL){
     attributes(KOlist)$download_time=file.info(paste0(dd,"/pathway-KO.list"))$mtime
     attributes(KOlist)$build_time=Sys.time()
 
-    ko_desc=utils::read.table(paste0(dd,"//ko.desc.list"),sep = "\t",col.names =c("KO","Description"),quote = "")
+    #ko_desc=utils::read.table(paste0(dd,"//ko.desc.list"),sep = "\t",col.names =c("KO","Description"),quote = "")
 
     if(is.null(output))output=paste0(dd,"/KOlist.rda")
     save(KOlist,ko_desc,file =output)
@@ -108,50 +119,94 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL){
 #'
 #' @param KOlist_file NULL or your `KOlist.rda` results from `make_KO_list`
 #' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
 #'
 #' @export
 #' @return KOlist in `.GlobalEnv`
-load_KOlist=function(KOlist_file=NULL,envir=.GlobalEnv){
+load_KOlist=function(KOlist_file=NULL,envir=.GlobalEnv,verbose=TRUE){
     if(is.null(KOlist_file)){
         #KOlist_file=system.file("data","new_KOlist.rda",package = "ReporterScore")
         KOlist_file=file.path(tools::R_user_dir("ReporterScore"),"new_KOlist.rda")
     }
     if(file.exists(KOlist_file))load(KOlist_file,envir = envir)
     else data("KOlist",package = "ReporterScore",envir = envir)
+    if(verbose){
+        pcutils::dabiao("load KOlist")
+        if(!is.null(attributes(KOlist)$"download_time")){
+            pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
+            message("If you want to update KOlist, use `update_KO_file()`")
+        }
+    }
 }
 
 #' Load the KO_htable (from KEGG)
 #'
 #' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
 #'
 #' @export
 #' @return KO_htable in `.GlobalEnv`
-load_KO_htable=function(envir=.GlobalEnv){
+load_KO_htable=function(envir=.GlobalEnv,verbose=TRUE){
     KO_htable_file=file.path(tools::R_user_dir("ReporterScore"),"new_KO_htable.rda")
     if(file.exists(KO_htable_file))load(KO_htable_file,envir = envir)
     else data("KO_htable",package = "ReporterScore",envir = envir)
-}
-
-if(F){
-    update_GO_file=function(){
-        GO_list=clusterProfiler:::get_GOTERM()
-        GO_list=GO_list[,-1]
+    if(verbose){
+        pcutils::dabiao("load KO_htable")
+        if(!is.null(attributes(KO_htable)$"download_time")){
+            pcutils::dabiao(paste0("KO_htable download time: ",attributes(KO_htable)$"download_time"))
+            message("If you want to update KO_htable, use `update_KO_htable()`")
+        }
     }
-
-    gene_to_go=data.frame(gene=rep(c("dnaJ","hspR"),each=3),go=c("GO:0005575","GO:0005618","GO:0005623",
-                                                                 "GO:0005618","GO:0005623","GO:0005506"))
-    term2gene1 <- gene_to_go[, c(2, 1)]
-    #为直接注释补充为间接注释
-    term2gene <- clusterProfiler::buildGOmap(term2gene1)
-    #将GoId转换为GoTerm
-    go2term <- clusterProfiler::go2term(term2gene$GO)
-    gene1=c("dnaJ")
-    df <- enricher(gene = gene1, TERM2GENE = term2gene, TERM2NAME = go2term, pvalueCutoff = 1, qvalueCutoff = 1)
-    #GO注释不是像KEGG一样，KO map到Pathway，而是直接gene map到 GOterm
 }
 
+#' Load the Pathway_htable (from KEGG)
+#'
+#' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
+#'
+#' @export
+#' @return Pathway_htable in `.GlobalEnv`
+load_Pathway_htable=function(envir=.GlobalEnv,verbose=TRUE){
+    load_KO_htable(envir = environment(),verbose = verbose)
+    Pathway_htable=dplyr::distinct(KO_htable[,1:6])
+    colnames(Pathway_htable)[5:6]=c("Pathway_id","Pathway_name")
+    assign("Pathway_htable",Pathway_htable,envir =envir )
+}
 
-#' update_KO_htable from KEGG
+#' Load the KO description (from KEGG)
+#'
+#' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
+#'
+#' @export
+#' @return KO description in `.GlobalEnv`
+load_ko_desc=function(envir=.GlobalEnv,verbose=TRUE){
+    load_KO_htable(envir = environment(),verbose = verbose)
+    ko_desc=dplyr::distinct(KO_htable[,7:8])%>%dplyr::arrange(KO_id)
+    assign("ko_desc",ko_desc,envir =envir)
+}
+
+#' Load the Module_htable (from KEGG)
+#'
+#' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
+#'
+#' @export
+#' @return Module_htable in `.GlobalEnv`
+load_Module_htable=function(envir=.GlobalEnv,verbose=TRUE){
+    Module_htable_file=file.path(tools::R_user_dir("ReporterScore"),"new_Module_htable.rda")
+    if(file.exists(Module_htable_file))load(Module_htable_file,envir = envir)
+    else data("Module_htable",package = "ReporterScore",envir = envir)
+    if(verbose){
+        pcutils::dabiao("load Module_htable")
+        if(!is.null(attributes(Module_htable)$"download_time")){
+            pcutils::dabiao(paste0("Module_htable download time: ",attributes(Module_htable)$"download_time"))
+            message("If you want to update Module_htable, use `update_Module_htable()`")
+        }
+    }
+}
+
+#' update KO_htable from KEGG
 #'
 #' @param file ko00001.keg from https://www.genome.jp/kegg-bin/download_htext?htext=ko00001&format=htext
 #' @param download_dir download_dir
@@ -182,10 +237,12 @@ update_KO_htable=function(file=NULL,download_dir=NULL){
     ko00001_htext2df(file,paste0(dd,"/ko00001.tsv"))
     readr::read_delim(paste0(dd,"/ko00001.tsv"),delim = "\t",
                       col_names = c("level1_id","level1_name","level2_id","level2_name",
-                                    "level3_id","level3_name","KO_id","KO_name"))->KO_htable
-    # readr::read_delim(paste0(dd,"/ko00002.tsv"),delim = "\t",
-    #                   col_names = c("level1_name","level2_name",
-    #                                 "level3_name","Module_id","Module_name"))->M_htable
+                                    "level3_id","level3_name","KO_id","KO_name"))%>%suppressMessages()->KO_htable
+
+    KO_htable$level2_id=paste0("B",KO_htable$level2_id)
+    KO_htable$level3_id=paste0("map",KO_htable$level3_id)
+    KO_htable$level3_name=sub(" \\[.*:ko.*\\]","",KO_htable$level3_name)
+
     attributes(KO_htable)$download_time=file.info(file)$mtime
     attributes(KO_htable)$build_time=Sys.time()
     save(KO_htable,file = paste0(pack_dir,"/new_KO_htable.rda"))
@@ -236,6 +293,43 @@ ko00001_htext2df=function(input_file, output_file,header_num = 0) {
     close(output)
 }
 
+#' update Module_htable from KEGG
+#'
+#' @param file ko00002.keg from https://www.genome.jp/kegg-bin/download_htext?htext=ko00002&format=htext
+#' @param download_dir download_dir
+#'
+#' @return Module_htable
+#' @export
+#'
+update_Module_htable=function(file=NULL,download_dir=NULL){
+    pcutils::lib_ps("readr")
+    #if(is.null(pack_dir))pack_dir=paste0(.libPaths()[1],"/ReporterScore")
+    pack_dir=tools::R_user_dir("ReporterScore")
+    if(!dir.exists(pack_dir))dir.create(pack_dir,recursive = TRUE)
+
+    if(is.null(download_dir))dd="ReporterScore_temp_download"
+    else dd=download_dir
+
+    if(!dir.exists(dd))dir.create(dd)
+
+    if(is.null(file)){
+        pcutils::dabiao("Trying to download files from https://rest.kegg.jp/ ")
+        utils::download.file("https://www.genome.jp/kegg-bin/download_htext?htext=ko00002&format=htext",
+                             destfile = paste0(dd,"/ko00002.keg"),method = "curl")
+        file=paste0(dd,"/ko00002.keg")
+    }
+    else {
+        if(!grepl("ko00002.keg",file))stop("file should be path of ko00002.keg.")
+    }
+    ko00002_htext2df(file,paste0(dd,"/ko00002.tsv"))
+    readr::read_delim(paste0(dd,"/ko00002.tsv"),delim = "\t",
+                      col_names = c("module1_name","module2_name",
+                                    "module3_name","Module_id","Module_name"))%>%suppressMessages()->Module_htable
+    attributes(Module_htable)$download_time=file.info(file)$mtime
+    attributes(Module_htable)$build_time=Sys.time()
+    save(Module_htable,file = paste0(pack_dir,"/new_Module_htable.rda"))
+    pcutils::dabiao(paste0("Update done at ",Sys.time()))
+}
 ko00002_htext2df=function(input_file, output_file,header_num = 0) {
     # Read the input file
     input <- readLines(input_file)
@@ -307,4 +401,22 @@ plot_KO_htable=function(select_ko=NULL){
         theme_classic()+
         theme(axis.text.y = element_text(color = patt[a$level1_name]))+
         scale_x_continuous(expand = c(0,0),limits = c(0,max(a$n)*1.1))
+}
+
+if(F){
+    update_GO_file=function(){
+        GO_list=clusterProfiler:::get_GOTERM()
+        GO_list=GO_list[,-1]
+    }
+
+    gene_to_go=data.frame(gene=rep(c("dnaJ","hspR"),each=3),go=c("GO:0005575","GO:0005618","GO:0005623",
+                                                                 "GO:0005618","GO:0005623","GO:0005506"))
+    term2gene1 <- gene_to_go[, c(2, 1)]
+    #为直接注释补充为间接注释
+    term2gene <- clusterProfiler::buildGOmap(term2gene1)
+    #将GoId转换为GoTerm
+    go2term <- clusterProfiler::go2term(term2gene$GO)
+    gene1=c("dnaJ")
+    df <- enricher(gene = gene1, TERM2GENE = term2gene, TERM2NAME = go2term, pvalueCutoff = 1, qvalueCutoff = 1)
+    #GO注释不是像KEGG一样，KO map到Pathway，而是直接gene map到 GOterm
 }

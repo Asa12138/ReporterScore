@@ -11,7 +11,8 @@ get_reporter_score(
   KOlist_file = NULL,
   modulelist = NULL,
   perm = 1000,
-  verbose = TRUE
+  verbose = TRUE,
+  p.adjust.method = "BH"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ get_reporter_score(
 \item{perm}{permutation number, default: 1000}
 
 \item{verbose}{logical}
+
+\item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 }
 \value{
 reporter_res dataframe

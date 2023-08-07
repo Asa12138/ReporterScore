@@ -10,7 +10,10 @@ plot_report(
   mode = 1,
   y_text_size = 13,
   str_width = 50,
-  Pathway_description = TRUE
+  Pathway_description = TRUE,
+  facet_level = FALSE,
+  facet_anno = NULL,
+  facet_str_width = 15
 )
 }
 \arguments{
@@ -25,6 +28,12 @@ plot_report(
 \item{str_width}{str_width to wrap}
 
 \item{Pathway_description}{show KO description rather than KO id.}
+
+\item{facet_level}{facet plot if the type is "pathway" or "module"}
+
+\item{facet_anno}{annotation table for facet, two columns, first is level summary, second is pathway id.}
+
+\item{facet_str_width}{str width for facet label}
 }
 \value{
 ggplot

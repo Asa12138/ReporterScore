@@ -20,10 +20,10 @@ NULL
 #'
 NULL
 
-#'@title KO Description
+#'@title Module htable from KEGG
 #'
 #'@docType data
-#'@name ko_desc
+#'@name Module_htable
 #'
 NULL
 

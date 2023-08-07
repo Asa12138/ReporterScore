@@ -8,6 +8,7 @@
 \usage{
 KO_fisher(
   ko_pvalue,
+  padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
   KOlist_file = NULL,
@@ -17,6 +18,7 @@ KO_fisher(
 
 KO_enrich(
   ko_pvalue,
+  padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
   KOlist_file = NULL,
@@ -27,6 +29,7 @@ KO_enrich(
 KO_gsea(
   ko_pvalue,
   add_mini = NULL,
+  padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
   KOlist_file = NULL,
@@ -36,6 +39,8 @@ KO_gsea(
 }
 \arguments{
 \item{ko_pvalue}{ko_pvalue dataframe from \code{\link[ReporterScore]{ko.test}}.}
+
+\item{padj_threshold}{p.adjust threshold to determine whether significant or not.}
 
 \item{p.adjust.method}{The method used for p-value adjustment (default: "BH").}
 
