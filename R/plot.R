@@ -29,16 +29,13 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     if(length(rs_threshold)==1)rs_threshold=c(rs_threshold,-rs_threshold)
 
     rs_threshold=sort(rs_threshold)
-    if(rs_threshold[2]>max((reporter_res$ReporterScore))){
-        rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
-        warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1],"\n")
-    }
+
     vs_group=attributes(reporter_res)$vs_group
     if(attributes(reporter_res)$mode=="directed"){
-        if(rs_threshold[1]<min((reporter_res$ReporterScore))){
-            rs_threshold[1]=head(sort((reporter_res$ReporterScore)))[5]%>%round(.,4)
-            warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1],"\n")
+        if((rs_threshold[1]<min(reporter_res$ReporterScore))&(rs_threshold[2]>max(reporter_res$ReporterScore))){
+            stop("No pathway in the rs_threshold range, please change rs_threshold to a proper number range. \n")
         }
+
         reporter_res2 <- reporter_res[(reporter_res$ReporterScore >= rs_threshold[2])|(reporter_res$ReporterScore <= rs_threshold[1]), ]
 
         if(length(vs_group)==2){
@@ -56,6 +53,11 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         breaks=c(scales::breaks_extended(3)(range(reporter_res2$ReporterScore)),rs_threshold)
     }
     else {
+        if(rs_threshold[2]>max(reporter_res$ReporterScore)){
+            #rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
+            stop("Too big rs_threshold, please change rs_threshold to a smaller number. \n")
+        }
+
         reporter_res2 <- reporter_res[reporter_res$ReporterScore >= rs_threshold[2],]
         reporter_res2$Group="Significant"
         cols1=c("Significant"='red2')
