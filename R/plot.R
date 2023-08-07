@@ -186,7 +186,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
         line_df=rbind(line_df,tmp)
     }
     if(show_number){
-        num=dplyr::count(line_df,Significantly)%>%dplyr::mutate(label=paste0(Significantly,": ",n))
+        num=dplyr::distinct(line_df,KO_id,.keep_all = TRUE)%>%dplyr::count(Significantly)%>%dplyr::mutate(label=paste0(Significantly,": ",n))
         line_df$Significantly=setNames(num$label,num$Significantly)[line_df$Significantly]
         #line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
         names(line_color)=setNames(num$label,num$Significantly)[names(line_color)]
@@ -318,7 +318,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 
     metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
     if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
-    plotdat=kodf[cols,,drop=FALSE]
+    plotdat=kodf[cols,order(metadata[,group]),drop=FALSE]
 
     annotation_colors=list(pcutils::get_cols(nlevels(factor(metadata[,group])),reporter_color))
     names(annotation_colors)=group
