@@ -29,13 +29,16 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     if(length(rs_threshold)==1)rs_threshold=c(rs_threshold,-rs_threshold)
 
     rs_threshold=sort(rs_threshold)
-
+    if(rs_threshold[2]>max((reporter_res$ReporterScore))){
+        rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
+        warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1],"\n")
+    }
     vs_group=attributes(reporter_res)$vs_group
     if(attributes(reporter_res)$mode=="directed"){
-        if((rs_threshold[1]<min(reporter_res$ReporterScore))&(rs_threshold[2]>max(reporter_res$ReporterScore))){
-            stop("No pathway in the rs_threshold range, please change rs_threshold to a proper number range. \n")
+        if(rs_threshold[1]<min((reporter_res$ReporterScore))){
+            rs_threshold[1]=head(sort((reporter_res$ReporterScore)))[5]%>%round(.,4)
+            warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1],"\n")
         }
-
         reporter_res2 <- reporter_res[(reporter_res$ReporterScore >= rs_threshold[2])|(reporter_res$ReporterScore <= rs_threshold[1]), ]
 
         if(length(vs_group)==2){
@@ -53,11 +56,6 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         breaks=c(scales::breaks_extended(3)(range(reporter_res2$ReporterScore)),rs_threshold)
     }
     else {
-        if(rs_threshold[2]>max(reporter_res$ReporterScore)){
-            #rs_threshold[2]=tail(sort((reporter_res$ReporterScore)))[1]%>%round(.,4)
-            stop("Too big rs_threshold, please change rs_threshold to a smaller number. \n")
-        }
-
         reporter_res2 <- reporter_res[reporter_res$ReporterScore >= rs_threshold[2],]
         reporter_res2$Group="Significant"
         cols1=c("Significant"='red2')
@@ -188,7 +186,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
         line_df=rbind(line_df,tmp)
     }
     if(show_number){
-        num=dplyr::distinct(line_df,KO_id,.keep_all = TRUE)%>%dplyr::count(Significantly)%>%dplyr::mutate(label=paste0(Significantly,": ",n))
+        num=dplyr::count(line_df,Significantly)%>%dplyr::mutate(label=paste0(Significantly,": ",n))
         line_df$Significantly=setNames(num$label,num$Significantly)[line_df$Significantly]
         #line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
         names(line_color)=setNames(num$label,num$Significantly)[names(line_color)]
@@ -320,7 +318,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 
     metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
     if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
-    plotdat=kodf[cols,order(metadata[,group]),drop=FALSE]
+    plotdat=kodf[cols,,drop=FALSE]
 
     annotation_colors=list(pcutils::get_cols(nlevels(factor(metadata[,group])),reporter_color))
     names(annotation_colors)=group

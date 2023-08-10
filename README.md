@@ -14,13 +14,13 @@ output:
 
 # ReporterScore
 
-ReporterScore Functional Enrichment Method for Microbiome
+Reporter Score-based Microbial Enrichment Analysis
 
 # Citation
 
 To cite ReporterScore in publications use:
 
-  Chen Peng, Chao Jiang. ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome. R package (2023),
+  Chen Peng, Chao Jiang. ReporterScore: an R package for Reporter Score-based Microbial Enrichment Analysis. R package (2023),
   <https://github.com/Asa12138/ReporterScore>
 
 ## Install
@@ -39,7 +39,7 @@ library(ReporterScore)
 
 Typically, we can use [KEGG database](https://www.kegg.jp/kegg/) to annotate our microbiome sequencing data, especially environmental microbiome because KEGG is more comprehensive.
 
-Specific methods include using blast to compare the KEGG sequence database, using KEGG official comparison software, and using the [EggNOG database](http://eggnog5.embl.de/#/app/home) and converting the results into KEGG annotations.
+Specific methods include using blast to align the KEGG sequence database, using KEGG official mapper software, and using the [EggNOG database](http://eggnog5.embl.de/#/app/home) and converting the results into KEGG annotations.
 
 So that we can get a KO abundance table (rows are KOs, columns are samples) for our enrichment analysis:
 
@@ -78,7 +78,7 @@ head(metadata)
 
 ### 2. Pathway database
 
-`ReporterScore` has built-in KEGG pathway and module databases (2023-5 version) for KO abundance table.
+`ReporterScore` has built-in KEGG pathway and module databases (2023-08 version) for KO abundance table.
 
 You can use `load_KOlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API) as using latest database is very important.
 
@@ -295,9 +295,8 @@ So that you can get reporterscore step by step.
 
 
 ```r
-set.seed(12)
 data("KO_abundance_test")
-reporter_score_res2=reporter_score(KO_abundance,"Group",metadata,mode="mixed",method = "t.test")
+reporter_score_res2=reporter_score(KO_abundance,"Group",metadata,mode="mixed")
 #View(reporter_score_res2$reporter_s)
 #reporter_score
 reporter_score_res2$reporter_s$p.adjust=p.adjust(reporter_score_res2$reporter_s$p.value,"BH")
@@ -310,6 +309,7 @@ filter(fisher_res,p.adjust<0.05)%>%pull(ID)->Fisher
 enrich_res=KO_enrich(ko_pvalue)
 filter(enrich_res,p.adjust<0.05)%>%pull(ID)->clusterProfiler
 #GESA
+set.seed(1234)
 gsea_res=KO_gsea(ko_pvalue)
 filter(gsea_res@result,p.adjust<0.05)%>%pull(ID)->GSEA
 
@@ -330,7 +330,7 @@ venn(venn_res,"network",vertex.label.cex=c(rep(1,4),rep(0.5,22)))
 
 [KEGG BRITE](https://www.genome.jp/kegg/brite.html) is a collection of hierarchical classification systems capturing functional hierarchies of various biological objects, especially those represented as KEGG objects.
 
-We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use `load_KO_htable` to get KO_htable and use `update_KO_htable` to update. Use `up_level_KO` can upgrade to specific level in one of "pathway", "module", "level1", "level2", "level3".
+We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use `load_KO_htable` to get KO_htable and use `update_KO_htable` to update. Use `up_level_KO` can upgrade to specific level in one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".
 
 
 ```r

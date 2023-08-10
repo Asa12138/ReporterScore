@@ -140,6 +140,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjus
     if(verbose)pcutils::dabiao("Removing all-zero rows: ",sum(rowSums(abs(kodf))==0))
     kodf=kodf[rowSums(abs(kodf))>0,]
 
+    if(is.numeric(sampFile$group))stop("group should be a category variable.")
     vs_group=levels(factor(sampFile$group))
 
     if(length(vs_group)==1)stop("'group' should be at least two elements factor")
