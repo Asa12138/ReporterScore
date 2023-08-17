@@ -8,7 +8,6 @@ up_level_KO(
   KO_abundance,
   level = "pathway",
   show_name = FALSE,
-  KOlist_file = NULL,
   modulelist = NULL,
   verbose = TRUE
 )
@@ -19,8 +18,6 @@ up_level_KO(
 \item{level}{one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".}
 
 \item{show_name}{logical}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

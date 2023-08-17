@@ -10,6 +10,7 @@ plot_report(
   mode = 1,
   y_text_size = 13,
   str_width = 50,
+  show_ID = FALSE,
   Pathway_description = TRUE,
   facet_level = FALSE,
   facet_anno = NULL,
@@ -26,6 +27,8 @@ plot_report(
 \item{y_text_size}{y_text_size}
 
 \item{str_width}{str_width to wrap}
+
+\item{show_ID}{show pathway id}
 
 \item{Pathway_description}{show KO description rather than KO id.}
 

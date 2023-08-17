@@ -19,8 +19,8 @@ print.reporter_score=function(x,...){
     cat("vs group: ",title,"\n",sep = "")
     pcutils::dabiao("parameter",print=TRUE)
     cat("use mode: ",attributes(reporter_score_res$reporter_s)$mode,
-        "; use method: ",attributes(reporter_score_res$reporter_s)$method,sep = "")
-
+        "; use method: ",attributes(reporter_score_res$reporter_s)$method,
+        "; the feature: ",attributes(reporter_score_res$reporter_s)$feature,sep = "")
 }
 
 #' One step to get the reporter score of your KO abundance table.
@@ -35,13 +35,15 @@ print.reporter_score=function(x,...){
 #' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 #' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 #' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
+#' @param feature one of "ko", "gene", "compound"
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param threads default 1
 #' @param p.adjust.method1 p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}
 #' @param p.adjust.method2 p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}
-#' @param type "pathway" or "module" for default KOlist_file.
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param perm permutation number, default: 1000.
+#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
+#' @param min_exist_ratio min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
 #'
 #' @return reporter_score object：
 #' \item{kodf}{your input KO_abundance table}
@@ -60,10 +62,12 @@ print.reporter_score=function(x,...){
 #'      method = "kruskal.test",p.adjust.method1 = "none")
 #' }
 reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
-                        verbose=TRUE,method="wilcox.test",threads=1,
+                        verbose=TRUE,method="wilcox.test",
+                        feature="ko",type=c("pathway","module")[1],
                         p.adjust.method1='BH',p.adjust.method2='BH',
-                        type=c("pathway","module")[1],perm =1000,
-                        KOlist_file=NULL,modulelist=NULL){
+                        threads=1,perm =1000,
+                        min_exist_KO=3,min_exist_ratio=0.2,
+                        modulelist=NULL){
     KOlist=NULL
 
     stopifnot(mode%in%c("mixed","directed"))
@@ -74,17 +78,37 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
     if(verbose)pcutils::dabiao("2.Transfer p.value to z-score")
     ko_stat=pvalue2zs(ko_pvalue,mode=mode,p.adjust.method =p.adjust.method1)
     if(verbose)pcutils::dabiao("3.Calculating reporter score")
-    reporter_s=get_reporter_score(ko_stat,type = type,threads = threads,
+    reporter_s=get_reporter_score(ko_stat,type = type,feature = feature,threads = threads,
                                   p.adjust.method = p.adjust.method2,
-                                  KOlist_file =KOlist_file,modulelist = modulelist,
-                                  perm = perm,verbose = verbose)
+                                  modulelist = modulelist,
+                                  perm = perm,verbose = verbose,min_exist_KO=min_exist_KO,min_exist_ratio=min_exist_ratio)
     if(verbose)pcutils::dabiao("All done")
 
     if(is.null(modulelist)){
-        load_KOlist(KOlist_file,envir = environment(),verbose=verbose)
-        modulelist=KOlist[[type]]
+        if(type%in%c("pathway","module")){
+            type=match.arg(type,c("pathway","module"))
+            if(feature=="ko"){
+                load_KOlist(envir = environment(),verbose=verbose)
+                modulelist=KOlist[[type]]
+            }
+            if(feature=="compound"){
+                load_CPDlist(envir = environment(),verbose=verbose)
+                modulelist=CPDlist[[type]]
+            }
+        }
+        else if(type%in%c("CC", "MF", "BP", "ALL")){
+            if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
+            #load_GOlist(envir = environment(),verbose=verbose)
+            if(type=="ALL")modulelist="lapply(names(GOlist),function(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)"
+            else modulelist=paste0("GOlist[['",type,"']]")
+        }
+        else{
+            modulelist=custom_modulelist_from_org(type,verbose = FALSE)
+        }
     }
-    if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+    #if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
+
+    kodf=kodf[rowSums(abs(kodf))>0,]
 
     res=list(kodf=kodf,ko_pvalue=ko_pvalue,ko_stat=ko_stat,reporter_s=reporter_s,modulelist=modulelist,group=group,metadata=metadata)
     class(res)="reporter_score"
@@ -97,7 +121,7 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001), colnames is samples
 #' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
 #' @param metadata sample information data.frame contains group
-#' @param method the type of test. Default is `wilcox.test`. Allowed values include:
+#' @param method the method of test. Default is `wilcox.test`. Allowed values include:
 #' \itemize{
 #' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 #' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
@@ -114,13 +138,10 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' data("KO_abundance_test")
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' }
-ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjust.method='BH',verbose=TRUE){
+ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",
+                 threads=1,p.adjust.method='BH',verbose=TRUE){
     i=NULL
     t1 <- Sys.time()
-
-    if(verbose)pcutils::dabiao("Checking rownames")
-    rowname_check=grepl("K\\d{5}",rownames(kodf))
-    if(!all(rowname_check))message("Some of your kodf are not KO id, check the format! (e.g. K00001)\n")
 
     if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){
@@ -153,7 +174,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjus
     tkodf=t(kodf)%>%as.data.frame()
     group=sampFile$group
     if(method%in%c("pearson", "kendall", "spearman")){
-        if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor level of group.")
+        if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
         group2=as.numeric(factor(group))
     }
 
@@ -195,6 +216,8 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjus
             pval <- stats::lm(val~group) %>% stats::anova(.) %>%.$`Pr(>F)` %>% .[1]
         }
         if(method%in%c("pearson", "kendall", "spearman")){
+            #用p-value还是直接效应量呢？?
+            #Pval <- 1-abs(stats::cor(val,group2,method = method))
             pval <- stats::cor.test(val,group2,method = method)$p.value
         }
         if(verbose&(i%%1000==0))message(paste(i,"done."))
@@ -238,6 +261,30 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",threads=1,p.adjus
     attributes(res.dt)$method=method
     attributes(res.dt)$p.adjust.method=p.adjust.method
     return(res.dt)
+}
+
+if(F){
+    # 安装和加载所需的包
+    library(MASS)
+
+    # 设置随机数种子
+    set.seed(123)
+
+    # 设置参数
+    n <- 50  # 随机向量数量
+    length <- 10  # 随机向量长度
+
+    # 生成n个随机向量
+    random_data <- matrix(rnorm(n * length), ncol = length)%>%as.data.frame()
+
+    cor_matrix=MetaNet::c_net_cal(random_data)
+    correlations=cor_matrix$r[upper.tri(cor_matrix$r)]%>%abs()
+    p_values <- cor_matrix$p.value[upper.tri(cor_matrix$p.value)]
+
+    # 绘制散点图
+    plot(correlations, p_values, xlab = "Pearson Correlation", ylab = "p-value",
+         main = "Correlation vs p-value", pch = 16, col = "blue")
+    #基本单调的，用p-value还是直接效应量应该是一致的。
 }
 
 #' Transfer p-value of KOs to Z-score
@@ -402,13 +449,15 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
-#' @param type "pathway" or "module" for default KOlist_file.
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param feature one of "ko", "gene", "compound"
 #' @param threads threads
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param perm permutation number, default: 1000
 #' @param verbose logical
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
+#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
+#' @param min_exist_ratio min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
 #'
 #' @return reporter_res dataframe
 #' @export
@@ -420,23 +469,48 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 #' reporter_s1=get_reporter_score(ko_stat)
 #' }
-get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOlist_file=NULL,modulelist=NULL,perm =1000,verbose=TRUE,p.adjust.method="BH"){
+get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",threads=1,
+                            modulelist=NULL,perm =1000,verbose=TRUE,p.adjust.method="BH",
+                            min_exist_KO=3,min_exist_ratio=0.5){
     KOlist=i=NULL
     type_flag=FALSE
     t1 <- Sys.time()
 
-    if(verbose)pcutils::dabiao("Checking file")
+    if(verbose&(feature=="ko")){
+        pcutils::dabiao("Checking rownames")
+        rowname_check=grepl("K\\d{5}",rownames(ko_stat))
+        if(!all(rowname_check))message("Some of your ko_stat are not KO id, check the format! (e.g. K00001)\n")
+    }
     if(!all(c("KO_id","Z_score")%in%colnames(ko_stat)))stop("Some wrong with ko_stat")
-    rowname_check=grepl("K\\d{5}",ko_stat$KO_id)
-    if(!all(rowname_check)){if(verbose)message("Some of your ko_stat are not KO id, check the format! (e.g. K00001)!\n")}
 
     if(is.null(modulelist)){
-        type=match.arg(type,c("pathway","module"))
-        load_KOlist(KOlist_file,envir = environment(),verbose=verbose)
-        modulelist=KOlist[[type]]
+        if(type%in%c("pathway","module")){
+            # 参考通路
+            type=match.arg(type,c("pathway","module"))
+            if(feature=="ko"){
+                load_KOlist(envir = environment(),verbose=verbose)
+                modulelist=KOlist[[type]]
+            }
+            if(feature=="compound"){
+                load_CPDlist(envir = environment(),verbose=verbose)
+                modulelist=CPDlist[[type]]
+            }
+        }
+        else if(type%in%c("CC", "MF", "BP", "ALL")){
+            if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
+            load_GOlist(envir = environment(),verbose=verbose)
+            if(type=="ALL")modulelist=lapply(names(GOlist),\(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)
+            else modulelist=GOlist[[type]]
+        }
+        else{
+            # 其他物种KEGG通路
+            modulelist=custom_modulelist_from_org(type,feature = feature,verbose = verbose)
+            if(verbose)message("You choose the feature: '",feature,"', make sure the rownames of your input table are right.")
+        }
         type_flag=TRUE
     }
-    if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+
+    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
     #calculate each pathway
     if(verbose)pcutils::dabiao("Calculating each pathway")
@@ -459,7 +533,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
         significant_KO=sum(z$p.adjust<p_th)
 
         #如果一条通路里压根没找到几个ko，就不应该有reporterscore
-        if((exist_KO<3)&(exist_KO/modulelist$K_num[i]<0.2))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
+        if((exist_KO<min_exist_KO)&(exist_KO/modulelist$K_num[i]<min_exist_ratio))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
 
         #KOnum <- modulelist$K_num[i]
         #KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
@@ -482,7 +556,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
         opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
         cl <- snow::makeCluster(threads)
         doSNOW::registerDoSNOW(cl)
-        res <- foreach::foreach(i = 1:reps,.options.snow = opts
+        res <- foreach::foreach(i = 1:reps,.options.snow = opts,.export = c("random_mean_sd")
         ) %dopar% {
             loop(i)
         }
@@ -500,10 +574,12 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
     reporter_res <- data.frame(ID = modulelist$id,
                                Description = modulelist$Description,
                                K_num=modulelist$K_num,res)
+    if(type=="ALL")reporter_res$ONT=modulelist$ONT
     reporter_res$p.adjust=stats::p.adjust(reporter_res$p.value,p.adjust.method)
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
     attributes(reporter_res)$method=attributes(ko_stat)$method
     attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group
+    attributes(reporter_res)$feature=feature
     if(type_flag)attributes(reporter_res)$type=type
     rownames(reporter_res)=reporter_res$ID
 
@@ -519,20 +595,25 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],threads=1,KOli
 #' get KOs in a modulelist
 #'
 #' @param map_id map_id in modulelist
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
 #' @param ko_stat NULL or ko_stat result from \code{\link{pvalue2zs}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #'
 #' @export
 #' @return koids, or dataframe with these koids
-get_KOs=function(map_id="map00010",KOlist_file=NULL,ko_stat=NULL,modulelist=NULL){
+get_KOs=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
     KOlist=NULL
     if(is.null(modulelist)){
-        load_KOlist(KOlist_file,envir = environment())
+        load_KOlist(envir = environment())
         if(grepl("map",map_id[1]))modulelist=KOlist$pathway
         if(grepl("M",map_id[1]))modulelist=KOlist$module
+        if(grepl("GO:",map_id[1])){
+            load_GOlist(envir = environment())
+            modulelist=lapply(names(GOlist),function(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)
+        }
     }
-    if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+    if(is.null(modulelist))stop("check your modulelist.")
+
+    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
     kos=modulelist[which(modulelist$id%in%map_id),"KOs"]
     if(length(kos)>0)kos=lapply(kos, strsplit,",")%>%unlist()
     else kos=NULL
@@ -546,7 +627,6 @@ get_KOs=function(map_id="map00010",KOlist_file=NULL,ko_stat=NULL,modulelist=NULL
 #' @param KO_abundance KO_abundance
 #' @param level one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".
 #' @param show_name logical
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param verbose logical
 #'
@@ -557,28 +637,33 @@ get_KOs=function(map_id="map00010",KOlist_file=NULL,ko_stat=NULL,modulelist=NULL
 #' KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
 #' pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])
 up_level_KO=function(KO_abundance,level="pathway",show_name=FALSE,
-                     KOlist_file=NULL,modulelist=NULL,verbose=TRUE){
+                     modulelist=NULL,verbose=TRUE){
     a=KO_abundance
     a$KO_id=rownames(a)
 
     if(level%in%c("pathway", "module")){
         KOlist=NULL
         if(is.null(modulelist)){
-            load_KOlist(KOlist_file,envir = environment(),verbose=verbose)
+            load_KOlist(envir = environment(),verbose=verbose)
             modulelist=KOlist[[level]]
         }
-        if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+        if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
         path2ko=pcutils::explode(modulelist[,c("id","KOs")],2,split = ",")
         path2name=setNames(modulelist$Description,modulelist$id)
     }
     else if (level%in%c("level1", "level2", "level3")){
         KO_htable=NULL
         load_KO_htable(envir = environment(),verbose=verbose)
-        path2ko=KO_htable[,c(paste0(level,"_id"),"KO_id")]
-
-        path2name=KO_htable[,paste0(level,c("_id","_name"))]%>%dplyr::distinct()
-        path2name=setNames(path2name[,paste0(level,"_name"),drop=TRUE],
-                           path2name[,paste0(level,"_id"),drop=TRUE])
+        if(level=="level3"){
+            path2ko=KO_htable[,c(paste0(level,"_id"),"KO_id")]
+            path2name=KO_htable[,paste0(level,c("_id","_name"))]%>%dplyr::distinct()
+            path2name=setNames(path2name[,paste0(level,"_name"),drop=TRUE],
+                               path2name[,paste0(level,"_id"),drop=TRUE])
+        }
+        else{
+            path2ko=KO_htable[,c(paste0(level,"_name"),"KO_id")]
+            show_name=FALSE
+        }
     }
     else if (level%in%c("module1", "module2", "module3")){
         Module_abundance=up_level_KO(KO_abundance,level = "module")
@@ -598,4 +683,50 @@ up_level_KO=function(KO_abundance,level="pathway",show_name=FALSE,
     b=pcutils::hebing(dplyr::select(aa,-c("KO_id","Pathway")),aa$Pathway,1,act = "sum")
     if(show_name)rownames(b)=c(path2name,"Unknown"="Unknown")[rownames(b)]
     b
+}
+
+
+#' Transfer gene symbol table to KO table
+#' @description
+#' You can use `clusterProfiler::bitr()` to transfer your table from other gene_id to gene_symbol.
+#'
+#' @param genedf ,rowname is gene symbol (e.g. PFKM), colnames is samples
+#' @param org kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"
+#'
+#' @return kodf
+#' @export
+#'
+#' @examples
+#' data(genedf)
+#' KOdf=gene2ko(genedf,org="hsa")
+gene2ko=function(genedf,org="hsa"){
+    load_org_pathway(org = org,envir = environment())
+    org_path=get(paste0(org,"_kegg_pathway"))
+
+    gene_mp_ko=dplyr::distinct_all(org_path$all_org_gene[,c("gene_symbol","KO_id")])
+
+    gene_symbol=data.frame(gene_symbol=rownames(genedf))
+    in_genes=length(intersect(rownames(genedf),gene_mp_ko$gene_symbol))
+    out_genes=nrow(genedf)-in_genes
+    message("\n",in_genes," genes are in the pathways, while ",out_genes, " genes are not.")
+    gene_symbol=dplyr::left_join(gene_symbol,gene_mp_ko,by="gene_symbol")
+    gene_symbol$KO_id=ifelse(is.na(gene_symbol$KO_id),"others",gene_symbol$KO_id)
+
+    KOdf=pcutils::hebing(genedf[gene_symbol$gene_symbol,],gene_symbol$KO_id,1,"sum")
+    KOdf
+}
+
+
+ko.test_with_pattern=function(kodf,group,metadata=NULL,method="perason",pattern,
+                              feature="ko",threads=1,p.adjust.method='BH',verbose=TRUE){
+    #这个函数完成指定一种pattern时的相关分析
+
+
+}
+
+
+cm_test=function(){
+    #做一个函数进行cm_cluster，找出十分显著的pattern
+    #然后再对每一个pattern做ko.test_with_pattern，即可以得到每个pattern的RSA结果
+
 }

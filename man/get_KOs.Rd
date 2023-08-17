@@ -4,17 +4,10 @@
 \alias{get_KOs}
 \title{get KOs in a modulelist}
 \usage{
-get_KOs(
-  map_id = "map00010",
-  KOlist_file = NULL,
-  ko_stat = NULL,
-  modulelist = NULL
-)
+get_KOs(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
 }
 \arguments{
 \item{map_id}{map_id in modulelist}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
 
 \item{ko_stat}{NULL or ko_stat result from \code{\link{pvalue2zs}}}
 

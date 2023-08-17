@@ -7,22 +7,24 @@
 get_reporter_score(
   ko_stat,
   type = c("pathway", "module")[1],
+  level = "ko",
   threads = 1,
-  KOlist_file = NULL,
   modulelist = NULL,
   perm = 1000,
   verbose = TRUE,
-  p.adjust.method = "BH"
+  p.adjust.method = "BH",
+  min_exist_KO = 3,
+  min_exist_ratio = 0.2
 )
 }
 \arguments{
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{type}{"pathway" or "module" for default KOlist_file.}
+\item{type}{"pathway" or "module" for default KOlist_file for microbiome. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
+
+\item{level}{one of "ko", "gene", "compound"}
 
 \item{threads}{threads}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
@@ -31,6 +33,10 @@ get_reporter_score(
 \item{verbose}{logical}
 
 \item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+
+\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
+
+\item{min_exist_ratio}{min exist KO ratio in a pathway (default, 0.2, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
 }
 \value{
 reporter_res dataframe

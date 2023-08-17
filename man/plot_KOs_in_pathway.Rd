@@ -7,7 +7,6 @@
 plot_KOs_in_pathway(
   ko_stat,
   map_id = "map00780",
-  KOlist_file = NULL,
   modulelist = NULL,
   box_color = reporter_color,
   show_number = TRUE,
@@ -19,8 +18,6 @@ plot_KOs_in_pathway(
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`}
 
 \item{map_id}{the pathway or module id}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

@@ -9,6 +9,7 @@ ko.test(
   group,
   metadata = NULL,
   method = "wilcox.test",
+  level = "ko",
   threads = 1,
   p.adjust.method = "BH",
   verbose = TRUE
@@ -21,11 +22,13 @@ ko.test(
 
 \item{metadata}{sample information data.frame contains group}
 
-\item{method}{the type of test. Default is `wilcox.test`. Allowed values include:
+\item{method}{the method of test. Default is `wilcox.test`. Allowed values include:
 \itemize{
 \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
+
+\item{level}{one of "ko", "gene", "compound"}
 
 \item{threads}{default 1}
 
@@ -44,4 +47,7 @@ Differential analysis or Correlation analysis for KO-abundance table
 data("KO_abundance_test")
 ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 }
+}
+\seealso{
+\code{\link{reporter_score}}
 }

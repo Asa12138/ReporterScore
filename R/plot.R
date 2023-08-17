@@ -86,9 +86,17 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
                 colnames(tmpdf)=c("facet_level","ID")
                 reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
             }
+            else if(attributes(reporter_res)$type=="ALL"){
+                tmpdf=reporter_res[c("ONT","ID")]
+                colnames(tmpdf)=c("facet_level","ID")
+                reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
+            }
             else {
-                warning("No attributes(reporter_res)$type found.")
-                facet_level=FALSE
+                load_Pathway_htable(envir = environment())
+                tmpdf=Pathway_htable[,c("level1_name","Pathway_id")]
+                colnames(tmpdf)=c("facet_level","ID")
+                tmpdf$ID=gsub("map",attributes(reporter_res)$type,tmpdf$ID)
+                reporter_res2=dplyr::left_join(reporter_res2,tmpdf,by=c("ID"))
             }
         }
     }
@@ -132,7 +140,6 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 #'
 #' @param map_id the pathway or module id
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param box_color box and point color, default: c("#e31a1c","#1f78b4")
 #' @param line_color line color, default: c("Depleted"="seagreen","Enriched"="orange","None"="grey")
@@ -146,7 +153,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 #' data("reporter_score_res")
 #' plot_KOs_in_pathway(ko_stat = reporter_score_res,map_id="map00860")
 plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
-                             KOlist_file=NULL,modulelist=NULL,
+                             modulelist=NULL,
                              box_color=reporter_color,show_number=TRUE,
                              line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")){
     Group=value=Group2=value2=Group1=value1=type=Significantly=KOlist=p.adjust=NULL
@@ -157,20 +164,18 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
         reporter_res=ko_stat
         ko_stat=reporter_res$ko_stat
         modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
         flag=TRUE
         RS=reporter_res$reporter_s[reporter_res$reporter_s$ID==map_id,"ReporterScore"]
     }
 
-    if(is.null(modulelist)){
-        load_KOlist(KOlist_file,envir = environment())
-        if(grepl("map",map_id))modulelist=KOlist$pathway
-        if(grepl("M",map_id))modulelist=KOlist$module
-    }
-
-    A=get_KOs(map_id =map_id,ko_stat = ko_stat,KOlist_file =KOlist_file,modulelist =modulelist )
+    A=get_KOs(map_id =map_id,ko_stat = ko_stat,modulelist =modulelist)
     if(nrow(A)<1)return(NULL)
 
-    if(any(colnames(modulelist)!=c("id","K_num","KOs","Description")))stop("check your KOlist or modulelist format!")
+    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
     Description=modulelist[modulelist$id==map_id,"Description"]
 
     vs_group=attributes(ko_stat)$vs_group
@@ -214,7 +219,6 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
 #' @param map_id the pathway or module id
 #' @param select_ko select which ko
 #' @param box_param parameters pass to \code{\link[pcutils]{group_box}}
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param KO_description show KO description rather than KO id.
 #' @param str_width str_width to wrap
@@ -229,7 +233,7 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
 plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
                       map_id="map00780",select_ko=NULL,only_sig=FALSE,
                       box_param=NULL,
-                      KOlist_file = NULL,modulelist = NULL,
+                      modulelist = NULL,
                       KO_description=FALSE,str_width=50){
     flag=FALSE
     if(inherits(kodf,"reporter_score")){
@@ -238,12 +242,16 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
         group=reporter_res$group
         metadata=reporter_res$metadata
         modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
         flag=TRUE
     }
 
     metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
 
-    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist )
+    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,modulelist =modulelist )
     if(only_sig&flag){
         sig_names=reporter_res$ko_stat%>%dplyr::filter(Significantly!="None")%>%rownames()
         select_ko=intersect(select_ko,sig_names)
@@ -262,7 +270,9 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
 
     if(KO_description){
         load_ko_desc(envir = environment())
-        colnames(plotdat)=ko_desc[match(colnames(plotdat),ko_desc$KO_id),"KO_name"]%>%stringr::str_wrap(., width = str_width)
+        newname=ko_desc[match(rownames(plotdat),ko_desc$KO_id),"KO_name",drop=T]
+        if(all(is.na(newname)))warning("No description for KO found, are you sure rownames of kodf are KOs?")
+        rownames(plotdat)=ifelse(is.na(newname),rownames(plotdat),newname)%>%stringr::str_wrap(., width = str_width)
     }
 
     do.call(pcutils::group_box,
@@ -281,7 +291,6 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
 #' @param map_id the pathway or module id
 #' @param select_ko select which ko
 #' @param heatmap_param parameters pass to \code{\link[pheatmap]{pheatmap}}
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param KO_description show KO description rather than KO id.
 #' @param str_width str_width to wrap
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
@@ -292,8 +301,9 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
 #' data("reporter_score_res")
 #' plot_KOs_heatmap(reporter_score_res,map_id="map00780")
 plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
-                          map_id="map00780",select_ko=NULL,only_sig=FALSE,
-                          KOlist_file = NULL,modulelist = NULL,
+                          map_id="map00780",select_ko=NULL,
+                          only_sig=FALSE,columns=NULL,
+                          modulelist = NULL,
                           KO_description=FALSE,str_width=50,
                           heatmap_param=list()){
     pcutils::lib_ps("pheatmap",library = FALSE)
@@ -304,10 +314,14 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
         group=reporter_res$group
         metadata=reporter_res$metadata
         modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
         flag=TRUE
     }
 
-    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,KOlist_file =KOlist_file,modulelist =modulelist)
+    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,modulelist =modulelist)
 
     if(only_sig&flag){
         sig_names=reporter_res$ko_stat%>%dplyr::filter(Significantly!="None")%>%rownames()
@@ -319,6 +333,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
     metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
     if(length(cols)==0)stop("No select KOs! check map_id or select_ko")
     plotdat=kodf[cols,,drop=FALSE]
+    if(!is.null(columns))plotdat=plotdat[,columns]
 
     annotation_colors=list(pcutils::get_cols(nlevels(factor(metadata[,group])),reporter_color))
     names(annotation_colors)=group
@@ -326,7 +341,9 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 
     if(KO_description){
         load_ko_desc(envir = environment())
-        colnames(plotdat)=ko_desc[match(colnames(plotdat),ko_desc$KO_id),"KO_name"]%>%stringr::str_wrap(., width = str_width)
+        newname=ko_desc[match(rownames(plotdat),ko_desc$KO_id),"KO_name",drop=T]
+        if(all(is.na(newname)))warning("No description for KO found, are you sure rownames of kodf are KOs?")
+        rownames(plotdat)=ifelse(is.na(newname),rownames(plotdat),newname)%>%stringr::str_wrap(., width = str_width)
     }
 
     do.call(pheatmap::pheatmap,
@@ -343,7 +360,6 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 #' @param map_id the pathway or module id
 #' @param kos_color default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
 #' @param near_pathway show the near_pathway if any KOs exist.
-#' @param KOlist_file default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param ... additional arguments for \code{\link[MetaNet]{c_net_plot}}
 #' @param pathway_label show pathway_label?
@@ -358,7 +374,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
 #' plot_KOs_network(reporter_score_res,map_id="map05230")
 #' plot_KOs_network(reporter_score_res,map_id="map00780",near_pathway=TRUE)
 plot_KOs_network=function(ko_stat,map_id="map00780",
-                          near_pathway=FALSE,KOlist_file=NULL,
+                          near_pathway=FALSE,
                           modulelist=NULL,
                           kos_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2","Pathway"="#80b1d3"),
                           pathway_label=TRUE,kos_label=TRUE,
@@ -371,14 +387,22 @@ plot_KOs_network=function(ko_stat,map_id="map00780",
         reporter_res=ko_stat
         ko_stat=reporter_res$ko_stat[,c("KO_id","Significantly")]
         modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
         reporter_s=reporter_res$reporter_s
     }
     else stop("Need reporter_score object")
 
     if(is.null(modulelist)){
-        load_KOlist(KOlist_file,envir = environment())
+        load_KOlist(envir = environment())
         if(grepl("map",map_id))modulelist=KOlist$pathway
         if(grepl("M",map_id))modulelist=KOlist$module
+        if(grepl("GO:",map_id[1])){
+            load_GOlist(envir = environment())
+            modulelist=lapply(names(GOlist),function(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)
+        }
     }
 
     id2ko=modulelist%>%dplyr::select(id,KOs)%>%pcutils::explode(2)
@@ -422,4 +446,33 @@ plot_KOs_network=function(ko_stat,map_id="map00780",
         if(return_net)return(ko_net)
         plot(ko_net,vertex.color=kos_color,vertex.label=tmp_v$label,...)
     }
+}
+
+#' plot KO_htable levels
+#'
+#' @param select_ko select kos
+#'
+#' @return ggplot
+#' @export
+#'
+#' @examples
+#' data("KO_abundance_test")
+#' plot_KO_htable(rownames(KO_abundance))
+plot_KO_htable=function(select_ko=NULL){
+    load_KO_htable(envir = environment())
+    if(!is.null(select_ko))KO_htable=dplyr::filter(KO_htable,KO_id%in%select_ko)
+
+    dplyr::count(KO_htable,level1_name,level2_name)->a
+    a$level2_name=factor(a$level2_name,levels = a$level2_name)
+    patt=setNames(pcutils::get_cols(length(unique(a$level1_name))),unique(a$level1_name))
+
+    ggplot(a)+
+        geom_col(aes(x=n,y=level2_name,fill=level1_name))+
+        scale_fill_manual(values = patt)+
+        geom_text(aes(x=n,y=level2_name,label=n),
+                  nudge_x = max(a$n)*1/200,hjust=0)+
+        labs(y=NULL,x="Number of KOs",title = "KEGG pathway annotation")+
+        theme_classic()+
+        theme(axis.text.y = element_text(color = patt[a$level1_name]))+
+        scale_x_continuous(expand = c(0,0),limits = c(0,max(a$n)*1.1))
 }

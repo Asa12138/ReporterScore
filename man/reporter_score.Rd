@@ -11,12 +11,14 @@ reporter_score(
   mode = c("mixed", "directed")[1],
   verbose = TRUE,
   method = "wilcox.test",
-  threads = 1,
+  level = "ko",
+  type = c("pathway", "module")[1],
   p.adjust.method1 = "BH",
   p.adjust.method2 = "BH",
-  type = c("pathway", "module")[1],
+  threads = 1,
   perm = 1000,
-  KOlist_file = NULL,
+  min_exist_KO = 3,
+  min_exist_ratio = 0.2,
   modulelist = NULL
 )
 }
@@ -37,17 +39,21 @@ reporter_score(
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
 
-\item{threads}{default 1}
+\item{level}{one of "ko", "gene", "compound"}
+
+\item{type}{"pathway" or "module" for default KOlist_file for microbiome. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
 
 \item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 
 \item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
-\item{type}{"pathway" or "module" for default KOlist_file.}
+\item{threads}{default 1}
 
 \item{perm}{permutation number, default: 1000.}
 
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}.}
+\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
+
+\item{min_exist_ratio}{min exist KO ratio in a pathway (default, 0.2, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 }

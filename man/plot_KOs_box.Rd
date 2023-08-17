@@ -12,7 +12,6 @@ plot_KOs_box(
   select_ko = NULL,
   only_sig = FALSE,
   box_param = NULL,
-  KOlist_file = NULL,
   modulelist = NULL,
   KO_description = FALSE,
   str_width = 50
@@ -32,8 +31,6 @@ plot_KOs_box(
 \item{only_sig}{only show the significant KOs}
 
 \item{box_param}{parameters pass to \code{\link[pcutils]{group_box}}}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

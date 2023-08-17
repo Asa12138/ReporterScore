@@ -11,7 +11,6 @@ plot_KOs_heatmap(
   map_id = "map00780",
   select_ko = NULL,
   only_sig = FALSE,
-  KOlist_file = NULL,
   modulelist = NULL,
   KO_description = FALSE,
   str_width = 50,
@@ -30,8 +29,6 @@ plot_KOs_heatmap(
 \item{select_ko}{select which ko}
 
 \item{only_sig}{only show the significant KOs}
-
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

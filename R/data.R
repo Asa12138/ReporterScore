@@ -13,6 +13,21 @@
 #'
 NULL
 
+#'@title The CPDlist used for enrichment.
+#'@description an list contains two data.frame named pathway and module.
+#'
+#'@docType data
+#'@name CPDlist
+#'@format four columns in each data.frame.
+#'\describe{
+#' \item{id}{"map0010" or "M00001"}
+#' \item{K_num}{contians how many Compounds in this pathway or module}
+#' \item{KOs}{Compounds name}
+#' \item{Description}{the description of this pathway or module}
+#'}
+#'
+NULL
+
 #'@title KO htable from KEGG
 #'
 #'@docType data
@@ -69,4 +84,16 @@ NULL
 #'@docType data
 #'@name reporter_score_res2
 #'@rdname reporter_score_res
+NULL
+
+#'@title pathway information for "hsa"
+#'
+#'@docType data
+#'@name hsa_kegg_pathway
+NULL
+
+#'@title human gene table
+#'
+#'@docType data
+#'@name genedf
 NULL

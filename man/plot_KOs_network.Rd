@@ -8,10 +8,14 @@ plot_KOs_network(
   ko_stat,
   map_id = "map00780",
   near_pathway = FALSE,
-  KOlist_file = NULL,
   modulelist = NULL,
   kos_color = c(Depleted = "seagreen", Enriched = "orange", None = "grey", Significant =
     "red2", Pathway = "#80b1d3"),
+  pathway_label = TRUE,
+  kos_label = TRUE,
+  mark_module = FALSE,
+  mark_color = NULL,
+  return_net = FALSE,
   ...
 )
 }
@@ -22,11 +26,19 @@ plot_KOs_network(
 
 \item{near_pathway}{show the near_pathway if any KOs exist.}
 
-\item{KOlist_file}{default NULL, use the internal file. Or you can upload your .rda file from \code{\link{make_KO_list}}}
-
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
 \item{kos_color}{default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")}
+
+\item{pathway_label}{show pathway_label?}
+
+\item{kos_label}{show kos_label?}
+
+\item{mark_module}{mark the modules?}
+
+\item{mark_color}{mark colors, default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")}
+
+\item{return_net}{return the network}
 
 \item{...}{additional arguments for \code{\link[MetaNet]{c_net_plot}}}
 }

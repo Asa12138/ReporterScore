@@ -29,6 +29,8 @@ Suggests:
     tibble,
     vegan,
     clusterProfiler,
+    org.Hs.eg.db,
+    KEGGREST,
     snow,
     doSNOW,
     enrichplot,
