@@ -509,10 +509,22 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     type_flag=FALSE
     t1 <- Sys.time()
 
-    if(verbose&(feature=="ko")){
+    pcutils::dabiao("Use feature: ",feature)
+    if(verbose){
         pcutils::dabiao("Checking rownames")
-        rowname_check=grepl("K\\d{5}",rownames(ko_stat))
-        if(!all(rowname_check))message("Some of your ko_stat are not KO id, check the format! (e.g. K00001)\n")
+        if(feature=="ko"){
+            rowname_check=grepl("K\\d{5}",rownames(ko_stat))
+            if(!all(rowname_check))warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)\n")
+        }
+        if(feature=="gene"){
+            message("please make sure your input table rows are gene symbol!\n")
+            rowname_check=!grepl("[a-z]",rownames(ko_stat))
+            if(!all(rowname_check))warning("Some of your ko_stat are not gene symbol, check the format! (e.g. PEX11A, all upper case)\n")
+        }
+        if(feature=="compound"){
+            rowname_check=grepl("C\\d{5}",rownames(ko_stat))
+            if(!all(rowname_check))warning("Some of your ko_stat are not KEGG compound id, check the format! (e.g. C00001)\n")
+        }
     }
     if(!all(c("KO_id","Z_score")%in%colnames(ko_stat)))stop("Some wrong with ko_stat")
 
