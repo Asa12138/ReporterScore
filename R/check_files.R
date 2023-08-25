@@ -563,7 +563,7 @@ load_org_pathway=function(org="hsa",envir=.GlobalEnv,verbose=TRUE){
     if(file.exists(path_file)){
         load(path_file,envir = envir)
     }
-    else if(org%in%c("hsa")) {
+    else if(org%in%c("hsa","mmu")) {
         data(paste0(org,"_kegg_pathway"),package = "ReporterScore",envir = envir)
     }
     else {
