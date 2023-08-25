@@ -135,7 +135,7 @@ load_KOlist=function(envir=.GlobalEnv,verbose=TRUE){
 #'
 #' @export
 #' @return CPDlist in `.GlobalEnv`
-load_CPDlist=function(CPDlist_file=NULL,envir=.GlobalEnv,verbose=TRUE){
+load_CPDlist=function(envir=.GlobalEnv,verbose=TRUE){
     if(T){
         #CPDlist_file=system.file("data","new_CPDlist.rda",package = "ReporterScore")
         CPDlist_file=file.path(tools::R_user_dir("ReporterScore"),"new_CPDlist.rda")
@@ -460,8 +460,8 @@ load_htable=function(type,envir=.GlobalEnv,verbose=TRUE){
     else data(list=prefix,package = "ReporterScore",envir = envir)
     if(verbose){
         pcutils::dabiao("load ",prefix)
-        if(!is.null(attributes(get(prefix))$"download_time")){
-            pcutils::dabiao(paste0(prefix," download time: ",attributes(get(prefix))$"download_time"))
+        if(!is.null(attributes(get(prefix,envir = envir))$"download_time")){
+            pcutils::dabiao(paste0(prefix," download time: ",attributes(get(prefix,envir = envir))$"download_time"))
             message("If you want to update ",prefix,", use `update_htable(type='",type,"')`")
         }
     }
@@ -566,11 +566,19 @@ load_org_pathway=function(org="hsa",envir=.GlobalEnv,verbose=TRUE){
     else if(org%in%c("hsa")) {
         data(paste0(org,"_kegg_pathway"),package = "ReporterScore",envir = envir)
     }
-    else stop("No pathway information for organism '",org,"', please use `get_org_pathway('",org,"')` to download.")
+    else {
+        message("No pathway information for organism '",org,"', download?\n")
+        flag <- readline("yes/no(y/n)?")
+        if (tolower(flag) %in% c("yes", "y")) {
+            get_org_pathway(org = org)
+            load(path_file,envir = envir)
+        }
+        else stop("No pathway information for organism '",org,"', please use `get_org_pathway('",org,"')` to download.")
+    }
 
     if(verbose){
         pcutils::dabiao("load ",org," pathway")
-        a=get(paste0(org,"_kegg_pathway"))
+        a=get(paste0(org,"_kegg_pathway"),envir = envir)
         if(!is.null(attributes(a)$"download_time")){
             pcutils::dabiao(paste0(org," pathway download time: ",attributes(a)$"download_time"))
             message("If you want to update ",org," pathway,"," use `get_org_pathway('",org,"')`")

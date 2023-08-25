@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot_KOs_network}
 \alias{plot_KOs_network}
-\title{Plot KOs heatmap}
+\title{Plot KOs network}
 \usage{
 plot_KOs_network(
   ko_stat,
@@ -43,7 +43,7 @@ plot_KOs_network(
 \item{...}{additional arguments for \code{\link[MetaNet]{c_net_plot}}}
 }
 \description{
-Plot KOs heatmap
+Plot KOs network
 }
 \examples{
 data("reporter_score_res")

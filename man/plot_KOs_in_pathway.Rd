@@ -8,6 +8,7 @@ plot_KOs_in_pathway(
   ko_stat,
   map_id = "map00780",
   modulelist = NULL,
+  select_ko = NULL,
   box_color = reporter_color,
   show_number = TRUE,
   line_color = c(Depleted = "seagreen", Enriched = "orange", None = "grey", Significant =
@@ -20,6 +21,8 @@ plot_KOs_in_pathway(
 \item{map_id}{the pathway or module id}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
+\item{select_ko}{select which ko}
 
 \item{box_color}{box and point color, default: c("#e31a1c","#1f78b4")}
 

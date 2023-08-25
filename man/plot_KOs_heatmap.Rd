@@ -11,6 +11,7 @@ plot_KOs_heatmap(
   map_id = "map00780",
   select_ko = NULL,
   only_sig = FALSE,
+  columns = NULL,
   modulelist = NULL,
   KO_description = FALSE,
   str_width = 50,
@@ -29,6 +30,8 @@ plot_KOs_heatmap(
 \item{select_ko}{select which ko}
 
 \item{only_sig}{only show the significant KOs}
+
+\item{columns}{change columns}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

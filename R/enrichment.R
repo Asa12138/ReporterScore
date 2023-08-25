@@ -9,15 +9,15 @@
 #' @examples
 #' \donttest{
 #' data("reporter_score_res")
-#' ko_pvalue=reporter_score_res$ko_pvalue
-#' fisher_res=KO_fisher(ko_pvalue)
+#' ko_stat=reporter_score_res$ko_stat
+#' fisher_res=KO_fisher(ko_stat)
 #' plot(fisher_res)
 #' }
-KO_fisher=function(ko_pvalue,padj_threshold=0.05,p.adjust.method="BH",type=c("pathway","module")[1],
+KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("pathway","module")[1],
                    modulelist=NULL,verbose=TRUE){
-    res.dt=ko_pvalue
-    if(!all(c("p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
-
+    res.dt=ko_stat
+    if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
     KOlist=NULL
     if(is.null(modulelist)){
         load_KOlist(envir = environment())
@@ -67,7 +67,7 @@ KO_fisher=function(ko_pvalue,padj_threshold=0.05,p.adjust.method="BH",type=c("pa
 #'
 #' This function performs KO enrichment analysis using the `clusterProfiler` package.
 #'
-#' @param ko_pvalue ko_pvalue dataframe from \code{\link[ReporterScore]{ko.test}}.
+#' @param ko_stat ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.
 #' @param padj_threshold p.adjust threshold to determine whether significant or not.
 #' @param p.adjust.method The method used for p-value adjustment (default: "BH").
 #' @param type "pathway" or "module" for default KOlist_file.
@@ -79,16 +79,17 @@ KO_fisher=function(ko_pvalue,padj_threshold=0.05,p.adjust.method="BH",type=c("pa
 #' @examples
 #' \donttest{
 #' data("reporter_score_res")
-#' ko_pvalue=reporter_score_res$ko_pvalue
-#' enrich_res=KO_enrich(ko_pvalue)
+#' ko_stat=reporter_score_res$ko_stat
+#' enrich_res=KO_enrich(ko_stat)
 #' plot(enrich_res)
 #' }
-KO_enrich=function(ko_pvalue,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_enrich=function(ko_stat,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
                    modulelist=NULL,verbose=TRUE){
     KO_id=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
-    res.dt=ko_pvalue
-    if(!all(c("p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    res.dt=ko_stat
+    if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
 
     KOlist=NULL
     if(is.null(modulelist)){
@@ -182,11 +183,11 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
 #' @examples
 #' \donttest{
 #' data("reporter_score_res")
-#' ko_pvalue=reporter_score_res$ko_pvalue
-#' gsea_res=KO_gsea(ko_pvalue)
+#' ko_stat=reporter_score_res$ko_stat
+#' gsea_res=KO_gsea(ko_stat)
 #' enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
 #' }
-KO_gsea=function(ko_pvalue,add_mini=NULL,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_gsea=function(ko_stat,add_mini=NULL,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
                  modulelist=NULL,verbose=TRUE){
     FC=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
@@ -205,10 +206,12 @@ KO_gsea=function(ko_pvalue,add_mini=NULL,padj_threshold=0.05,p.adjust.method='BH
     }
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
-    vs_group=grep("average",colnames(ko_pvalue),value = T)
+    vs_group=grep("average",colnames(ko_stat),value = T)
     if(length(vs_group)>2)stop("GESA only available for two groups")
-    res.dt=ko_pvalue
-    if(!all(c("p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    res.dt=ko_stat
+    if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
+
     res.dt=dplyr::filter(res.dt,p.adjust<padj_threshold)
 
     tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])

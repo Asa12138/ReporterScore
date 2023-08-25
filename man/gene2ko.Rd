@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculation.R
 \name{gene2ko}
 \alias{gene2ko}
-\title{Gene symbol table transfer to KO table}
+\title{Transfer gene symbol table to KO table}
 \usage{
 gene2ko(genedf, org = "hsa")
 }

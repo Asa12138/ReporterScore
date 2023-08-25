@@ -9,7 +9,7 @@ ko.test(
   group,
   metadata = NULL,
   method = "wilcox.test",
-  level = "ko",
+  pattern = NULL,
   threads = 1,
   p.adjust.method = "BH",
   verbose = TRUE
@@ -28,7 +28,7 @@ ko.test(
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
 
-\item{level}{one of "ko", "gene", "compound"}
+\item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
 
 \item{threads}{default 1}
 
@@ -47,7 +47,4 @@ Differential analysis or Correlation analysis for KO-abundance table
 data("KO_abundance_test")
 ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 }
-}
-\seealso{
-\code{\link{reporter_score}}
 }

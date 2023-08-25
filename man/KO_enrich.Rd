@@ -7,7 +7,7 @@
 \title{Perform fisher.test for enrichment}
 \usage{
 KO_fisher(
-  ko_pvalue,
+  ko_stat,
   padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
@@ -16,7 +16,7 @@ KO_fisher(
 )
 
 KO_enrich(
-  ko_pvalue,
+  ko_stat,
   padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
@@ -25,7 +25,7 @@ KO_enrich(
 )
 
 KO_gsea(
-  ko_pvalue,
+  ko_stat,
   add_mini = NULL,
   padj_threshold = 0.05,
   p.adjust.method = "BH",
@@ -35,7 +35,7 @@ KO_gsea(
 )
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link[ReporterScore]{ko.test}}.}
+\item{ko_stat}{ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.}
 
 \item{padj_threshold}{p.adjust threshold to determine whether significant or not.}
 
@@ -55,27 +55,27 @@ data.frame
 A data frame containing the enrichment results.
 }
 \description{
-This function performs KO enrichment analysis using the clusterProfiler package.
+This function performs KO enrichment analysis using the `clusterProfiler` package.
 
 This function performs KO enrichment analysis using the clusterProfiler package.
 }
 \examples{
 \donttest{
 data("reporter_score_res")
-ko_pvalue=reporter_score_res$ko_pvalue
-fisher_res=KO_fisher(ko_pvalue)
+ko_stat=reporter_score_res$ko_stat
+fisher_res=KO_fisher(ko_stat)
 plot(fisher_res)
 }
 \donttest{
 data("reporter_score_res")
-ko_pvalue=reporter_score_res$ko_pvalue
-enrich_res=KO_enrich(ko_pvalue)
+ko_stat=reporter_score_res$ko_stat
+enrich_res=KO_enrich(ko_stat)
 plot(enrich_res)
 }
 \donttest{
 data("reporter_score_res")
-ko_pvalue=reporter_score_res$ko_pvalue
-gsea_res=KO_gsea(ko_pvalue)
+ko_stat=reporter_score_res$ko_stat
+gsea_res=KO_gsea(ko_stat)
 enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
 }
 }

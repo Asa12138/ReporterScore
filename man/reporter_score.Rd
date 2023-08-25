@@ -11,15 +11,16 @@ reporter_score(
   mode = c("mixed", "directed")[1],
   verbose = TRUE,
   method = "wilcox.test",
-  level = "ko",
+  pattern = NULL,
+  feature = "ko",
   type = c("pathway", "module")[1],
   p.adjust.method1 = "BH",
   p.adjust.method2 = "BH",
+  modulelist = NULL,
   threads = 1,
   perm = 1000,
   min_exist_KO = 3,
-  min_exist_ratio = 0.2,
-  modulelist = NULL
+  min_exist_ratio = 0.2
 )
 }
 \arguments{
@@ -39,28 +40,29 @@ reporter_score(
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
 
-\item{level}{one of "ko", "gene", "compound"}
+\item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
 
-\item{type}{"pathway" or "module" for default KOlist_file for microbiome. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
+\item{feature}{one of "ko", "gene", "compound"}
+
+\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
 
 \item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 
 \item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
+\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+
 \item{threads}{default 1}
 
 \item{perm}{permutation number, default: 1000.}
 
-\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
+\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)}
 
-\item{min_exist_ratio}{min exist KO ratio in a pathway (default, 0.2, when a pathway contains KOs less than 3 & ratio less than 0.2, there will be no RS)}
-
-\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+\item{min_exist_ratio}{min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)}
 }
 \value{
 reporter_score object：
 \item{kodf}{your input KO_abundance table}
-\item{ko_pvalue}{ko statistics result contains p.value}
 \item{ko_stat}{ko statistics result contains p.value and z_score}
 \item{reporter_s}{the reporter score in each pathway}
 \item{modulelist}{default KOlist or customized modulelist dataframe}
@@ -76,5 +78,7 @@ data("KO_abundance_test")
 reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
 reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
      method = "kruskal.test",p.adjust.method1 = "none")
+reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
+     method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2))
 }
 }

@@ -27,6 +27,7 @@ Suggests:
     rmarkdown,
     ggpubr,
     tibble,
+    plyr,
     vegan,
     clusterProfiler,
     org.Hs.eg.db,

@@ -1,4 +1,4 @@
-reporter_color=c("#e31a1c","#1f78b4","#b15928","#b2df8a","#810f7c")
+reporter_color=c("#e31a1c","#1f78b4","#b15928","#b2df8a","#810f7c","#FFF021")
 
 #' Plot the reporter_res
 #'
@@ -24,6 +24,18 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
                       Pathway_description=TRUE,facet_level=FALSE,facet_anno=NULL,facet_str_width=15){
     if(inherits(reporter_res,"reporter_score"))reporter_res=reporter_res$reporter_s
 
+    flag=FALSE
+    if(inherits(reporter_res,"rs_by_cm")){
+        rsa_cm_res=reporter_res
+        ncluster=sum(grepl("Cluster",names(rsa_cm_res)))
+        clusters_name=grep("Cluster",names(rsa_cm_res),value = T)
+        reporter_res=lapply(clusters_name,
+               \(i){data.frame(rsa_cm_res[[i]]$reporter_s,Cluster=i,row.names = NULL)})%>%
+            do.call(rbind,.)
+        attributes(reporter_res)=pcutils::update_param(attributes(rsa_cm_res[["Cluster1"]]$reporter_s),attributes(reporter_res))
+        flag=TRUE
+    }
+
     reporter_res=na.omit(reporter_res)
     Group=Description=ReporterScore=Exist_K_num=NULL
     if(length(rs_threshold)==1)rs_threshold=c(rs_threshold,-rs_threshold)
@@ -34,7 +46,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         warning("Too big rs_threshold, change rs_threshold to ", rs_threshold[1],"\n")
     }
     vs_group=attributes(reporter_res)$vs_group
-    if(attributes(reporter_res)$mode=="directed"){
+    if((attributes(reporter_res)$mode=="directed")&is.null(attributes(reporter_res)$pattern)){
         if(rs_threshold[1]<min((reporter_res$ReporterScore))){
             rs_threshold[1]=head(sort((reporter_res$ReporterScore)))[5]%>%round(.,4)
             warning("Too small rs_threshold, change rs_threshold to", rs_threshold[1],"\n")
@@ -61,6 +73,10 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         cols1=c("Significant"='red2')
         title=paste0(vs_group,collapse = "/")
         breaks=c(scales::breaks_extended(3)(range(reporter_res2$ReporterScore)),rs_threshold[2])
+    }
+    if(flag){
+        reporter_res2$Group=reporter_res2$Cluster
+        cols1=setNames(pcutils::get_cols(ncluster),clusters_name)
     }
 
     if(facet_level){
@@ -106,10 +122,14 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     if(show_ID)reporter_res2$Description=paste0(reporter_res2$ID,": ",reporter_res2$Description)
     if(!Pathway_description)reporter_res2$Description=reporter_res2$ID
 
-
     if(mode==1){
-        p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore), fill = Group)) +
-            geom_bar(stat = 'identity', position='dodge')+
+        if(flag){
+            reporter_res2$Description=factor(reporter_res2$Description,
+                                             levels = arrange(reporter_res2,Group,ReporterScore)%>%pull(Description))
+            p=ggplot(reporter_res2, aes(ReporterScore,Description, fill = Group))
+            }
+        else p=ggplot(reporter_res2, aes(ReporterScore,stats::reorder(Description, ReporterScore), fill = Group))
+        p=p+geom_bar(stat = 'identity', position='dodge')+
             scale_fill_manual(values=cols1)+
             theme_light()
     }
@@ -130,16 +150,18 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         )
     if(facet_level)p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
         theme(strip.text.y = element_text(angle = 0))
-    if(attributes(reporter_res)$mode=="directed")p=p+geom_vline(xintercept = rs_threshold[1], linetype = 2)
+    if(attributes(reporter_res)$mode=="directed"&is.null(attributes(reporter_res)$pattern))p=p+geom_vline(xintercept = rs_threshold[1], linetype = 2)
     #if(length(attributes(reporter_res)$vs_group)==2)p=p+labs(title = paste(attributes(reporter_res)$vs_group,collapse = " vs "))
     p=p+labs(title = title)
     return(p)
 }
 
+
 #' Plot KOs trend in one pathway or module
 #'
-#' @param map_id the pathway or module id
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
+#' @param map_id the pathway or module id
+#' @param select_ko select which ko
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param box_color box and point color, default: c("#e31a1c","#1f78b4")
 #' @param line_color line color, default: c("Depleted"="seagreen","Enriched"="orange","None"="grey")
@@ -153,7 +175,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
 #' data("reporter_score_res")
 #' plot_KOs_in_pathway(ko_stat = reporter_score_res,map_id="map00860")
 plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
-                             modulelist=NULL,
+                             modulelist=NULL,select_ko=NULL,
                              box_color=reporter_color,show_number=TRUE,
                              line_color=c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")){
     Group=value=Group2=value2=Group1=value1=type=Significantly=KOlist=p.adjust=NULL
@@ -172,7 +194,9 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
         RS=reporter_res$reporter_s[reporter_res$reporter_s$ID==map_id,"ReporterScore"]
     }
 
-    A=get_KOs(map_id =map_id,ko_stat = ko_stat,modulelist =modulelist)
+    if(is.null(select_ko))A=get_KOs(map_id =map_id,ko_stat = ko_stat,modulelist =modulelist)
+    else A=ko_stat[ko_stat$KO_id%in%select_ko,]
+
     if(nrow(A)<1)return(NULL)
 
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
@@ -201,7 +225,8 @@ plot_KOs_in_pathway=function(ko_stat,map_id="map00780",
         geom_boxplot(data =box_df,aes(x=Group,y=value,color=Group),show.legend = FALSE)+
         geom_point(data =box_df,aes(x=Group,y=value,color=Group),show.legend = FALSE)+
         scale_color_manual(values = pcutils::get_cols(nlevels(box_df$Group),box_color))+
-        labs(title = paste0("KOs in ",map_id," (",Description,")"),x=NULL,y="Abundance")+
+        labs(title = ifelse(is.null(select_ko),paste0("KOs in ",map_id," (",Description,")"),"Selected KOs"),
+             x=NULL,y="Abundance")+
         ggnewscale::new_scale_color()+
         geom_segment(data = line_df,
                      aes(x=Group2,y=value2,xend=Group1,yend=value1,color=Significantly))+
@@ -251,7 +276,7 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
 
     metadata[,group]=factor(metadata[,group],levels = levels(factor(metadata[,group])))
 
-    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,modulelist =modulelist )
+    if(is.null(select_ko))select_ko=get_KOs(map_id =map_id,modulelist =modulelist)
     if(only_sig&flag){
         sig_names=reporter_res$ko_stat%>%dplyr::filter(Significantly!="None")%>%rownames()
         select_ko=intersect(select_ko,sig_names)
@@ -295,6 +320,7 @@ plot_KOs_box=function(kodf,group=NULL,metadata=NULL,
 #' @param str_width str_width to wrap
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param only_sig only show the significant KOs
+#' @param columns change columns
 #'
 #' @export
 #' @examples
@@ -354,7 +380,7 @@ plot_KOs_heatmap=function(kodf,group=NULL,metadata=NULL,
                                   heatmap_param))
 }
 
-#' Plot KOs heatmap
+#' Plot KOs network
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
 #' @param map_id the pathway or module id
@@ -475,4 +501,20 @@ plot_KO_htable=function(select_ko=NULL){
         theme_classic()+
         theme(axis.text.y = element_text(color = patt[a$level1_name]))+
         scale_x_continuous(expand = c(0,0),limits = c(0,max(a$n)*1.1))
+}
+
+#' Plot c_means result
+#'
+#' @param rsa_cm_res a cm_res object
+#' @param ... additional
+#' @param filter_membership filter membership 0~1.
+#' @param mode 1~2
+#' @param show.clust.cent show cluster center?
+#' @param show_num show number of each cluster?
+#'
+#' @export
+#'
+plot_c_means=function(rsa_cm_res,filter_membership,mode=1,show.clust.cent=TRUE,show_num=TRUE,...){
+    stopifnot(inherits(rsa_cm_res,"rs_by_cm"))
+    plot(rsa_cm_res$cm_res,filter_membership = filter_membership,show.clust.cent=show.clust.cent,mode=mode,show_num=show_num,...)
 }

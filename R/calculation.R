@@ -35,8 +35,9 @@ print.reporter_score=function(x,...){
 #' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 #' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 #' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
+#' @param pattern a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.
 #' @param feature one of "ko", "gene", "compound"
-#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param threads default 1
 #' @param p.adjust.method1 p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}
 #' @param p.adjust.method2 p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}
@@ -47,7 +48,6 @@ print.reporter_score=function(x,...){
 #'
 #' @return reporter_score object：
 #' \item{kodf}{your input KO_abundance table}
-#' \item{ko_pvalue}{ko statistics result contains p.value}
 #' \item{ko_stat}{ko statistics result contains p.value and z_score}
 #' \item{reporter_s}{the reporter score in each pathway}
 #' \item{modulelist}{default KOlist or customized modulelist dataframe}
@@ -60,20 +60,32 @@ print.reporter_score=function(x,...){
 #' reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
 #' reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
 #'      method = "kruskal.test",p.adjust.method1 = "none")
+#' reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
+#'      method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2))
 #' }
 reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
-                        verbose=TRUE,method="wilcox.test",
+                        verbose=TRUE,method="wilcox.test",pattern=NULL,
                         feature="ko",type=c("pathway","module")[1],
                         p.adjust.method1='BH',p.adjust.method2='BH',
+                        modulelist=NULL,
                         threads=1,perm =1000,
-                        min_exist_KO=3,min_exist_ratio=0.2,
-                        modulelist=NULL){
+                        min_exist_KO=3,min_exist_ratio=0.2){
     KOlist=NULL
 
     stopifnot(mode%in%c("mixed","directed"))
+    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman"))
+    if(!is.null(pattern)){
+        if(!method%in%c("pearson", "kendall", "spearman"))stop('method should be one of "pearson", "kendall", "spearman" when you specify a pattern')
+        if(mode!="directed")stop('method should be "directed" when you specify a pattern')
+    }
+    if(type%in%c("pathway","module")){
+        if(feature=="gene"){
+            stop('If the feature of your table is "gene", please sepcify the "type" arugment as an org in listed in https://www.genome.jp/kegg/catalog/org_list.html or "CC", "MF", "BP", "ALL" for default GOlist')
+        }
+    }
 
     if(verbose)pcutils::dabiao("1.KO test")
-    ko_pvalue=ko.test(kodf,group,metadata,method = method,threads =threads,
+    ko_pvalue=ko.test(kodf,group,metadata,method = method,pattern = pattern,threads =threads,
                       p.adjust.method =p.adjust.method1,verbose = verbose)
     if(verbose)pcutils::dabiao("2.Transfer p.value to z-score")
     ko_stat=pvalue2zs(ko_pvalue,mode=mode,p.adjust.method =p.adjust.method1)
@@ -110,7 +122,7 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 
     kodf=kodf[rowSums(abs(kodf))>0,]
 
-    res=list(kodf=kodf,ko_pvalue=ko_pvalue,ko_stat=ko_stat,reporter_s=reporter_s,modulelist=modulelist,group=group,metadata=metadata)
+    res=list(kodf=kodf,ko_stat=ko_stat,reporter_s=reporter_s,modulelist=modulelist,group=group,metadata=metadata)
     class(res)="reporter_score"
     res
 }
@@ -126,6 +138,7 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 #' \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
 #' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
+#' @param pattern a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.
 #' @param threads default 1
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
 #' @param verbose logical
@@ -138,10 +151,15 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' data("KO_abundance_test")
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' }
-ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",
+ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
                  threads=1,p.adjust.method='BH',verbose=TRUE){
     i=NULL
     t1 <- Sys.time()
+
+    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman"))
+    if(!is.null(pattern)){
+        if(!method%in%c("pearson", "kendall", "spearman"))stop('method should be one of "pearson", "kendall", "spearman" when you specify a pattern')
+    }
 
     if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){
@@ -166,7 +184,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",
 
     if(length(vs_group)==1)stop("'group' should be at least two elements factor")
     if(length(vs_group)>2){
-        if(method%in%c("t.test","wilcox.test"))stop("'group' more than two elements, try 'kruskal.test' or 'anova'")}
+        if(method%in%c("t.test","wilcox.test"))stop('group" more than two elements, try "kruskal.test", "anova" or "pearson", "kendall", "spearman"')}
 
     #calculate each
     if(verbose)pcutils::dabiao("Calculating each KO")
@@ -174,8 +192,16 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",
     tkodf=t(kodf)%>%as.data.frame()
     group=sampFile$group
     if(method%in%c("pearson", "kendall", "spearman")){
-        if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
-        group2=as.numeric(factor(group))
+        if(is.null(pattern)){
+            if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
+            group2=as.numeric(factor(group))
+        }
+        else {
+            if((is.null(names(pattern)))|(length(pattern)!=nlevels(factor(group))))
+                stop('pattern should be a named vector matching the group, e.g. c("G1"=1.5,"G2"=0.5,"G3"=2)')
+            group2=pattern[group]
+            if(verbose)message("Using pattern")
+        }
     }
 
     res.dt=data.frame("KO_id"=rownames(kodf))
@@ -260,6 +286,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",
     attributes(res.dt)$vs_group=vs_group
     attributes(res.dt)$method=method
     attributes(res.dt)$p.adjust.method=p.adjust.method
+    attributes(res.dt)$pattern=pattern
     return(res.dt)
 }
 
@@ -381,7 +408,10 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
     }
     if("cor"%in%colnames(res.dt)){
         res.dt$sign <- ifelse(res.dt$cor < 0, -1, 1)
-        res.dt$type <- ifelse(res.dt$cor < 0, paste0('Depleted'), paste0('Enriched'))
+        if(is.null(attributes(ko_pvalue)$pattern))
+            res.dt$type <- ifelse(res.dt$cor < 0, paste0('Depleted'), paste0('Enriched'))
+        else
+            res.dt$type <- ifelse(res.dt$cor < 0, paste0('None'), paste0('Significant'))
     }
 
     #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2
@@ -397,6 +427,8 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
     }
     if(mode=="directed"){
         if(!"type"%in%colnames(res.dt))stop("directed mode only use for two groups differential analysis or multi-groups correlation analysis.")
+        res.dt$origin_p.value=ko_pvalue$p.value
+        res.dt$origin_p.adjust=ko_pvalue$p.adjust
         pn_sign=2
         res.dt$p.value=res.dt$p.value/pn_sign
         res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
@@ -426,6 +458,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
 
     if(is.null(attributes(res.dt)$mode))p_th=0.05
     else p_th=ifelse(attributes(res.dt)$mode=="directed",0.025,0.05)
+    attributes(res.dt)$pattern=attributes(ko_pvalue)$pattern
 
     if("type"%in%colnames(res.dt)&mode=="directed")res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,type,"None"))
     else res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,"Significant","None"))
@@ -449,7 +482,7 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
-#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param feature one of "ko", "gene", "compound"
 #' @param threads threads
 #' @param perm permutation number, default: 1000
@@ -495,6 +528,9 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
                 load_CPDlist(envir = environment(),verbose=verbose)
                 modulelist=CPDlist[[type]]
             }
+            if(feature=="gene"){
+                stop('If the feature of your table is "gene", please sepcify the "type" arugment as an org in listed in https://www.genome.jp/kegg/catalog/org_list.html or "CC", "MF", "BP", "ALL" for default GOlist')
+            }
         }
         else if(type%in%c("CC", "MF", "BP", "ALL")){
             if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
@@ -513,7 +549,11 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
     #calculate each pathway
-    if(verbose)pcutils::dabiao("Calculating each pathway")
+    if(verbose){
+        if(type%in%c("module"))pcutils::dabiao("Calculating each module")
+        if(type%in%c("CC", "MF", "BP", "ALL")) pcutils::dabiao("Calculating each GO term, please wait as there are lots of GO terms")
+        else pcutils::dabiao("Calculating each pathway")
+    }
 
     #parallel
     reps=nrow(modulelist)
@@ -579,6 +619,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
     attributes(reporter_res)$method=attributes(ko_stat)$method
     attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group
+    attributes(reporter_res)$pattern=attributes(ko_stat)$pattern
     attributes(reporter_res)$feature=feature
     if(type_flag)attributes(reporter_res)$type=type
     rownames(reporter_res)=reporter_res$ID
@@ -716,17 +757,140 @@ gene2ko=function(genedf,org="hsa"){
     KOdf
 }
 
+#做一个函数进行cm_cluster，找出十分显著的pattern
+#然后再对每一个pattern做ko.test_with_pattern，即可以得到每个pattern的RSA结果
 
-ko.test_with_pattern=function(kodf,group,metadata=NULL,method="perason",pattern,
-                              feature="ko",threads=1,p.adjust.method='BH',verbose=TRUE){
-    #这个函数完成指定一种pattern时的相关分析
+if(F){
+    pcutils::hebing(KO_abundance,metadata$Group2,2)->KO_abundance_Group2
+    cm_test_k(KO_abundance_Group2,0.7)
+    cm_res=c_means(KO_abundance_Group2,3,0.7)
+    plot(cm_res,filter_membership = 0.8,mode = 1)
+    cm_res$centers
 
+    test1=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
+                                       method = "pearson",pattern = cm_res$centers[1,])
+    plot_report(test1,show_ID = T)
+    plot_KOs_in_pathway(test1,map_id = "map03010")
 
 }
 
+#' Reporter score analysis after C-means clustering
+#'
+#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
+#' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
+#' @param metadata sample information data.frame contains group
+#' @param k_num if NULL, perform the \code{\link[pctax]{cm_test_k}}, else an integer
+#' @param filter_var see \code{\link[pctax]{c_means}}
+#' @param seed set.seed
+#' @param verbose verbose
+#' @param method method from \code{\link{reporter_score}}
+#' @param ... additional arguments for \code{\link{reporter_score}}
+#'
+#' @return rs_by_cm
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' rsa_cm_res=RSA_by_cm(KO_abundance,"Group2",metadata,method = "pearson")
+#' }
+RSA_by_cm=function(kodf,group,metadata=NULL,
+                   k_num=NULL,filter_var=0.7,seed=1234,
+                   verbose=TRUE,method="pearson",...){
+    pcutils::lib_ps("pctax",library = F)
+    if(verbose)pcutils::dabiao("Checking group")
+    if(!is.null(metadata)){
+        if(length(group)!=1)stop("'group' should be one column name of metadata when metadata exsit!")
+        idx = rownames(metadata) %in% colnames(kodf)
+        metadata = metadata[idx, , drop = FALSE]
+        kodf = kodf[, rownames(metadata),drop=FALSE]
+        if(verbose)message(nrow(metadata)," samples are matched for next step.")
+        if(length(idx)<2)stop("too less common samples")
+        sampFile = data.frame(group=metadata[, group], row.names = row.names(metadata))
+    }
+    else {
+        if(length(group)!=ncol(kodf))stop("'group' length should equal to columns number of kodf when metadata is NULL!")
+        sampFile =data.frame(row.names =colnames(kodf),group=group)
+    }
 
-cm_test=function(){
-    #做一个函数进行cm_cluster，找出十分显著的pattern
-    #然后再对每一个pattern做ko.test_with_pattern，即可以得到每个pattern的RSA结果
+    pcutils::hebing(kodf,sampFile$group,2)->kodf_g
+    if(is.null(k_num)){
+        cm_test_k_res=pctax::cm_test_k(kodf_g,filter_var = filter_var)
+        print(cm_test_k_res)
+        while(TRUE){
+            if(!is.null(k_num))cat("wrong format, please choose a proper k_num for clustering.")
+            else cat("please choose a proper k_num for clustering.")
+            k_num=readline("k_num: ")
+            suppressWarnings({k_num=as.numeric(k_num)})
+            if(is.numeric(k_num)&(!is.na(k_num)))break
+        }
+    }
+    if(verbose)pcutils::dabiao("Choose k_num: ",k_num,". Start to cluster")
+    set.seed(seed)
+    cm_res=pctax::c_means(kodf_g,k_num = k_num,filter_var = filter_var)
 
+    if(verbose)pcutils::dabiao("Get ReporterScore for each cluster")
+    all_res=list()
+    for (i in seq_len(k_num)) {
+        if(verbose)pcutils::dabiao("For cluster ",i)
+        pattern1=cm_res$centers[i,]
+        tmp_res=reporter_score(kodf = kodf,group = group,metadata = metadata,
+                       mode="directed",method = method,pattern = pattern1,verbose = verbose,...)
+        all_res[[paste0("Cluster",i)]]=append(tmp_res[2:3],list(pattern = pattern1))
+    }
+    all_res=append(all_res,append(tmp_res[c(1,4:6)],list(cm_res=cm_res)))
+    class(all_res)="rs_by_cm"
+    all_res
 }
+
+
+#' Print rs_by_cm
+#'
+#' @param x rs_by_cm
+#' @param ... add
+#'
+#' @return No value
+#' @exportS3Method
+#' @method print rs_by_cm
+#'
+print.rs_by_cm=function(x,...){
+    rsa_cm_res=x
+    ncluster=sum(grepl("Cluster",names(rsa_cm_res)))
+    pcutils::dabiao("RSA result with ",ncluster," clusters",print=TRUE)
+
+    pcutils::dabiao("KO abundance table",print=TRUE)
+    cat("With ", nrow(rsa_cm_res$kodf)," KOs and ",ncol(rsa_cm_res$kodf)," samples.\n")
+    pcutils::dabiao("group",print=TRUE)
+    vs_group=attributes(rsa_cm_res$Cluster1$reporter_s)$vs_group
+
+    title=paste0(vs_group,collapse = "/ ")
+    cat("vs group: ",title,"\n",sep = "")
+
+    cat("Patterns: \n")
+    print(rsa_cm_res$cm_res$centers)
+
+    pcutils::dabiao("parameter",print=TRUE)
+    cat("use method: ",attributes(rsa_cm_res$Cluster1$reporter_s)$method,
+        "; the feature: ",attributes(rsa_cm_res$Cluster1$reporter_s)$feature,sep = "")
+}
+
+#' Extract one cluster from rs_by_cm object
+#'
+#' @param rsa_cm_res rs_by_cm object
+#' @param cluster integer
+#'
+#' @return reporter_score object
+#' @export
+#'
+#' @examples
+#' data(rsa_cm_res)
+#' extract_cluster(rsa_cm_res,1)
+extract_cluster=function(rsa_cm_res,cluster=1){
+    stopifnot(inherits(rsa_cm_res,"rs_by_cm"))
+    ncluster=sum(grepl("Cluster",names(rsa_cm_res)))
+    if(!paste0("Cluster",cluster[1])%in%names(rsa_cm_res))stop("check the cluster")
+    res=append(rsa_cm_res[[paste0("Cluster",cluster[1])]],
+               rsa_cm_res[c("kodf","modulelist","group","metadata")])
+    class(res)="reporter_score"
+    res
+}
+
