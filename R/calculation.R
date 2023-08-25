@@ -97,26 +97,7 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
     if(verbose)pcutils::dabiao("All done")
 
     if(is.null(modulelist)){
-        if(type%in%c("pathway","module")){
-            type=match.arg(type,c("pathway","module"))
-            if(feature=="ko"){
-                load_KOlist(envir = environment(),verbose=verbose)
-                modulelist=KOlist[[type]]
-            }
-            if(feature=="compound"){
-                load_CPDlist(envir = environment(),verbose=verbose)
-                modulelist=CPDlist[[type]]
-            }
-        }
-        else if(type%in%c("CC", "MF", "BP", "ALL")){
-            if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
-            #load_GOlist(envir = environment(),verbose=verbose)
-            if(type=="ALL")modulelist="lapply(names(GOlist),function(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)"
-            else modulelist=paste0("GOlist[['",type,"']]")
-        }
-        else{
-            modulelist=custom_modulelist_from_org(type,verbose = FALSE)
-        }
+        modulelist=get_modulelist(type,feature,verbose = F)
     }
     #if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
@@ -479,6 +460,36 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
     list(vec=temp,mean_sd=c(mean(temp), stats::sd(temp)))
 }
 
+get_modulelist=function(type,feature,verbose=T){
+    if(type%in%c("pathway","module")){
+        # 参考通路
+        type=match.arg(type,c("pathway","module"))
+        if(feature=="ko"){
+            load_KOlist(envir = environment(),verbose=verbose)
+            modulelist=KOlist[[type]]
+        }
+        if(feature=="compound"){
+            load_CPDlist(envir = environment(),verbose=verbose)
+            modulelist=CPDlist[[type]]
+        }
+        if(feature=="gene"){
+            stop('If the feature of your table is "gene", please sepcify the "type" arugment as an org in listed in https://www.genome.jp/kegg/catalog/org_list.html or "CC", "MF", "BP", "ALL" for default GOlist')
+        }
+    }
+    else if(type%in%c("CC", "MF", "BP", "ALL")){
+        if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
+        load_GOlist(envir = environment(),verbose=verbose)
+        if(type=="ALL")modulelist=lapply(names(GOlist),\(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)
+        else modulelist=GOlist[[type]]
+    }
+    else{
+        # 其他物种KEGG通路
+        modulelist=custom_modulelist_from_org(type,feature = feature,verbose = verbose)
+        if(verbose)message("You choose the feature: '",feature,"', make sure the rownames of your input table are right.")
+    }
+    return(modulelist)
+}
+
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
@@ -518,8 +529,6 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         }
         if(feature=="gene"){
             message("please make sure your input table rows are gene symbol!\n")
-            rowname_check=!grepl("[a-z]",rownames(ko_stat))
-            if(!all(rowname_check))warning("Some of your ko_stat are not gene symbol, check the format! (e.g. PEX11A, all upper case)\n")
         }
         if(feature=="compound"){
             rowname_check=grepl("C\\d{5}",rownames(ko_stat))
@@ -529,32 +538,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     if(!all(c("KO_id","Z_score")%in%colnames(ko_stat)))stop("Some wrong with ko_stat")
 
     if(is.null(modulelist)){
-        if(type%in%c("pathway","module")){
-            # 参考通路
-            type=match.arg(type,c("pathway","module"))
-            if(feature=="ko"){
-                load_KOlist(envir = environment(),verbose=verbose)
-                modulelist=KOlist[[type]]
-            }
-            if(feature=="compound"){
-                load_CPDlist(envir = environment(),verbose=verbose)
-                modulelist=CPDlist[[type]]
-            }
-            if(feature=="gene"){
-                stop('If the feature of your table is "gene", please sepcify the "type" arugment as an org in listed in https://www.genome.jp/kegg/catalog/org_list.html or "CC", "MF", "BP", "ALL" for default GOlist')
-            }
-        }
-        else if(type%in%c("CC", "MF", "BP", "ALL")){
-            if(feature!="gene")stop('"CC", "MF", "BP", "ALL" using GO database, which only support feature="gene"')
-            load_GOlist(envir = environment(),verbose=verbose)
-            if(type=="ALL")modulelist=lapply(names(GOlist),\(i)cbind(GOlist[[i]],ONT=i))%>%do.call(rbind,.)
-            else modulelist=GOlist[[type]]
-        }
-        else{
-            # 其他物种KEGG通路
-            modulelist=custom_modulelist_from_org(type,feature = feature,verbose = verbose)
-            if(verbose)message("You choose the feature: '",feature,"', make sure the rownames of your input table are right.")
-        }
+        modulelist=get_modulelist(type,feature,verbose)
         type_flag=TRUE
     }
 
