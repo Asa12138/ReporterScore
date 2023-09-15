@@ -11,6 +11,7 @@ KO_fisher(
   padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
+  feature = "ko",
   modulelist = NULL,
   verbose = TRUE
 )
@@ -20,6 +21,7 @@ KO_enrich(
   padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
+  feature = "ko",
   modulelist = NULL,
   verbose = TRUE
 )
@@ -30,6 +32,7 @@ KO_gsea(
   padj_threshold = 0.05,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
+  feature = "ko",
   modulelist = NULL,
   verbose = TRUE
 )
@@ -42,6 +45,8 @@ KO_gsea(
 \item{p.adjust.method}{The method used for p-value adjustment (default: "BH").}
 
 \item{type}{"pathway" or "module" for default KOlist_file.}
+
+\item{feature}{one of "ko", "gene", "compound"}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 

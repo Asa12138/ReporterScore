@@ -1,3 +1,25 @@
+cid2keggid=function(id=c("5281127"),
+                        from="PubChem CID",
+                        to=c("KEGG"),check_api=FALSE){
+    #install_github("dgrapov/CTSgetR")
+
+    lib_ps("CTSgetR","httr",library = F)
+
+    #Make sure CTS API is available
+    if(check_api){
+        httr::GET('https://cts.fiehnlab.ucdavis.edu/services') %>%
+            httr::http_status(.) %>%
+            {if( .$category != 'Success'){stop('Oops looks like https://cts.fiehnlab.ucdavis.edu/services is down!') }}
+    }
+    # db_name<-'ctsgetr.sqlite'
+    # CTSgetR::init_CTSgetR_db(db_name)
+    # CTSgetR::db_stats()
+
+    suppressMessages({res=lapply(id, \(i)CTSgetR::CTSgetR(i,from,to))%>%do.call(rbind,.)})%>%suppressWarnings()
+    #KEGGREST::keggConv("compound","pubchem")
+    res
+}
+
 
 #' Perform fisher.test for enrichment
 #'
@@ -13,24 +35,28 @@
 #' fisher_res=KO_fisher(ko_stat)
 #' plot(fisher_res)
 #' }
-KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("pathway","module")[1],
+KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("pathway","module")[1],feature="ko",
                    modulelist=NULL,verbose=TRUE){
+    if(inherits(ko_stat,"reporter_score")){
+        reporter_res=ko_stat
+        ko_stat=reporter_res$ko_stat
+        modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
+    }
     res.dt=ko_stat
     if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
     if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
     KOlist=NULL
     if(is.null(modulelist)){
-        load_KOlist(envir = environment())
-        modulelist=KOlist[[type]]
-        if(verbose){
-            pcutils::dabiao("load KOlist")
-            if(!is.null(attributes(KOlist)$"download_time")){
-                pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
-                message("If you want to update KOlist, use `update_KO_file()`")
-            }
-        }
+        modulelist=get_modulelist(type,feature,verbose)
     }
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
+
+    all_KOs=lapply(modulelist$KOs,\(i)strsplit(i,",")[[1]])%>%do.call(c,.)
+    res.dt=dplyr::filter(res.dt,KO_id%in%all_KOs)
 
     sig_K_num = length(unique(res.dt[res.dt$p.adjust<padj_threshold,]$KO_id))
     nosig_K_num = nrow(res.dt)-sig_K_num
@@ -56,6 +82,8 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
     fisher_res <- data.frame(ID = modulelist$id,
                                Description = modulelist$Description,
                                K_num=modulelist$K_num,res)
+
+    fisher_res=dplyr::filter(fisher_res,Exist_K_num>0)
     fisher_res$p.adjust <- stats::p.adjust(fisher_res$p.value, method = p.adjust.method)
     attributes(fisher_res)$method="fisher.test"
     class(fisher_res)<-c("enrich_res",class(fisher_res))
@@ -70,6 +98,7 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
 #' @param ko_stat ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.
 #' @param padj_threshold p.adjust threshold to determine whether significant or not.
 #' @param p.adjust.method The method used for p-value adjustment (default: "BH").
+#' @param feature one of "ko", "gene", "compound"
 #' @param type "pathway" or "module" for default KOlist_file.
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param verbose logical
@@ -83,25 +112,26 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
 #' enrich_res=KO_enrich(ko_stat)
 #' plot(enrich_res)
 #' }
-KO_enrich=function(ko_stat,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_enrich=function(ko_stat,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],feature="ko",
                    modulelist=NULL,verbose=TRUE){
     KO_id=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
+    if(inherits(ko_stat,"reporter_score")){
+        reporter_res=ko_stat
+        ko_stat=reporter_res$ko_stat
+        modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
+    }
     res.dt=ko_stat
     if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
     if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
 
     KOlist=NULL
     if(is.null(modulelist)){
-        load_KOlist(envir = environment())
-        modulelist=KOlist[[type]]
-        if(verbose){
-            pcutils::dabiao("load KOlist")
-            if(!is.null(attributes(KOlist)$"download_time")){
-                pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
-                message("If you want to update KOlist, use `update_KO_file()`")
-            }
-        }
+        modulelist=get_modulelist(type,feature,verbose)
     }
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
@@ -149,7 +179,7 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
     if(mode==1){
         p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=Significant_K_num, fill=p.adjust))+
             geom_bar(stat = "identity",width=0.7)+#柱子宽度
-            scale_fill_gradient(low = "red",high ="blue",limits=c(0,0.05))+#颜色自己可以换
+            scale_fill_gradient(low = "red",high ="blue",limits=c(0,padj_threshold))+#颜色自己可以换
             labs(x = "Gene numbers")+
             scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
             theme_bw()
@@ -158,7 +188,7 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
         p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=Significant_K_num, fill=p.adjust,size=Significant_K_num))+
             geom_point(shape=21)+
             scale_size(guide = guide_none())+
-            scale_fill_gradient(low = "red",high ="blue",limits=c(0,0.05))+#颜色自己可以换
+            scale_fill_gradient(low = "red",high ="blue",limits=c(0,padj_threshold))+#颜色自己可以换
             labs(x = "Gene numbers")+
             scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
             theme_bw()
@@ -187,47 +217,59 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
 #' gsea_res=KO_gsea(ko_stat)
 #' enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
 #' }
-KO_gsea=function(ko_stat,add_mini=NULL,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],
+KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
+                 padj_threshold=1,p.adjust.method='BH',
+                 type=c("pathway","module")[1],feature="ko",
                  modulelist=NULL,verbose=TRUE){
     FC=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
 
+    if(inherits(ko_stat,"reporter_score")){
+        reporter_res=ko_stat
+        ko_stat=reporter_res$ko_stat
+        modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
+    }
+    res.dt=ko_stat
+
     KOlist=NULL
     if(is.null(modulelist)){
-        load_KOlist(envir = environment())
-        modulelist=KOlist[[type]]
-        if(verbose){
-            pcutils::dabiao("load KOlist")
-            if(!is.null(attributes(KOlist)$"download_time")){
-                pcutils::dabiao(paste0("KOlist download time: ",attributes(KOlist)$"download_time"))
-                message("If you want to update KOlist, use `update_KO_file()`")
-            }
-        }
+        modulelist=get_modulelist(type,feature,verbose)
     }
     if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
 
-    vs_group=grep("average",colnames(ko_stat),value = T)
-    if(length(vs_group)>2)stop("GESA only available for two groups")
-    res.dt=ko_stat
     if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
     if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
 
-    res.dt=dplyr::filter(res.dt,p.adjust<padj_threshold)
-
-    tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
-    if (is.null(add_mini))
-        add_mini = min(tmp[tmp > 0]) * 0.05
-    res.dt$FC=(res.dt[,vs_group[1]]+add_mini)/(res.dt[,vs_group[2]]+add_mini)
-
-    res.dt_sort <- res.dt %>% dplyr::arrange(dplyr::desc(FC))
-
-    kos <- log2(res.dt_sort$FC)
-    names(kos) <- res.dt_sort$KO_id
-
-    path2ko=pcutils::explode(KOlist$pathway[,c(1,3)],2)
-    path2name=KOlist$pathway[,c(1,4)]
+    path2ko=pcutils::explode(modulelist[,c("id","KOs")],2,split = ",")
+    path2name=modulelist[,c("id","Description")]
     #set background
     {path2ko=dplyr::filter(path2ko,KOs%in%res.dt$KO_id)}
+
+    res.dt=dplyr::filter(res.dt,p.adjust<padj_threshold)
+
+    if(!weight%in%colnames(res.dt)){
+        vs_group=grep("average",colnames(res.dt),value = T)
+        if(length(vs_group)!=2)stop("GESA only available for two groups")
+        tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
+
+        if (is.null(add_mini))
+            add_mini = min(tmp[tmp > 0]) * 0.05
+        res.dt$FC=(res.dt[,vs_group[2]]+add_mini)/(res.dt[,vs_group[1]]+add_mini)
+
+        res.dt_sort <- res.dt %>% dplyr::arrange(dplyr::desc(FC))
+
+        kos <- log2(res.dt_sort$FC)
+        names(kos) <- res.dt_sort$KO_id
+    }
+    else{
+        kos=res.dt[,weight,drop=T]
+        names(kos) <- res.dt$KO_id
+        kos=sort(kos,decreasing = T)
+    }
 
     e <- clusterProfiler::GSEA(kos, TERM2GENE = path2ko, TERM2NAME = path2name,verbose=F,pvalueCutoff = 1)
     e

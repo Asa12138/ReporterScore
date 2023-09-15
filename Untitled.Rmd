@@ -1,0 +1,66 @@
+### (1) Calculating the _p-value_ list
+
+Use a differential and correlation analyses method (often Wilcoxon rank sum test) to obtain the _p-value_ of the significance of each KO difference between the experimental groups (i.e., $p_{KO_i}$, $KO_i$ represents a certain KO; Figure \@ref(fig:1-workflow)A). The full list can be found Table xxx.
+
+### (2) Converting the _p-value_ into Z-score 
+
+For the classic mixed RSA, use an inverse normal cumulative distribution function ($\theta ^{-1}$) to convert the _p-value_ of each KO into Z-score ($Z_{KO_i}$). Thus, in case of uniformly distributed _p-values_ (random data assumption), the resulting Z-scores will follow a standard normal distribution (Figure \@ref(fig:1-workflow)B), the formula is:
+
+$$Z_{KO_i}=\theta ^{-1}(1-p_{KO_i})$$
+
+For the new directed RSA, we first divide the _p-value_ by 2, that is, the range of _p-value_ from $(0,1]$ becomes $(0,0.5]$:
+
+$$p_{KO_i}=p_{KO_i}/2$$
+
+Secondly, use an inverse normal cumulative distribution function to convert the _p-value_ of each KO into a Z score ($Z_{KO_i}$). When the _p-value_ is 0.5, the converted Z-score is exactly equal to 0 in the standard normal distribution. Since the above _p-value_ is less than 0.5, all converted Z-score will be greater than 0 (Figure \@ref(fig:1-workflow)B), the formula is:
+
+$$Z_{KO_i}=\theta ^{-1}(1-p_{KO_i})$$
+
+Then consider whether each KO is up-regulated or down-regulated and calculate the $\Delta KO_i$.
+
+In the differential analysis:
+
+$$\Delta KO_i=\overline {KO_{i_{g1}}}-\overline {KO_{i_{g2}}}$$
+
+$\overline {KO_{i_{g1}}}$ is the average abundance of $KO_i$ in group1, 
+and $\overline {KO_{i_{g2}}}$ is the average abundance of $KO_i$ in group2.
+
+In the correlation analysis:
+
+$$\Delta KO_i=\rho_{KO_i}$$
+$\rho_{KO_i}$ is the correlation coefficient between $KO_i$ and numeric group.
+
+Finally, assign a plus or minus sign to each Z-score:
+
+$$
+Z_{KO_i} =
+\begin{cases} 
+-Z_{KO_i},  & (\Delta KO_i<0) \\
++Z_{KO_i}, & (\Delta KO_i \ge 0)
+\end{cases}
+$$
+
+so $KO_i$ whose $Z_{KO_i}$ greater than 0 is up-regulation, $Z_{KO_i}$ less than 0 is down-regulation.
+
+### (3) Scoring a pathway
+
+After calculating the Z-score of each KO, we calculate the score of the pathway. First, choose a pathway database as the reference. It is of particular interest to note any hierarchy relational table (e.g., taxonomy database) can be used as an reference when the relationship between the upstream and downstream features (e.g., pathways and KOs) can be represented by a bipartite network (Figure \@ref(fig:1-workflow)C). For each pathway in the selected database, calculate the Z-score of pathway j ($Z_{path_j}$), the formula is:
+
+$$Z_{path_j}=\frac{1}{\sqrt{k}}\sum_{i=1}^k Z_{KO_i}$$
+where $Z_{KO_i}$ is the Z-score of $KO_i$ within the $path_j$, and $k$ denotes a total of $k$ KOs in the $path_j$;
+
+Then correct each $Z_{path_j}$ for background distribution of Z_score ($Z_{KO_{all}}$) to evaluate the significance. We get the aggregates $Z_{path\_rand_j}$ of size $k$ by choosing randomly from the background $Z_{KO_{all}}$ for $N$ times, and correct $Z_{path_j}$ by substrate the mean ($\mu _k$) and divide by the standard deviation ($\sigma _k$), where $N$ is often 10,000 @oliveiraArchitectureTranscriptionalRegulatory2008. The corrected result of $Z_{path_j}$ is the $Reporter Score_j$, and the _p-value_ of $Reporter Score_j$ is measured by the above permutation, the formula is:
+
+$$Reporter Score_j=\frac{Z_{path_j}-\mu _k}{\sigma _k}$$
+where $Z_{path\_rand_j}$ have the same $k$ to $Z_{path_j}$, $μ_k$ is the mean of the random aggregates $Z_{path\_rand_j}$, $σ_k$ is the standard deviation of the random aggregates $Z_{path\_rand_j}$.
+
+$$p\_value_j=\frac{\sum_{n=1}^N I(Z_{path_j},Z_{path\_rand_{jn}})}{N}$$
+
+$$
+p\_value_j =
+\begin{cases} 
+p\_value_j,  & (Reporter Score_j<0) \\
+1-p\_value_j, & (Reporter Score_j \ge 0)
+\end{cases}
+$$
+where the $I(a,b)$ equal to 1 when $a>b$, else the $I(a,b)$ equal to 0.

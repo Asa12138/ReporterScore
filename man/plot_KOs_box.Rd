@@ -43,7 +43,7 @@ Plot KOs boxplot
 }
 \examples{
 data("reporter_score_res")
-plot_KOs_box(reporter_score_res,"Group",metadata,
+plot_KOs_box(reporter_score_res,
      select_ko=c("K00059","K00208","K00647","K00652","K00833","K01012"))
-plot_KOs_box(reporter_score_res,"Group",metadata,select_ko="K00059",KO_description=TRUE)
+plot_KOs_box(reporter_score_res,select_ko="K00059",KO_description=TRUE)
 }

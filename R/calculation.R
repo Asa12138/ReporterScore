@@ -53,6 +53,20 @@ print.reporter_score=function(x,...){
 #' \item{modulelist}{default KOlist or customized modulelist dataframe}
 #' \item{group}{The comparison groups in your data}
 #' \item{metadata}{sample information dataframe contains group}
+#'
+#' for the `reporter_s` in result, whose columns represent:
+#' \item{ID}{pathway id}
+#' \item{Description}{pathway description}
+#' \item{K_num}{total number of KOs/genes in the pathway}
+#' \item{Exist_K_num}{number of KOs/genes in your inputdata that exist in the pathway}
+#' \item{Significant_K_num}{number of kos/genes in your inputdata that are significant in the pathway}
+#' \item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
+#' \item{BG_Mean}{Background mean, \eqn{\mu _k}}
+#' \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
+#' \item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+#' \item{p.value}{p.value of the ReporterScore}
+#' \item{p.adjust}{adjusted p.value by p.adjust.method1}
+#'
 #' @export
 #' @examples
 #' \donttest{
@@ -159,14 +173,6 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
 
     if(verbose)pcutils::dabiao("Removing all-zero rows: ",sum(rowSums(abs(kodf))==0))
     kodf=kodf[rowSums(abs(kodf))>0,]
-
-    if(is.numeric(sampFile$group))stop("group should be a category variable.")
-    vs_group=levels(factor(sampFile$group))
-
-    if(length(vs_group)==1)stop("'group' should be at least two elements factor")
-    if(length(vs_group)>2){
-        if(method%in%c("t.test","wilcox.test"))stop('group" more than two elements, try "kruskal.test", "anova" or "pearson", "kendall", "spearman"')}
-
     #calculate each
     if(verbose)pcutils::dabiao("Calculating each KO")
     if(verbose)pcutils::dabiao("Using method: ",method)
@@ -175,34 +181,56 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
     if(method%in%c("pearson", "kendall", "spearman")){
         if(is.null(pattern)){
             if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
-            group2=as.numeric(factor(group))
+            if(is.numeric(group))group2=group
+            else group2=as.numeric(factor(group))
         }
         else {
-            if((is.null(names(pattern)))|(length(pattern)!=nlevels(factor(group))))
-                stop('pattern should be a named vector matching the group, e.g. c("G1"=1.5,"G2"=0.5,"G3"=2)')
-            group2=pattern[group]
+            if(is.numeric(group)) {
+                #stop("Can not use 'pattern' when group is a numeric variable.")
+                if((!is.numeric(pattern))|length(group)!=length(pattern))
+                    stop('pattern should be a numeric vector whose length equal to the group, e.g. c(1,2,3,5,3)')
+            }
+            else {
+                if((!is.numeric(pattern))|(is.null(names(pattern)))|(length(pattern)!=nlevels(factor(group))))
+                    stop('pattern should be a named numeric vector matching the group, e.g. c("G1"=1.5,"G2"=0.5,"G3"=2)')
+                group2=pattern[group]
+            }
             if(verbose)message("Using pattern")
         }
     }
 
-    res.dt=data.frame("KO_id"=rownames(kodf))
+    res.dt=data.frame("KO_id"=rownames(kodf),row.names = rownames(kodf))
 
-    for (i in vs_group) {
-        tmpdf=data.frame(average=apply(kodf[,which(group==i)],1,mean),sd=apply(kodf[,which(group==i)],1,sd))
-        colnames(tmpdf)=paste0(colnames(tmpdf),"_",i)
-        res.dt=cbind(res.dt,tmpdf)
+    if(is.numeric(sampFile$group)){
+        #stop("group should be a category variable.")
+        vs_group="Numeric variable"
+        if(!method%in%c("pearson", "kendall", "spearman")){
+            stop('group is a numeric variable, try "pearson", "kendall", "spearman" method')
+            res.dt$cor=cor(tkodf,group2,method = method)[,1]
+        }
     }
-    if(length(vs_group)==2){
-        #update, make sure the control group is first one.
-        res.dt$diff_mean=res.dt[,paste0("average_",vs_group[2])]-res.dt[,paste0("average_",vs_group[1])]
+    else {
+        vs_group=levels(factor(sampFile$group))
+        if(length(vs_group)==1)stop("'group' should be at least two elements factor")
+        if(length(vs_group)>2){
+            if(method%in%c("t.test","wilcox.test"))stop('group" more than two elements, try "kruskal.test", "anova" or "pearson", "kendall", "spearman"')}
+
+        for (i in vs_group) {
+            tmpdf=data.frame(average=apply(kodf[,which(group==i)],1,mean),sd=apply(kodf[,which(group==i)],1,sd))
+            colnames(tmpdf)=paste0(colnames(tmpdf),"_",i)
+            res.dt=cbind(res.dt,tmpdf)
+        }
+        if(length(vs_group)==2){
+            #update, make sure the control group is first one.
+            res.dt$diff_mean=res.dt[,paste0("average_",vs_group[2])]-res.dt[,paste0("average_",vs_group[1])]
+        }
+
+        high_group <- apply(res.dt[,paste0("average_",vs_group)], 1, function(a) which(a == max(a))[[1]])
+        res.dt$Highest=vs_group[high_group]
     }
     if(method%in%c("pearson", "kendall", "spearman")){
         res.dt$cor=cor(tkodf,group2,method = method)[,1]
     }
-
-    high_group <- apply(res.dt[,paste0("average_",vs_group)], 1, function(a) which(a == max(a))[[1]])
-    res.dt$Highest=vs_group[high_group]
-
     #parallel
     reps=nrow(kodf)
 
@@ -222,12 +250,17 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
         if(method=="anova"){
             pval <- stats::lm(val~group) %>% stats::anova(.) %>%.$`Pr(>F)` %>% .[1]
         }
+        if(method=="lm"){
+            #pval <- stats::lm(val~group) %>% stats::anova(.) %>%.$`Pr(>F)` %>% .[1]
+            r2 <- stats::lm(val~group) %>% summary() %>%.$`adj.r.squared` %>% .[1]
+            pval=1-r2
+        }
         if(method%in%c("pearson", "kendall", "spearman")){
             #用p-value还是直接效应量呢？?
             #Pval <- 1-abs(stats::cor(val,group2,method = method))
             pval <- stats::cor.test(val,group2,method = method)$p.value
         }
-        if(verbose&(i%%1000==0))message(paste(i,"done."))
+        if(verbose&(i%%1000==0))message(paste(i,"features done."))
         pval
     }
 
@@ -273,14 +306,12 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
 
 if(F){
     # 安装和加载所需的包
-    library(MASS)
-
     # 设置随机数种子
     set.seed(123)
 
     # 设置参数
     n <- 50  # 随机向量数量
-    length <- 10  # 随机向量长度
+    length <- 20  # 随机向量长度
 
     # 生成n个随机向量
     random_data <- matrix(rnorm(n * length), ncol = length)%>%as.data.frame()
@@ -293,6 +324,30 @@ if(F){
     plot(correlations, p_values, xlab = "Pearson Correlation", ylab = "p-value",
          main = "Correlation vs p-value", pch = 16, col = "blue")
     #基本单调的，用p-value还是直接效应量应该是一致的。
+
+    #看看lm的情况
+    trandom_data=t(random_data)
+    lm_b=lm_p=lm_r2=cor_matrix$r
+    for (i in 1:(length-1)) {
+        for (j in (i+1):length) {
+            tmp=lm(trandom_data[i,]~trandom_data[j,])
+            lm_b[i,j]=tmp$coefficients[2]
+            tmp2=summary(tmp)
+            lm_p[i,j]=anova(tmp)%>%.$`Pr(>F)` %>% .[1]
+            lm_r2[i,j]=tmp2$adj.r.squared
+        }
+    }
+    b=lm_b[upper.tri(cor_matrix$r)]
+    r2=lm_r2[upper.tri(cor_matrix$r)]%>%abs()
+    p_values2 <- lm_p[upper.tri(cor_matrix$p.value)]
+
+    # 绘制散点图,lm的R2和整体的p值就没有这样的关系了
+    plot(r2, p_values2, xlab = "R2", ylab = "p-value",
+         main = "R2 vs p-value", pch = 16, col = "blue")
+
+    #lm b-coeff和pearson的相关系数之间相关性非常高
+    plot(cor_matrix$r[upper.tri(cor_matrix$r)], b, xlab = "b-coeff", ylab = "correlation",
+         main = "correlation vs b-coeff", pch = 16, col = "blue")
 }
 
 #' Transfer p-value of KOs to Z-score
@@ -392,7 +447,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
         if(is.null(attributes(ko_pvalue)$pattern))
             res.dt$type <- ifelse(res.dt$cor < 0, paste0('Depleted'), paste0('Enriched'))
         else
-            res.dt$type <- ifelse(res.dt$cor < 0, paste0('None'), paste0('Significant'))
+            res.dt$type <- ifelse(res.dt$cor < 0, paste0('None'), paste0('Positive'))
     }
 
     #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2
@@ -441,9 +496,12 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
     else p_th=ifelse(attributes(res.dt)$mode=="directed",0.025,0.05)
     attributes(res.dt)$pattern=attributes(ko_pvalue)$pattern
 
-    if("type"%in%colnames(res.dt)&mode=="directed")res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,type,"None"))
+    if("type"%in%colnames(res.dt)&mode=="directed"){
+        res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,type,"None"))
+        if(!is.null(attributes(ko_pvalue)$pattern))
+            res.dt=dplyr::mutate(res.dt,Significantly=ifelse(Significantly=="Positive","Significant",Significantly))
+    }
     else res.dt=dplyr::mutate(res.dt,Significantly=ifelse(p.adjust<p_th,"Significant","None"))
-
     return(res.dt)
 }
 
@@ -566,7 +624,8 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         z <- ko_stat[ko_stat$KO_id %in% tmp_kos,]
         exist_KO=nrow(z)
 
-        significant_KO=sum(z$p.adjust<p_th)
+        #significant_KO=sum(z$p.adjust<p_th)
+        significant_KO=sum(z$Significantly!="None")
 
         #如果一条通路里压根没找到几个ko，就不应该有reporterscore
         if((exist_KO<min_exist_KO)&(exist_KO/modulelist$K_num[i]<min_exist_ratio))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
@@ -580,9 +639,9 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         Z_score=sum(z$Z_score) / sqrt(KOnum)
 
         reporter_score <- (Z_score - mean_sd$mean_sd[1])/mean_sd$mean_sd[2]
-        p.value=sum(mean_sd$vec>Z_score)/length(mean_sd$vec)
-        p.value=ifelse(p.value>0.5,1-p.value,p.value)
-        if(verbose&(i%%100==0))message(paste(i,"done."))
+        p.value=sum(Z_score>mean_sd$vec)/length(mean_sd$vec)
+        p.value=ifelse(reporter_score>0,1-p.value,p.value)
+        if(verbose&(i%%100==0))message(paste(i,"pathways done."))
         c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value)
     }
     {
@@ -616,8 +675,11 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     attributes(reporter_res)$method=attributes(ko_stat)$method
     attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group
     attributes(reporter_res)$pattern=attributes(ko_stat)$pattern
-    attributes(reporter_res)$feature=feature
-    if(type_flag)attributes(reporter_res)$type=type
+
+    if(type_flag){
+        attributes(reporter_res)$type=type
+        attributes(reporter_res)$feature=feature}
+
     rownames(reporter_res)=reporter_res$ID
 
     t2 <- Sys.time()
@@ -625,7 +687,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     stime <- sprintf("%.3f", t2 - t1)
     resinfo <- paste0('ID number: ', reps, "\n",
                       'Time use: ', stime, attr(stime, 'units'), '\n')
-    message(resinfo)
+    if(verbose)message(resinfo)
     return(reporter_res)
 }
 

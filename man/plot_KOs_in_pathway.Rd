@@ -11,6 +11,7 @@ plot_KOs_in_pathway(
   select_ko = NULL,
   box_color = reporter_color,
   show_number = TRUE,
+  scale = FALSE,
   line_color = c(Depleted = "seagreen", Enriched = "orange", None = "grey", Significant =
     "red2")
 )
@@ -27,6 +28,8 @@ plot_KOs_in_pathway(
 \item{box_color}{box and point color, default: c("#e31a1c","#1f78b4")}
 
 \item{show_number}{show the numbers.}
+
+\item{scale}{scale the data by row.}
 
 \item{line_color}{line color, default: c("Depleted"="seagreen","Enriched"="orange","None"="grey")}
 }

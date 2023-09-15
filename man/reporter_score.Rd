@@ -68,6 +68,19 @@ reporter_score object：
 \item{modulelist}{default KOlist or customized modulelist dataframe}
 \item{group}{The comparison groups in your data}
 \item{metadata}{sample information dataframe contains group}
+
+for the `reporter_s` in result, whose columns represent:
+\item{ID}{pathway id}
+\item{Description}{pathway description}
+\item{K_num}{total number of KOs/genes in the pathway}
+\item{Exist_K_num}{number of KOs/genes in your inputdata that exist in the pathway}
+\item{Significant_K_num}{number of kos/genes in your inputdata that are significant in the pathway}
+\item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
+\item{BG_Mean}{Background mean, \eqn{\mu _k}}
+\item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
+\item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+\item{p.value}{p.value of the ReporterScore}
+\item{p.adjust}{adjusted p.value by p.adjust.method1}
 }
 \description{
 One step to get the reporter score of your KO abundance table.
