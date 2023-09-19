@@ -10,8 +10,8 @@ ko.test(
   metadata = NULL,
   method = "wilcox.test",
   pattern = NULL,
-  threads = 1,
   p.adjust.method = "BH",
+  threads = 1,
   verbose = TRUE
 )
 }
@@ -30,9 +30,9 @@ ko.test(
 
 \item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
 
-\item{threads}{default 1}
-
 \item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+
+\item{threads}{default 1}
 
 \item{verbose}{logical}
 }

@@ -18,6 +18,8 @@ reporter_score object
 Extract one cluster from rs_by_cm object
 }
 \examples{
+\donttest{
 data(rsa_cm_res)
 extract_cluster(rsa_cm_res,1)
+}
 }

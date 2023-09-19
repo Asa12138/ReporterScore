@@ -37,7 +37,7 @@ print.reporter_score=function(x,...){
 #' \item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}
 #' @param pattern a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.
 #' @param feature one of "ko", "gene", "compound"
-#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param threads default 1
 #' @param p.adjust.method1 p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}
 #' @param p.adjust.method2 p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}
@@ -45,6 +45,8 @@ print.reporter_score=function(x,...){
 #' @param perm permutation number, default: 1000.
 #' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
 #' @param min_exist_ratio min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
+#' @aliases GRSA
+#' @aliases RSA
 #'
 #' @return reporter_score object：
 #' \item{kodf}{your input KO_abundance table}
@@ -65,7 +67,7 @@ print.reporter_score=function(x,...){
 #' \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
 #' \item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 #' \item{p.value}{p.value of the ReporterScore}
-#' \item{p.adjust}{adjusted p.value by p.adjust.method1}
+#' \item{p.adjust}{adjusted p.value by p.adjust.method2}
 #'
 #' @export
 #' @examples
@@ -77,10 +79,12 @@ print.reporter_score=function(x,...){
 #' reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
 #'      method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2))
 #' }
-reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
-                        verbose=TRUE,method="wilcox.test",pattern=NULL,
+reporter_score=function(kodf,group,metadata=NULL,
+                        method="wilcox.test",pattern=NULL,p.adjust.method1='BH',
+                        mode=c("mixed","directed")[1],
+                        verbose=TRUE,
                         feature="ko",type=c("pathway","module")[1],
-                        p.adjust.method1='BH',p.adjust.method2='BH',
+                        p.adjust.method2='BH',
                         modulelist=NULL,
                         threads=1,perm =1000,
                         min_exist_KO=3,min_exist_ratio=0.2){
@@ -147,7 +151,7 @@ reporter_score=function(kodf,group,metadata=NULL,mode=c("mixed","directed")[1],
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' }
 ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
-                 threads=1,p.adjust.method='BH',verbose=TRUE){
+                 p.adjust.method='BH',threads=1,verbose=TRUE){
     i=NULL
     t1 <- Sys.time()
 
@@ -178,6 +182,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
     if(verbose)pcutils::dabiao("Using method: ",method)
     tkodf=t(kodf)%>%as.data.frame()
     group=sampFile$group
+    group2=NULL
     if(method%in%c("pearson", "kendall", "spearman")){
         if(is.null(pattern)){
             if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
@@ -271,7 +276,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
             opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
             cl <- snow::makeCluster(threads)
             doSNOW::registerDoSNOW(cl)
-            res <- foreach::foreach(i = 1:reps,.options.snow = opts
+            res <- foreach::foreach(i = 1:reps,.options.snow = opts,.export = c("group","group2")
             ) %dopar% {
                 suppressWarnings(loop(i))
             }
@@ -348,6 +353,26 @@ if(F){
     #lm b-coeff和pearson的相关系数之间相关性非常高
     plot(cor_matrix$r[upper.tri(cor_matrix$r)], b, xlab = "b-coeff", ylab = "correlation",
          main = "correlation vs b-coeff", pch = 16, col = "blue")
+
+    #Wilcox, t.test
+    trandom_data=t(random_data)
+    wil_W=wil_p=cor_matrix$r
+    for (i in 1:(length-1)) {
+        for (j in (i+1):length) {
+            # tmp=wilcox.test(trandom_data[i,],trandom_data[j,])
+            # wil_W[i,j]=tmp$statistic
+            # wil_p[i,j]=tmp$p.value
+
+            tmp=t.test(trandom_data[i,],trandom_data[j,])
+            wil_W[i,j]=tmp$statistic
+            wil_p[i,j]=tmp$p.value
+        }
+    }
+    W=wil_W[upper.tri(cor_matrix$r)]%>%abs()
+    p_values3=wil_p[upper.tri(cor_matrix$r)]
+    plot(W, p_values3, xlab = "R2", ylab = "p-value",
+         main = "R2 vs p-value", pch = 16, col = "blue")
+
 }
 
 #' Transfer p-value of KOs to Z-score
@@ -507,11 +532,7 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
 
 random_mean_sd <- function(vec, Knum, perm = 1000){
     #set.seed((Knum + 1))
-    #我认为应该repalce=TRUE，否则当vec长度小于Knum时，每次取到的都是同一个结果，sd就会非常小！
-    #修改Knum为exist_Knum就不会有这个问题了
-    #但是Permutation就是不放回抽样😭，Bootstrap才是有放回
-    #建议输入的KO表的ko数量多一些，保证sd正确。
-    #replace=(length(vec)<=Knum)
+    #Permutation就是不放回抽样😭，Bootstrap才是有放回
 
     replace=FALSE
     temp=sapply(1:perm, \(i){sum(sample(vec, Knum,replace = replace))/sqrt(Knum)})
@@ -520,7 +541,7 @@ random_mean_sd <- function(vec, Knum, perm = 1000){
 
 get_modulelist=function(type,feature,verbose=T){
     if(type%in%c("pathway","module")){
-        # 参考通路
+        # reference pathway
         type=match.arg(type,c("pathway","module"))
         if(feature=="ko"){
             load_KOlist(envir = environment(),verbose=verbose)
@@ -541,7 +562,7 @@ get_modulelist=function(type,feature,verbose=T){
         else modulelist=GOlist[[type]]
     }
     else{
-        # 其他物种KEGG通路
+        # KEGG pathway of other organisms
         modulelist=custom_modulelist_from_org(type,feature = feature,verbose = verbose)
         if(verbose)message("You choose the feature: '",feature,"', make sure the rownames of your input table are right.")
     }
@@ -551,7 +572,7 @@ get_modulelist=function(type,feature,verbose=T){
 #' Calculate reporter score
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}}
-#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param feature one of "ko", "gene", "compound"
 #' @param threads threads
 #' @param perm permutation number, default: 1000
@@ -670,15 +691,19 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
                                Description = modulelist$Description,
                                K_num=modulelist$K_num,res)
     if(type=="ALL")reporter_res$ONT=modulelist$ONT
+
     reporter_res$p.adjust=stats::p.adjust(reporter_res$p.value,p.adjust.method)
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
     attributes(reporter_res)$method=attributes(ko_stat)$method
     attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group
     attributes(reporter_res)$pattern=attributes(ko_stat)$pattern
 
+    attributes(reporter_res)$perm=perm
+
     if(type_flag){
         attributes(reporter_res)$type=type
-        attributes(reporter_res)$feature=feature}
+        attributes(reporter_res)$feature=feature
+    }
 
     rownames(reporter_res)=reporter_res$ID
 
@@ -691,15 +716,16 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     return(reporter_res)
 }
 
-#' get KOs in a modulelist
+#' get features in a modulelist
 #'
 #' @param map_id map_id in modulelist
 #' @param ko_stat NULL or ko_stat result from \code{\link{pvalue2zs}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #'
+#' @aliases get_KOs
 #' @export
-#' @return koids, or dataframe with these koids
-get_KOs=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
+#' @return KOids, or dataframe with these KOids.
+get_features=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
     KOlist=NULL
     if(is.null(modulelist)){
         load_KOlist(envir = environment())
@@ -719,7 +745,6 @@ get_KOs=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
     if(!is.null(ko_stat)){return(ko_stat[ko_stat$KO_id%in%kos,])}
     return(kos)
 }
-
 
 #' Upgrade the KO level
 #'
@@ -790,7 +815,7 @@ up_level_KO=function(KO_abundance,level="pathway",show_name=FALSE,
 #' You can use `clusterProfiler::bitr()` to transfer your table from other gene_id to gene_symbol.
 #'
 #' @param genedf ,rowname is gene symbol (e.g. PFKM), colnames is samples
-#' @param org kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"
+#' @param org kegg organism, listed in 'https://www.genome.jp/kegg/catalog/org_list.html', default, "hsa"
 #'
 #' @return kodf
 #' @export
@@ -800,7 +825,7 @@ up_level_KO=function(KO_abundance,level="pathway",show_name=FALSE,
 #' KOdf=gene2ko(genedf,org="hsa")
 gene2ko=function(genedf,org="hsa"){
     load_org_pathway(org = org,envir = environment())
-    org_path=get(paste0(org,"_kegg_pathway"))
+    org_path=get(paste0(org,"_kegg_pathway"),envir = environment())
 
     gene_mp_ko=dplyr::distinct_all(org_path$all_org_gene[,c("gene_symbol","KO_id")])
 
@@ -846,6 +871,7 @@ if(F){
 #'
 #' @return rs_by_cm
 #' @export
+#' @aliases GRSA_by_cm
 #'
 #' @examples
 #' \donttest{
@@ -940,8 +966,10 @@ print.rs_by_cm=function(x,...){
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data(rsa_cm_res)
 #' extract_cluster(rsa_cm_res,1)
+#' }
 extract_cluster=function(rsa_cm_res,cluster=1){
     stopifnot(inherits(rsa_cm_res,"rs_by_cm"))
     ncluster=sum(grepl("Cluster",names(rsa_cm_res)))

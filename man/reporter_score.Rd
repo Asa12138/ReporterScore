@@ -2,19 +2,21 @@
 % Please edit documentation in R/calculation.R
 \name{reporter_score}
 \alias{reporter_score}
+\alias{GRSA}
+\alias{RSA}
 \title{One step to get the reporter score of your KO abundance table.}
 \usage{
 reporter_score(
   kodf,
   group,
   metadata = NULL,
-  mode = c("mixed", "directed")[1],
-  verbose = TRUE,
   method = "wilcox.test",
   pattern = NULL,
+  p.adjust.method1 = "BH",
+  mode = c("mixed", "directed")[1],
+  verbose = TRUE,
   feature = "ko",
   type = c("pathway", "module")[1],
-  p.adjust.method1 = "BH",
   p.adjust.method2 = "BH",
   modulelist = NULL,
   threads = 1,
@@ -30,10 +32,6 @@ reporter_score(
 
 \item{metadata}{sample information data.frame contains group}
 
-\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
-
-\item{verbose}{logical}
-
 \item{method}{the type of test. Default is `wilcox.test`. Allowed values include:
 \itemize{
 \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
@@ -42,11 +40,15 @@ reporter_score(
 
 \item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
 
+\item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
+
+\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
+
+\item{verbose}{logical}
+
 \item{feature}{one of "ko", "gene", "compound"}
 
-\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
-
-\item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
+\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
 
 \item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
@@ -80,7 +82,7 @@ for the `reporter_s` in result, whose columns represent:
 \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
 \item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 \item{p.value}{p.value of the ReporterScore}
-\item{p.adjust}{adjusted p.value by p.adjust.method1}
+\item{p.adjust}{adjusted p.value by p.adjust.method2}
 }
 \description{
 One step to get the reporter score of your KO abundance table.

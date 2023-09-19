@@ -2,18 +2,22 @@
 % Please edit documentation in R/plot.R
 \name{plot_htable}
 \alias{plot_htable}
-\title{plot htable levels}
+\title{Plot htable levels}
 \usage{
 plot_htable(type = "ko", select = NULL, htable = NULL)
 }
 \arguments{
-\item{select_ko}{select kos}
+\item{type}{"ko", "module", "pathway", "compound"}
+
+\item{select}{select ids}
+
+\item{htable}{custom a htable}
 }
 \value{
 ggplot
 }
 \description{
-plot htable levels
+Plot htable levels
 }
 \examples{
 data("KO_abundance_test")

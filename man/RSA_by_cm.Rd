@@ -2,6 +2,7 @@
 % Please edit documentation in R/calculation.R
 \name{RSA_by_cm}
 \alias{RSA_by_cm}
+\alias{GRSA_by_cm}
 \title{Reporter score analysis after C-means clustering}
 \usage{
 RSA_by_cm(

@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot_report}
 \alias{plot_report}
+\alias{plot_report_bar}
 \title{Plot the reporter_res}
 \usage{
 plot_report(
@@ -18,7 +19,7 @@ plot_report(
 )
 }
 \arguments{
-\item{reporter_res}{result of `get_reporter_score`}
+\item{reporter_res}{result of `get_reporter_score` or `reporter_score`}
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
@@ -46,5 +47,5 @@ Plot the reporter_res
 }
 \examples{
 data("reporter_score_res")
-plot_report(reporter_score_res,rs_threshold=c(2,-2),y_text_size=10,str_width=40)
+plot_report(reporter_score_res,rs_threshold=c(2.5,-2.5),y_text_size=10,str_width=40)
 }

@@ -2,6 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{get_org_pathway}
 \alias{get_org_pathway}
+\alias{download_org_pathway}
 \title{Get pathway information for an organism from kegg}
 \usage{
 get_org_pathway(

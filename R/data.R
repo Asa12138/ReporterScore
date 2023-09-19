@@ -57,10 +57,10 @@ NULL
 #'
 NULL
 
-#'@title The KOs abundance table and group table.
+#'@title Pathway htable from KEGG
 #'
 #'@docType data
-#'@name KO_abundance_test
+#'@name Pathway_htable
 #'
 NULL
 
@@ -101,10 +101,23 @@ NULL
 #'@rdname reporter_score_res
 NULL
 
+#'@title `RSA_by_cm()` result from KO_abundance_test
+#'
+#'@docType data
+#'@name rsa_cm_res
+NULL
+
+
 #'@title pathway information for "hsa"
 #'
 #'@docType data
 #'@name hsa_kegg_pathway
+NULL
+
+#'@title pathway information for "mmu"
+#'
+#'@docType data
+#'@name mmu_kegg_pathway
 NULL
 
 #'@title human gene table

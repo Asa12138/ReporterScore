@@ -21,6 +21,86 @@ cid2keggid=function(id=c("5281127"),
 }
 
 
+#' Perform KO enrichment analysis
+#'
+#' This function performs KO enrichment analysis using the `clusterProfiler` package.
+#'
+#' @param ko_stat ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.
+#' @param padj_threshold p.adjust threshold to determine whether a feature significant or not. p.adjust < padj_threshold, default: 0.05
+#' @param logFC_threshold logFC threshold to determine whether a feature significant or not. abs(logFC)>logFC_threshold, default: NULL
+#' @param add_mini add_mini when calculate the logFC. e.g (10+0.1)/(0+0.1), default 0.05*min(avg_abundance)
+#' @param p.adjust.method The method used for p-value adjustment (default: "BH").
+#' @param feature one of "ko", "gene", "compound"
+#' @param type "pathway" or "module" for default KOlist_file.
+#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
+#' @param verbose logical
+#'
+#' @return A data frame containing the enrichment results.
+#' @export
+#' @examples
+#' \donttest{
+#' data("reporter_score_res")
+#' enrich_res=KO_enrich(reporter_score_res)
+#' plot(enrich_res)
+#' }
+KO_enrich=function(ko_stat,padj_threshold=0.05,
+                   logFC_threshold=NULL,add_mini=NULL,p.adjust.method='BH',
+                   type=c("pathway","module")[1],feature="ko",
+                   modulelist=NULL,verbose=TRUE){
+    KO_id=p.adjust=NULL
+    pcutils::lib_ps("clusterProfiler",library = F)
+    if(inherits(ko_stat,"reporter_score")){
+        reporter_res=ko_stat
+        ko_stat=reporter_res$ko_stat
+        modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
+    }
+    res.dt=ko_stat
+    if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
+    if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
+
+    if(!is.null(logFC_threshold)){
+        vs_group=grep("average",colnames(res.dt),value = T)
+        if(length(vs_group)!=2)stop("logFC only available for two groups")
+        tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
+
+        if (is.null(add_mini))
+            add_mini = min(tmp[tmp > 0]) * 0.05
+        res.dt$logFC=log2((res.dt[,vs_group[2]]+add_mini)/(res.dt[,vs_group[1]]+add_mini))
+        sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold,abs(logFC)>logFC_threshold)%>%dplyr::pull(KO_id)
+    }
+    else sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold)%>%dplyr::pull(KO_id)
+
+    if(length(sig_KO)<1)return(NULL)
+
+    KOlist=NULL
+    if(is.null(modulelist)){
+        modulelist=get_modulelist(type,feature,verbose)
+    }
+    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
+
+    path2ko=pcutils::explode(modulelist[,c("id","KOs")],2,split = ",")
+    path2name=modulelist[,c("id","Description")]
+
+    #set background
+    #这个跟指定universe的结果一致
+    {path2ko=dplyr::filter(path2ko,KOs%in%res.dt$KO_id)}
+
+    e <- clusterProfiler::enricher(gene = sig_KO,TERM2GENE = path2ko,TERM2NAME = path2name,
+                  pAdjustMethod = p.adjust.method, pvalueCutoff = 1, qvalueCutoff = 1)
+
+    if(verbose)pcutils::dabiao("`clusterProfiler::enricher` done")
+
+    GO_res=as.data.frame(e)
+    GO_res=rename(GO_res,"p.value"="pvalue","Significant_K_num"="Count")
+    GO_res=GO_res[,c(1:6,9)]
+    class(GO_res)<-c("enrich_res",class(GO_res))
+    GO_res
+}
+
 #' Perform fisher.test for enrichment
 #'
 #' @rdname KO_enrich
@@ -71,7 +151,7 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
         significant_KO=sum(z$p.adjust<padj_threshold)
 
         p_value = stats::fisher.test(matrix(c(significant_KO,exist_KO-significant_KO,
-                             sig_K_num-significant_KO,nosig_K_num-(exist_KO-significant_KO)), 2, 2, byrow = T), alternative = "greater")
+                                              sig_K_num-significant_KO,nosig_K_num-(exist_KO-significant_KO)), 2, 2, byrow = T), alternative = "greater")
 
         c(exist_KO,significant_KO,p_value$p.value)
     })%>%do.call(rbind,.)->res
@@ -80,8 +160,8 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
     if(verbose)pcutils::dabiao("`fisher.test` done")
 
     fisher_res <- data.frame(ID = modulelist$id,
-                               Description = modulelist$Description,
-                               K_num=modulelist$K_num,res)
+                             Description = modulelist$Description,
+                             K_num=modulelist$K_num,res)
 
     fisher_res=dplyr::filter(fisher_res,Exist_K_num>0)
     fisher_res$p.adjust <- stats::p.adjust(fisher_res$p.value, method = p.adjust.method)
@@ -89,73 +169,6 @@ KO_fisher=function(ko_stat,padj_threshold=0.05,p.adjust.method="BH",type=c("path
     class(fisher_res)<-c("enrich_res",class(fisher_res))
     fisher_res
 }
-
-
-#' Perform KO enrichment analysis
-#'
-#' This function performs KO enrichment analysis using the `clusterProfiler` package.
-#'
-#' @param ko_stat ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.
-#' @param padj_threshold p.adjust threshold to determine whether significant or not.
-#' @param p.adjust.method The method used for p-value adjustment (default: "BH").
-#' @param feature one of "ko", "gene", "compound"
-#' @param type "pathway" or "module" for default KOlist_file.
-#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#' @param verbose logical
-#'
-#' @return A data frame containing the enrichment results.
-#' @export
-#' @examples
-#' \donttest{
-#' data("reporter_score_res")
-#' ko_stat=reporter_score_res$ko_stat
-#' enrich_res=KO_enrich(ko_stat)
-#' plot(enrich_res)
-#' }
-KO_enrich=function(ko_stat,padj_threshold=0.05,p.adjust.method='BH',type=c("pathway","module")[1],feature="ko",
-                   modulelist=NULL,verbose=TRUE){
-    KO_id=p.adjust=NULL
-    pcutils::lib_ps("clusterProfiler",library = F)
-    if(inherits(ko_stat,"reporter_score")){
-        reporter_res=ko_stat
-        ko_stat=reporter_res$ko_stat
-        modulelist=reporter_res$modulelist
-        if(is.character(modulelist)){
-            load_GOlist(envir = environment())
-            modulelist=eval(parse(text = modulelist))
-        }
-    }
-    res.dt=ko_stat
-    if(!all(c("KO_id","p.adjust")%in%colnames(res.dt))){stop("check if p.adjust in your ko_stat dataframe!")}
-    if("origin_p.adjust"%in%colnames(res.dt))res.dt$p.adjust=res.dt$origin_p.adjust
-
-    KOlist=NULL
-    if(is.null(modulelist)){
-        modulelist=get_modulelist(type,feature,verbose)
-    }
-    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
-
-    path2ko=pcutils::explode(modulelist[,c("id","KOs")],2,split = ",")
-    path2name=modulelist[,c("id","Description")]
-
-    #set background
-    #这个跟指定universe的结果一致
-    {path2ko=dplyr::filter(path2ko,KOs%in%res.dt$KO_id)}
-
-    sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold)%>%dplyr::pull(KO_id)
-
-    e <- clusterProfiler::enricher(gene = sig_KO,TERM2GENE = path2ko,TERM2NAME = path2name,
-                  pAdjustMethod = p.adjust.method, pvalueCutoff = 1, qvalueCutoff = 1)
-
-    if(verbose)pcutils::dabiao("`clusterProfiler::enricher` done")
-
-    GO_res=as.data.frame(e)
-    GO_res=rename(GO_res,"p.value"="pvalue","Significant_K_num"="Count")
-    GO_res=GO_res[,c(1:6,9)]
-    class(GO_res)<-c("enrich_res",class(GO_res))
-    GO_res
-}
-
 
 #' Plot enrich_res
 #'
@@ -205,8 +218,8 @@ plot.enrich_res<-function(x,...,mode=1,str_width=50,padj_threshold=0.05){
 #'
 #' This function performs KO enrichment analysis using the clusterProfiler package.
 #'
+#' @param weight the metric used for ranking, default: logFC
 #' @rdname KO_enrich
-#' @param add_mini add_mini when calculate the logFC. e.g (10+0.1)/(0+0.1), default 0.05*min(avg_abundance)
 #'
 #' @export
 #'
@@ -253,7 +266,7 @@ KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
 
     if(!weight%in%colnames(res.dt)){
         vs_group=grep("average",colnames(res.dt),value = T)
-        if(length(vs_group)!=2)stop("GESA only available for two groups")
+        if(length(vs_group)!=2)stop("logFC only available for two groups")
         tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
 
         if (is.null(add_mini))
@@ -272,5 +285,11 @@ KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
     }
 
     e <- clusterProfiler::GSEA(kos, TERM2GENE = path2ko, TERM2NAME = path2name,verbose=F,pvalueCutoff = 1)
+    if(verbose)pcutils::dabiao("`clusterProfiler::GSEA` done")
+
     e
+}
+
+G_gsea=function(){
+
 }

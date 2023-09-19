@@ -9,7 +9,7 @@ gene2ko(genedf, org = "hsa")
 \arguments{
 \item{genedf}{,rowname is gene symbol (e.g. PFKM), colnames is samples}
 
-\item{org}{kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"}
+\item{org}{kegg organism, listed in 'https://www.genome.jp/kegg/catalog/org_list.html', default, "hsa"}
 }
 \value{
 kodf

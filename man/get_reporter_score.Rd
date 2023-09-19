@@ -20,7 +20,7 @@ get_reporter_score(
 \arguments{
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in \link{https://www.genome.jp/kegg/catalog/org_list.html} such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
+\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
 
 \item{feature}{one of "ko", "gene", "compound"}
 

@@ -5,9 +5,13 @@ update_KEGG=function(){
     pcutils::dabiao("1.`update_KO_file`")
     update_KO_file()
     pcutils::dabiao("2.`update_KO_htable`")
-    update_KO_htable()
+    update_htable(type = "ko")
+    pcutils::dabiao("3.`update_Pathway_htable`")
+    update_htable(type = "pathway")
     pcutils::dabiao("3.`update_Module_htable`")
-    update_Module_htable()
+    update_htable(type = "module")
+    pcutils::dabiao("3.`update_Compound_htable`")
+    update_htable(type = "compound")
 }
 
 #' Update the KO2Pathway and CPD2Pathway files from KEGG
@@ -75,7 +79,6 @@ update_KO_file=function(download_dir=NULL,RDSfile=NULL){
     pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
-
 #' Build a custom moduleist
 #'
 #' @param pathway2ko user input annotation of Pathway to KO mapping, a data.frame of 2 column with pathway and ko.
@@ -102,6 +105,7 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL){
     pathway2ko_com=stats::aggregate(KO~Pathway,pathway2ko,paste, collapse = ",")
     pathway_list=Reduce(\(x,y)dplyr::left_join(x=x,y=y,by = "Pathway"), list(pathway2ko_num,pathway2ko_com,pathway2desc))
     colnames(pathway_list)=c("id","K_num","KOs","Description")
+    message("please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.")
     pathway_list
 }
 
@@ -180,7 +184,7 @@ load_Pathway_htable=function(envir=.GlobalEnv,verbose=TRUE){
 #'
 #' @export
 #' @return KO description in `.GlobalEnv`
-load_ko_desc=function(envir=.GlobalEnv,verbose=TRUE){
+load_KO_desc=function(envir=.GlobalEnv,verbose=TRUE){
     load_KO_htable(envir = environment(),verbose = verbose)
     ko_desc=dplyr::distinct(KO_htable[,c("KO_id","KO_name")])%>%dplyr::arrange(KO_id)
     assign("ko_desc",ko_desc,envir =envir)
@@ -247,7 +251,6 @@ brite2df=function(lines){
     tipdf=sub("  ","\t",df_res[[tip]])%>%strsplit2(.,"\t",colnames=c("id","name"))
     cbind(df_res[,node],tipdf)
 }
-
 brite2df2=function(lines,id_pattern="\\s+[CG]\\d{5}  "){
     #当确定查询的tip的pattern时用这个
     lines=lines[!grepl("^#",lines)]
@@ -290,7 +293,6 @@ brite2df2=function(lines,id_pattern="\\s+[CG]\\d{5}  "){
     df_res1=do.call(plyr::rbind.fill,df_res)
     df_res1[,c(levels[-length(levels)],"id","name")]
 }
-
 brite_file2df=function(keg_file=NULL,br_id=NULL,id_pattern=NULL){
     some_pattern=c(
         "br08001"="\\s+[CG]\\d{5}"
@@ -474,6 +476,7 @@ load_htable=function(type,envir=.GlobalEnv,verbose=TRUE){
 #' @param download save the .keg file?
 #' @param download_dir where to save the .keg file?
 #'
+#' @aliases download_org_pathway
 #' @export
 #'
 get_org_pathway=function(org="hsa",RDS_file=NULL,download=TRUE,download_dir=NULL){
@@ -597,7 +600,6 @@ custom_modulelist_from_org=function(org="hsa",feature="ko",verbose=TRUE){
     org_modulist
 }
 
-
 #' Update the GO2gene files from GO
 #'
 #'
@@ -626,7 +628,6 @@ update_GO_file=function(){
     }
     attributes(GOlist)$download_time=attributes(GOlist)$build_time=Sys.time()
     save(GOlist,file = paste0(pack_dir,"/new_GOlist.rda"),compress = "xz")
-
     pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
@@ -661,88 +662,88 @@ get_all_GO_info=function(){
     GO_list
 }
 
+# if(F){
+#     update_GO_file=function(){
+#         GO_list=clusterProfiler:::get_GOTERM()
+#         GO_list=GO_list[,-1]
+#
+#         a=clusterProfiler:::get_GO_data(org.Hs.eg.db,ont = "ALL",keytype = "SYMBOL")
+#
+#         a$PATHID2EXTID
+#
+#     }
+#
+#     gene_to_go=data.frame(gene=rep(c("dnaJ","hspR"),each=3),go=c("GO:0005575","GO:0005618","GO:0005623",
+#                                                                  "GO:0005618","GO:0005623","GO:0005506"))
+#     term2gene1 <- gene_to_go[, c(2, 1)]
+#     #为直接注释补充为间接注释
+#     term2gene <- clusterProfiler::buildGOmap(term2gene1)
+#     #将GoId转换为GoTerm
+#     go2term <- clusterProfiler::go2term(term2gene$GO)
+#     gene1=c("dnaJ")
+#     df <- enricher(gene = gene1, TERM2GENE = term2gene, TERM2NAME = go2term, pvalueCutoff = 1, qvalueCutoff = 1)
+#     #GO注释不是像KEGG一样，KO map到Pathway，而是直接gene map到 GOterm
+#     #
+#
+#     #理解一下GeneRatio and BgRatio
+#     genes <- letters[1:15]
+#     gs_df <- data.frame("gs_name"=c(rep("genesetX", 10), rep("genesetY", 25)),
+#                         "entrez_gene"=c(letters[1:10], letters[2:26]))
+#     enricher(gene = genes, TERM2GENE = gs_df, minGSSize=1)@result
+#
+#     #GO
+#     library(org.Hs.eg.db)
+#     library(clusterProfiler)
+#
+#     data(geneList, package="DOSE") #富集分析的背景基因集
+#     gene <- names(geneList)[abs(geneList) > 2]
+#     gene.df <- bitr(gene, fromType = "ENTREZID", toType = c("ENSEMBL", "SYMBOL"), OrgDb = org.Hs.eg.db)
+#     head(gene.df,2)
+#
+#     test1=head(gene.df,20)
+#     ego_ALL <- enrichGO(gene = test1$ENTREZID,
+#                         universe = names(geneList), #背景基因集
+#                         OrgDb = org.Hs.eg.db, #没有organism="human"，改为OrgDb=org.Hs.eg.db
+#                         #keytype = 'ENSEMBL',
+#                         ont = "ALL", #也可以是 CC  BP  MF中的一种
+#                         pAdjustMethod = "BH", #矫正方式 holm”, “hochberg”, “hommel”, “bonferroni”, “BH”, “BY”, “fdr”, “none”中的一种
+#                         pvalueCutoff = 1, #P值会过滤掉很多，可以全部输出
+#                         qvalueCutoff = 1,
+#                         readable = TRUE) #Gene ID 转成gene Symbol ，易读
+#
+#     View(ego_ALL@result)
+#     ##可视化--点图
+#     dotplot(ego_ALL,title="EnrichmentGO_MF_dot")#点图，按富集的数从大到小的
+#     ##可视化--条形图
+#     barplot(ego_ALL, showCategory=20,title="EnrichmentGO_MF")#条状图，按p从小到大排，绘制前20个Term
+#     plotGOgraph(ego_ALL)
+#
+#     #golite
+#     library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+#     txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
+#     all_eids_hg19 <- names(genes(txdb))
+#
+#     set.seed(1)
+#     eids_bg <- sample(all_eids_hg19, 3500)
+#     eids_set <- sample(eids_bg,300)
+#
+#
+#     #KEGG富集
+#     download_KEGG()
+#     data(geneList, package='DOSE')
+#     de <- names(geneList)[1:100]
+#     yy <- enrichKEGG(de,organism = "hsa",keyType = "ncbi-geneid",pvalueCutoff=0.01)
+#     head(yy)
+#
+#     idType(org.Hs.eg.db)
+#     clusterProfiler::bitr("HK3",fromType = "SYMBOL",toType = "PATH",org.Hs.eg.db)
+#
+#     for (i in idType(org.Hs.eg.db)) {
+#         print(i)
+#         if(i!="SYMBOL")
+#             clusterProfiler::bitr("HK3",fromType = "SYMBOL",toType = i,org.Hs.eg.db)%>%print
+#     }
+#
+# }
 
-if(F){
-    update_GO_file=function(){
-        GO_list=clusterProfiler:::get_GOTERM()
-        GO_list=GO_list[,-1]
-
-        a=clusterProfiler:::get_GO_data(org.Hs.eg.db,ont = "ALL",keytype = "SYMBOL")
-
-        a$PATHID2EXTID
-
-    }
-
-    gene_to_go=data.frame(gene=rep(c("dnaJ","hspR"),each=3),go=c("GO:0005575","GO:0005618","GO:0005623",
-                                                                 "GO:0005618","GO:0005623","GO:0005506"))
-    term2gene1 <- gene_to_go[, c(2, 1)]
-    #为直接注释补充为间接注释
-    term2gene <- clusterProfiler::buildGOmap(term2gene1)
-    #将GoId转换为GoTerm
-    go2term <- clusterProfiler::go2term(term2gene$GO)
-    gene1=c("dnaJ")
-    df <- enricher(gene = gene1, TERM2GENE = term2gene, TERM2NAME = go2term, pvalueCutoff = 1, qvalueCutoff = 1)
-    #GO注释不是像KEGG一样，KO map到Pathway，而是直接gene map到 GOterm
-    #
-
-    #理解一下GeneRatio and BgRatio
-    genes <- letters[1:15]
-    gs_df <- data.frame("gs_name"=c(rep("genesetX", 10), rep("genesetY", 25)),
-                        "entrez_gene"=c(letters[1:10], letters[2:26]))
-    enricher(gene = genes, TERM2GENE = gs_df, minGSSize=1)@result
-
-    #GO
-    library(org.Hs.eg.db)
-    library(clusterProfiler)
-
-    data(geneList, package="DOSE") #富集分析的背景基因集
-    gene <- names(geneList)[abs(geneList) > 2]
-    gene.df <- bitr(gene, fromType = "ENTREZID", toType = c("ENSEMBL", "SYMBOL"), OrgDb = org.Hs.eg.db)
-    head(gene.df,2)
-
-    test1=head(gene.df,20)
-    ego_ALL <- enrichGO(gene = test1$ENTREZID,
-                        universe = names(geneList), #背景基因集
-                        OrgDb = org.Hs.eg.db, #没有organism="human"，改为OrgDb=org.Hs.eg.db
-                        #keytype = 'ENSEMBL',
-                        ont = "ALL", #也可以是 CC  BP  MF中的一种
-                        pAdjustMethod = "BH", #矫正方式 holm”, “hochberg”, “hommel”, “bonferroni”, “BH”, “BY”, “fdr”, “none”中的一种
-                        pvalueCutoff = 1, #P值会过滤掉很多，可以全部输出
-                        qvalueCutoff = 1,
-                        readable = TRUE) #Gene ID 转成gene Symbol ，易读
-
-    View(ego_ALL@result)
-    ##可视化--点图
-    dotplot(ego_ALL,title="EnrichmentGO_MF_dot")#点图，按富集的数从大到小的
-    ##可视化--条形图
-    barplot(ego_ALL, showCategory=20,title="EnrichmentGO_MF")#条状图，按p从小到大排，绘制前20个Term
-    plotGOgraph(ego_ALL)
-
-    #golite
-    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-    txdb = TxDb.Hsapiens.UCSC.hg19.knownGene
-    all_eids_hg19 <- names(genes(txdb))
-
-    set.seed(1)
-    eids_bg <- sample(all_eids_hg19, 3500)
-    eids_set <- sample(eids_bg,300)
-
-
-    #KEGG富集
-    download_KEGG()
-    data(geneList, package='DOSE')
-    de <- names(geneList)[1:100]
-    yy <- enrichKEGG(de,organism = "hsa",keyType = "ncbi-geneid",pvalueCutoff=0.01)
-    head(yy)
-
-    idType(org.Hs.eg.db)
-    clusterProfiler::bitr("HK3",fromType = "SYMBOL",toType = "PATH",org.Hs.eg.db)
-
-    for (i in idType(org.Hs.eg.db)) {
-        print(i)
-        if(i!="SYMBOL")
-            clusterProfiler::bitr("HK3",fromType = "SYMBOL",toType = i,org.Hs.eg.db)%>%print
-    }
-
-}
-
+#metacyc数据库
