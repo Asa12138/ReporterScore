@@ -42,7 +42,7 @@ reporter_score(
 
 \item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 
-\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
+\item{mode}{"mixed" or "directed" (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
 
 \item{verbose}{logical}
 

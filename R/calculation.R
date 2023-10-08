@@ -28,7 +28,7 @@ print.reporter_score=function(x,...){
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
 #' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
 #' @param metadata sample information data.frame contains group
-#' @param mode "mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.
+#' @param mode "mixed" or "directed" (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.
 #' @param verbose logical
 #' @param method the type of test. Default is `wilcox.test`. Allowed values include:
 #' \itemize{
@@ -91,9 +91,9 @@ reporter_score=function(kodf,group,metadata=NULL,
     KOlist=NULL
 
     stopifnot(mode%in%c("mixed","directed"))
-    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman"))
+    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman","lm"))
     if(!is.null(pattern)){
-        if(!method%in%c("pearson", "kendall", "spearman"))stop('method should be one of "pearson", "kendall", "spearman" when you specify a pattern')
+        if(!method%in%c("pearson", "kendall", "spearman","lm"))stop('method should be one of "pearson", "kendall", "spearman" when you specify a pattern')
         if(mode!="directed")stop('method should be "directed" when you specify a pattern')
     }
     if(type%in%c("pathway","module")){
@@ -142,7 +142,7 @@ reporter_score=function(kodf,group,metadata=NULL,
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
 #' @param verbose logical
 #'
-#' @return ko_pvalue dataframe
+#' @return ko_pvalue dataframej
 #' @export
 #'
 #' @examples
@@ -155,7 +155,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
     i=NULL
     t1 <- Sys.time()
 
-    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman"))
+    method=match.arg(method,c("t.test","wilcox.test","kruskal.test", "anova", "pearson", "kendall", "spearman","lm"))
     if(!is.null(pattern)){
         if(!method%in%c("pearson", "kendall", "spearman"))stop('method should be one of "pearson", "kendall", "spearman" when you specify a pattern')
     }
@@ -183,9 +183,9 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
     tkodf=t(kodf)%>%as.data.frame()
     group=sampFile$group
     group2=NULL
-    if(method%in%c("pearson", "kendall", "spearman")){
+    if(method%in%c("pearson", "kendall", "spearman","lm")){
         if(is.null(pattern)){
-            if(verbose)message("Using correlation analysis: ",method," the groups will be transform to numeric, note the factor feature of group.")
+            if(verbose)message("Using correlation analysis: ",method,", the groups will be transform to numeric, note the factor feature of group.")
             if(is.numeric(group))group2=group
             else group2=as.numeric(factor(group))
         }
@@ -209,7 +209,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
     if(is.numeric(sampFile$group)){
         #stop("group should be a category variable.")
         vs_group="Numeric variable"
-        if(!method%in%c("pearson", "kendall", "spearman")){
+        if(!method%in%c("pearson", "kendall", "spearman","lm")){
             stop('group is a numeric variable, try "pearson", "kendall", "spearman" method')
             res.dt$cor=cor(tkodf,group2,method = method)[,1]
         }
@@ -229,7 +229,6 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
             #update, make sure the control group is first one.
             res.dt$diff_mean=res.dt[,paste0("average_",vs_group[2])]-res.dt[,paste0("average_",vs_group[1])]
         }
-
         high_group <- apply(res.dt[,paste0("average_",vs_group)], 1, function(a) which(a == max(a))[[1]])
         res.dt$Highest=vs_group[high_group]
     }
@@ -257,8 +256,11 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
         }
         if(method=="lm"){
             #pval <- stats::lm(val~group) %>% stats::anova(.) %>%.$`Pr(>F)` %>% .[1]
-            r2 <- stats::lm(val~group) %>% summary() %>%.$`adj.r.squared` %>% .[1]
-            pval=1-r2
+            lm_res=stats::lm(val~group)
+            lm_res_summ = summary(lm_res)
+            lm_res_anova = stats::anova(lm_res)
+            r2 <- lm_res_summ %>%.$`adj.r.squared` %>% .[1]
+            pval=c(lm_res$coefficients[2],r2,as.numeric(lm_res_anova[1,]))
         }
         if(method%in%c("pearson", "kendall", "spearman")){
             #用p-value还是直接效应量呢？?
@@ -288,8 +290,15 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
             res <-suppressWarnings(lapply(1:reps, loop))
         }}
     #simplify method
-    res=do.call(c,res)
-    res.dt$p.value=res
+    if(method=="lm"){
+        res=do.call(rbind,res)
+        colnames(res)=c("b-coefficient","adj-r2","df","sum_sq","mean_sq","F-value","p.value")
+        res.dt=cbind(res.dt,res)
+    }
+    else {
+        res=do.call(c,res)
+        res.dt$p.value=res
+    }
 
     t2 <- Sys.time()
     stime <- sprintf("%.3f", t2 - t1)
@@ -343,10 +352,10 @@ if(F){
         }
     }
     b=lm_b[upper.tri(cor_matrix$r)]
-    r2=lm_r2[upper.tri(cor_matrix$r)]%>%abs()
+    r2=lm_r2[upper.tri(cor_matrix$r)] #r2可以小于0
     p_values2 <- lm_p[upper.tri(cor_matrix$p.value)]
 
-    # 绘制散点图,lm的R2和整体的p值就没有这样的关系了
+    # 绘制散点图,lm的R2和整体的p值也是这样的关系
     plot(r2, p_values2, xlab = "R2", ylab = "p-value",
          main = "R2 vs p-value", pch = 16, col = "blue")
 
@@ -456,7 +465,7 @@ if(F){
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
 #' }
-pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH'){
+pvalue2zs=function(ko_pvalue,mode=c("directed","mixed")[1],p.adjust.method='BH'){
     p.adjust=type=NULL
     res.dt=ko_pvalue
     if(!all(c("p.value")%in%colnames(res.dt))){stop("check if `p.value` in your ko_stat dataframe!")}
@@ -467,12 +476,20 @@ pvalue2zs=function(ko_pvalue,mode=c("mixed","directed")[1],p.adjust.method='BH')
         res.dt$sign <- ifelse(res.dt$diff_mean < 0, -1, 1)
         res.dt$type <- ifelse(res.dt$diff_mean < 0, paste0('Depleted'), paste0('Enriched'))
     }
+
     if("cor"%in%colnames(res.dt)){
         res.dt$sign <- ifelse(res.dt$cor < 0, -1, 1)
         if(is.null(attributes(ko_pvalue)$pattern))
             res.dt$type <- ifelse(res.dt$cor < 0, paste0('Depleted'), paste0('Enriched'))
         else
             res.dt$type <- ifelse(res.dt$cor < 0, paste0('None'), paste0('Positive'))
+    }
+    if("b-coefficient"%in%colnames(res.dt)){
+        res.dt$sign <- ifelse(res.dt$`b-coefficient` < 0, -1, 1)
+        if(is.null(attributes(ko_pvalue)$pattern))
+            res.dt$type <- ifelse(res.dt$`b-coefficient` < 0, paste0('Depleted'), paste0('Enriched'))
+        else
+            res.dt$type <- ifelse(res.dt$`b-coefficient` < 0, paste0('None'), paste0('Positive'))
     }
 
     #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2

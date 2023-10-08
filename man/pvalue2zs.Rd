@@ -4,7 +4,7 @@
 \alias{pvalue2zs}
 \title{Transfer p-value of KOs to Z-score}
 \usage{
-pvalue2zs(ko_pvalue, mode = c("mixed", "directed")[1], p.adjust.method = "BH")
+pvalue2zs(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method = "BH")
 }
 \arguments{
 \item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}} or your statistics test data.frame contains column: `p.value`}

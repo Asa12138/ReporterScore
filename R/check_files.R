@@ -106,6 +106,7 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL){
     pathway_list=Reduce(\(x,y)dplyr::left_join(x=x,y=y,by = "Pathway"), list(pathway2ko_num,pathway2ko_com,pathway2desc))
     colnames(pathway_list)=c("id","K_num","KOs","Description")
     message("please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.")
+    pathway_list$Description=ifelse(is.na(pathway_list$Description),pathway_list$id,pathway_list$Description)
     pathway_list
 }
 
@@ -293,6 +294,7 @@ brite2df2=function(lines,id_pattern="\\s+[CG]\\d{5}  "){
     df_res1=do.call(plyr::rbind.fill,df_res)
     df_res1[,c(levels[-length(levels)],"id","name")]
 }
+
 brite_file2df=function(keg_file=NULL,br_id=NULL,id_pattern=NULL){
     some_pattern=c(
         "br08001"="\\s+[CG]\\d{5}"
@@ -615,6 +617,7 @@ update_GO_file=function(){
     if(!dir.exists(pack_dir))dir.create(pack_dir,recursive = TRUE)
 
     GO_data=clusterProfiler:::get_GO_data(org.Hs.eg.db::org.Hs.eg.db,ont = "ALL",keytype = "SYMBOL")
+
     #all(names(GO_data$GO2ONT)==names(GO_data$PATHID2EXTID))
     GO_modulelist=
         data.frame(id=names(GO_data$GO2ONT),ONT=GO_data$GO2ONT,
@@ -654,12 +657,101 @@ load_GOlist=function(envir=.GlobalEnv,verbose=TRUE){
     }
 }
 
-
 get_all_GO_info=function(){
     pcutils::lib_ps("clusterProfiler","org.Hs.eg.db",library = FALSE)
     GO_list=clusterProfiler:::get_GOTERM()
     GO_list=GO_list[,-1]
     GO_list
+}
+
+update_GO_info=function(download_dir=NULL,obo_file=NULL){
+    pack_dir=tools::R_user_dir("ReporterScore")
+    if(!dir.exists(pack_dir))dir.create(pack_dir,recursive = TRUE)
+
+    if(is.null(download_dir))download_dir="ReporterScore_temp_download"
+    if(is.null(obo_file)){
+        pcutils::dabiao("Trying to download files from http://current.geneontology.org/ontology/go.obo")
+        ori_time=getOption("timeout")
+        on.exit(options(timeout = ori_time))
+
+        options(timeout = 300)
+        tryCatch(expr = {
+            download.file("http://current.geneontology.org/ontology/go.obo",destfile =file.path(download_dir,"go.obo"))
+        },error=function(e){
+            stop("Try download yourself from http://current.geneontology.org/ontology/go.obo")
+        })
+        obo_file=file.path(download_dir,"go.obo")
+    }
+    else {
+        if(!(file.exists(obo_file)&grepl("go.obo",obo_file)))stop("Wrong file: ",obo_file)
+    }
+
+    # 读取文本文件
+    data_text <- readLines(obo_file)
+
+    # 初始化一个空数据框
+    df <- data.frame(id = character(0), name = character(0), namespace = character(0),
+                     def = character(0), synonym = character(0), alt_id = character(0),
+                     stringsAsFactors = FALSE)
+
+    # 初始化变量以存储当前条目的信息
+    flag=FALSE
+
+    # 遍历每一行文本
+    for (line in data_text) {
+        # 如果行为空白，表示当前条目结束，将其添加到数据框中
+        if (grepl("\\[Term\\]", line)) {
+            if(flag)df <- rbind(df, current_entry)
+            flag=TRUE
+            # 重置current_entry
+            current_entry <- list(id = NA, name = NA, namespace = NA, def = NA, synonym = NA, alt_id = NA)
+        } else {
+            # 使用正则表达式提取信息
+            if (grepl("^id:", line)) {
+                current_entry$id <- gsub("^id: ", "", line)
+            } else if (grepl("^name:", line)) {
+                current_entry$name <- gsub("^name: ", "", line)
+            } else if (grepl("^namespace:", line)) {
+                current_entry$namespace <- gsub("^namespace: ", "", line)
+            } else if (grepl("^def:", line)) {
+                current_entry$def <- gsub("^def: \"(.+)\" .+$", "\\1", line)
+            } else if (grepl("^synonym:", line)) {
+                if(is.na(current_entry$synonym))current_entry$synonym <- gsub("^synonym: \"(.+)\" .+$", "\\1", line)
+                else current_entry$synonym=paste0(current_entry$synonym,";", gsub("^synonym: \"(.+)\" .+$", "\\1", line))
+            } else if (grepl("^alt_id:", line)) {
+                if(is.na(current_entry$alt_id))current_entry$alt_id <- gsub("^alt_id: ", "", line)
+                else current_entry$alt_id=paste0(current_entry$alt_id,";", gsub("^alt_id: ", "", line))
+            }
+        }
+    }
+    colnames(df)[3]="ONT"
+
+    GOinfo=df
+    attributes(GOinfo)$download_time=Sys.time()
+    save(GOinfo,file =paste0(pack_dir,"/new_GOinfo.rda"))
+}
+
+#' Load the GOinfo (from GO)
+#'
+#' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
+#'
+#' @export
+#' @return KO_htable in `.GlobalEnv`
+load_GOinfo=function(envir=.GlobalEnv,verbose=TRUE){
+    prefix="GOinfo"
+    GOinfo_file=file.path(tools::R_user_dir("ReporterScore"),paste0("new_",prefix,".rda"))
+
+    if(file.exists(GOinfo_file))load(GOinfo_file,envir = envir)
+    else stop("use `update_GOinfo()` first")
+
+    if(verbose){
+        pcutils::dabiao("load ",prefix)
+        if(!is.null(attributes(GOinfo)$"download_time")){
+            pcutils::dabiao(paste0(prefix," download time: ",attributes(GOinfo)$"download_time"))
+            message("If you want to update ",prefix,", use `update_GOinfo()`")
+        }
+    }
 }
 
 # if(F){

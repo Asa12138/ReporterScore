@@ -4,7 +4,7 @@
 \alias{KO_enrich}
 \alias{KO_fisher}
 \alias{KO_gsea}
-\title{Perform KO enrichment analysis}
+\title{Perform enrichment analysis}
 \usage{
 KO_enrich(
   ko_stat,
@@ -21,6 +21,8 @@ KO_enrich(
 KO_fisher(
   ko_stat,
   padj_threshold = 0.05,
+  logFC_threshold = NULL,
+  add_mini = NULL,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
   feature = "ko",
@@ -68,8 +70,6 @@ data.frame
 }
 \description{
 This function performs KO enrichment analysis using the `clusterProfiler` package.
-
-This function performs KO enrichment analysis using the clusterProfiler package.
 }
 \examples{
 \donttest{
@@ -79,14 +79,13 @@ plot(enrich_res)
 }
 \donttest{
 data("reporter_score_res")
-ko_stat=reporter_score_res$ko_stat
-fisher_res=KO_fisher(ko_stat)
+fisher_res=KO_fisher(reporter_score_res)
 plot(fisher_res)
 }
 \donttest{
 data("reporter_score_res")
-ko_stat=reporter_score_res$ko_stat
-gsea_res=KO_gsea(ko_stat)
+gsea_res=KO_gsea(reporter_score_res)
 enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
+plot(as.enrich_res(gsea_res@result))
 }
 }

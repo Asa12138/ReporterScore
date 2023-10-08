@@ -37,7 +37,7 @@ ko.test(
 \item{verbose}{logical}
 }
 \value{
-ko_pvalue dataframe
+ko_pvalue dataframej
 }
 \description{
 Differential analysis or Correlation analysis for KO-abundance table

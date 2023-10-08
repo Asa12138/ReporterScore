@@ -5,12 +5,24 @@
 \alias{plot_KOs_distribution}
 \title{plot the Z-score of features distribution}
 \usage{
-plot_features_distribution(reporter_res, map_id)
+plot_features_distribution(
+  reporter_res,
+  map_id,
+  text_size = 4,
+  text_position = NULL,
+  rug_length = 0.04
+)
 }
 \arguments{
 \item{reporter_res}{result of `reporter_score`}
 
 \item{map_id}{the pathway or module id}
+
+\item{text_size}{text_size=4}
+
+\item{text_position}{text_position, e.g. c(x=3,y=0.4)}
+
+\item{rug_length}{rug_length=0.04}
 }
 \value{
 ggplot
