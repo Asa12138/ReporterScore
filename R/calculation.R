@@ -745,6 +745,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
 get_features=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
     KOlist=NULL
     if(is.null(modulelist)){
+        warning("modulelist is NULL, use default modulelist!")
         load_KOlist(envir = environment())
         if(grepl("map",map_id[1]))modulelist=KOlist$pathway
         if(grepl("M",map_id[1]))modulelist=KOlist$module
@@ -759,6 +760,7 @@ get_features=function(map_id="map00010",ko_stat=NULL,modulelist=NULL){
     kos=modulelist[which(modulelist$id%in%map_id),"KOs"]
     if(length(kos)>0)kos=lapply(kos, strsplit,",")%>%unlist()
     else kos=NULL
+    if(!"KO_id"%in%colnames(ko_stat))rownames(ko_stat)->ko_stat$KO_id
     if(!is.null(ko_stat)){return(ko_stat[ko_stat$KO_id%in%kos,])}
     return(kos)
 }
@@ -982,11 +984,6 @@ print.rs_by_cm=function(x,...){
 #' @return reporter_score object
 #' @export
 #'
-#' @examples
-#' \donttest{
-#' data(rsa_cm_res)
-#' extract_cluster(rsa_cm_res,1)
-#' }
 extract_cluster=function(rsa_cm_res,cluster=1){
     stopifnot(inherits(rsa_cm_res,"rs_by_cm"))
     ncluster=sum(grepl("Cluster",names(rsa_cm_res)))

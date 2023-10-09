@@ -83,6 +83,7 @@ update_KO_file=function(download_dir=NULL,RDSfile=NULL){
 #'
 #' @param pathway2ko user input annotation of Pathway to KO mapping, a data.frame of 2 column with pathway and ko.
 #' @param pathway2desc user input of Pathway TO Description mapping, a data.frame of 2 column with pathway and description.
+#' @param verbose verbose
 #'
 #' @return a custom modulelist
 #' @export
@@ -90,7 +91,7 @@ update_KO_file=function(download_dir=NULL,RDSfile=NULL){
 #' mydat=data.frame(pathway=paste0("PATHWAY",rep(1:2,each=5)),ko=paste0("K",1:10))
 #' mymodulelist=custom_modulelist(mydat)
 #' mymodulelist
-custom_modulelist=function(pathway2ko,pathway2desc=NULL){
+custom_modulelist=function(pathway2ko,pathway2desc=NULL,verbose=T){
     Pathway=NULL
     pathway2ko=pathway2ko[,1:2]
     colnames(pathway2ko)=c("Pathway","KO")
@@ -105,7 +106,7 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL){
     pathway2ko_com=stats::aggregate(KO~Pathway,pathway2ko,paste, collapse = ",")
     pathway_list=Reduce(\(x,y)dplyr::left_join(x=x,y=y,by = "Pathway"), list(pathway2ko_num,pathway2ko_com,pathway2desc))
     colnames(pathway_list)=c("id","K_num","KOs","Description")
-    message("please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.")
+    if(verbose)message("please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.")
     pathway_list$Description=ifelse(is.na(pathway_list$Description),pathway_list$id,pathway_list$Description)
     pathway_list
 }
@@ -598,7 +599,7 @@ custom_modulelist_from_org=function(org="hsa",feature="ko",verbose=TRUE){
     else if (feature=="gene")pathway2ko=dplyr::distinct_all(org_path$all_org_gene[,c("pathway_id","gene_symbol")])
     else if (feature=="compound")pathway2ko=dplyr::distinct_all(org_path$all_org_compound[,c("pathway_id","kegg_compound_id")])
     else stop("feature should be one of 'ko', 'gene', 'compound'.")
-    org_modulist=custom_modulelist(pathway2ko = pathway2ko,pathway2desc = org_path$org_pathway[,c("pathID","org_pathway")])
+    org_modulist=custom_modulelist(pathway2ko = pathway2ko,pathway2desc = org_path$org_pathway[,c("pathID","org_pathway")],verbose=verbose)
     org_modulist
 }
 
@@ -664,7 +665,14 @@ get_all_GO_info=function(){
     GO_list
 }
 
-update_GO_info=function(download_dir=NULL,obo_file=NULL){
+#' update_GOinfo
+#'
+#' @param download_dir download_dir
+#' @param obo_file obo_file from http://current.geneontology.org/ontology/go.obo
+#'
+#' @export
+#'
+update_GOinfo=function(download_dir=NULL,obo_file=NULL){
     pack_dir=tools::R_user_dir("ReporterScore")
     if(!dir.exists(pack_dir))dir.create(pack_dir,recursive = TRUE)
 
@@ -674,6 +682,7 @@ update_GO_info=function(download_dir=NULL,obo_file=NULL){
         ori_time=getOption("timeout")
         on.exit(options(timeout = ori_time))
 
+        dir.create(download_dir,recursive = T)
         options(timeout = 300)
         tryCatch(expr = {
             download.file("http://current.geneontology.org/ontology/go.obo",destfile =file.path(download_dir,"go.obo"))
@@ -695,14 +704,15 @@ update_GO_info=function(download_dir=NULL,obo_file=NULL){
                      stringsAsFactors = FALSE)
 
     # 初始化变量以存储当前条目的信息
-    flag=FALSE
+    cnt=0
 
     # 遍历每一行文本
     for (line in data_text) {
         # 如果行为空白，表示当前条目结束，将其添加到数据框中
         if (grepl("\\[Term\\]", line)) {
-            if(flag)df <- rbind(df, current_entry)
-            flag=TRUE
+            if(cnt>0)df <- rbind(df, current_entry)
+            cnt=cnt+1
+            if(cnt%%1000==0)pcutils::dabiao(cnt, "done, please wait")
             # 重置current_entry
             current_entry <- list(id = NA, name = NA, namespace = NA, def = NA, synonym = NA, alt_id = NA)
         } else {
@@ -723,6 +733,7 @@ update_GO_info=function(download_dir=NULL,obo_file=NULL){
                 else current_entry$alt_id=paste0(current_entry$alt_id,";", gsub("^alt_id: ", "", line))
             }
         }
+
     }
     colnames(df)[3]="ONT"
 

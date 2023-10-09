@@ -554,13 +554,36 @@ plot_features_in_pathway=function(ko_stat,map_id="map00780",
     p
 }
 
-plot_KEGG_map=function(ko_stat,map_id="map00780",modulelist=NULL){
+
+#' plot_KEGG_map
+#'
+#' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
+#' @param map_id the pathway or module id
+#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
+#' @param feature one of "ko", "gene", "compound"
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param color_var use which variable to color
+#' @param save_dir where to save the png files
+#' @param color color
+#'
+#' @references https://zhuanlan.zhihu.com/p/357687076
+#' @return png files
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' data("reporter_score_res")
+#' plot_KEGG_map(reporter_score_res$ko_stat,map_id="map00780",type="pathway",feature="ko",color_var="Z_score")
+#' data(genedf)
+#' a=clusterProfiler::bitr(rownames(genedf),"SYMBOL","ENTREZID",OrgDb = org.Hs.eg.db::org.Hs.eg.db)
+#' genedf=hebing(genedf[a$SYMBOL,],a$ENTREZID,1,"sum")
+#' plot_KEGG_map(genedf,map_id="hsa04640",type="hsa",feature="gene",color_var="WT1")
+#' }
+plot_KEGG_map=function(ko_stat,map_id="map00780",modulelist=NULL,type="pathway",feature="ko",
+                       color_var="Z_score",save_dir="ReporterScore_temp_download/",color=c("blue","grey","red")){
     if(inherits(ko_stat,"reporter_score")){
         reporter_res=ko_stat
-        kodf=reporter_res$kodf
         ko_stat=reporter_res$ko_stat
-        group=reporter_res$group
-        metadata=reporter_res$metadata
         modulelist=reporter_res$modulelist
         if(is.character(modulelist)){
             load_GOlist(envir = environment())
@@ -569,10 +592,44 @@ plot_KEGG_map=function(ko_stat,map_id="map00780",modulelist=NULL){
         flag=TRUE
         RS=reporter_res$reporter_s[reporter_res$reporter_s$ID==map_id,"ReporterScore"]
     }
+    if(is.null(modulelist))modulelist=get_modulelist(type = type,feature = feature,verbose = FALSE)
 
-    A=get_KOs(map_id =map_id,ko_stat = ko_stat,modulelist =modulelist)
+    A=get_KOs(map_id =map_id,ko_stat = ko_stat,modulelist = modulelist)
+    if(nrow(A)<1)A=ko_stat
+
     lib_ps("pathview")
-    pathview::pathview(A["Significantly"],pathway.id ="00780",species = "ko",gene.idtype = "KEGG")
+    if(type=="pathway")type="ko"
+    if(type=="module")stop("need pathway")
+    pathway.id=gsub("[^0-9]", "",map_id)
+
+    dir.create(save_dir,recursive = T,showWarnings = F)
+    filename=paste0(type,pathway.id,".",color_var,".png")
+
+    if(is.numeric(A[,color_var,drop=T])){
+        discrete=FALSE
+        limit=max(abs(A[,color_var,drop=T]))
+        both.dirs=T
+    }
+    else {
+        stop("need numeric")
+    }
+    params=list(pathway.id =pathway.id,species = type,kegg.dir = save_dir,out.suffix=color_var,res=500,
+                discrete=discrete,limit=limit,both.dirs=both.dirs,low = color[1],mid = color[2],high = color[3])
+
+    if(feature%in%c("ko")){
+        do.call(pathview::pathview,pcutils::update_param(list(gene.data = A[color_var],gene.idtype = "KEGG"),params))
+    }
+    if(feature%in%"gene"){
+        message('please make sure the rownames of your input is entrezid\ndo a transfer like\n`a=clusterProfiler::bitr(rownames(ko_stat),"SYMBOL","ENTREZID",OrgDb = org.Hs.eg.db::org.Hs.eg.db)\nrownames(ko_stat)=a$ENTREZID`')
+
+        do.call(pathview::pathview,pcutils::update_param(list(gene.data = A[color_var],gene.idtype = "entrez"),params))
+    }
+    if (feature=="compound"){
+        do.call(pathview::pathview,pcutils::update_param(list(cpd.data = A[color_var],cpd.idtype = "kegg"),params))
+    }
+    file.copy(filename,file.path(save_dir,filename),overwrite = T)
+    file.remove(filename)
+    pcutils::read.file(file.path(save_dir,filename))
 }
 
 #' Plot features boxplot
@@ -927,3 +984,4 @@ if(F){
     p=data.frame(f_tax2)%>%my_circle_packing()
     p+scale_fill_gradient2()
 }
+

@@ -101,13 +101,6 @@ NULL
 #'@rdname reporter_score_res
 NULL
 
-#'@title `RSA_by_cm()` result from KO_abundance_test
-#'
-#'@docType data
-#'@name rsa_cm_res
-NULL
-
-
 #'@title pathway information for "hsa"
 #'
 #'@docType data

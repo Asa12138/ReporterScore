@@ -42,7 +42,8 @@ Suggests:
     ggrepel,
     pctax,
     CTSgetR,
-    httr
+    httr,
+    pathview
 Remotes: 
     github::Asa12138/pcutils
 Depends: 

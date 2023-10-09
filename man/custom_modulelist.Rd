@@ -4,12 +4,14 @@
 \alias{custom_modulelist}
 \title{Build a custom moduleist}
 \usage{
-custom_modulelist(pathway2ko, pathway2desc = NULL)
+custom_modulelist(pathway2ko, pathway2desc = NULL, verbose = T)
 }
 \arguments{
 \item{pathway2ko}{user input annotation of Pathway to KO mapping, a data.frame of 2 column with pathway and ko.}
 
 \item{pathway2desc}{user input of Pathway TO Description mapping, a data.frame of 2 column with pathway and description.}
+
+\item{verbose}{verbose}
 }
 \value{
 a custom modulelist
