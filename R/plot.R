@@ -54,6 +54,9 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
         reporter_res=reporter_res$reporter_s
         filter_report(reporter_res,rs_threshold)
     }
+    if(is.data.frame(reporter_res)){
+        filter_report(reporter_res,rs_threshold)
+    }
     flag=FALSE
     if(inherits(reporter_res,"rs_by_cm")){
         rsa_cm_res=reporter_res
@@ -94,7 +97,7 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
     }
 
     reporter_res2 <- reporter_res2[stats::complete.cases(reporter_res2), ]
-    rownames(reporter_res2)=reporter_res2$ID
+    #rownames(reporter_res2)=reporter_res2$ID
 
     if(show_ID)reporter_res2$Description=paste0(reporter_res2$ID,": ",reporter_res2$Description)
     if(!Pathway_description)reporter_res2$Description=reporter_res2$ID
@@ -131,8 +134,12 @@ plot_report<-function(reporter_res,rs_threshold=1.64,mode=1,y_text_size=13,str_w
             axis.text.x = element_text(colour='black',size=13),
             axis.text.y = element_text(colour='black',size=y_text_size)
         )
-    if(facet_level)p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
-        theme(strip.text.y = element_text(angle = 0))
+    if(facet_level){
+        p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
+            theme(strip.text.y = element_text(angle = 0),
+                  strip.background = element_rect(fill = "grey90"),
+                  strip.text = element_text(face = "bold",color="black"))
+    }
     if(attributes(reporter_res)$mode=="directed"&is.null(attributes(reporter_res)$pattern)){
         if(any(reporter_res2$ReporterScore>rs_threshold[2]))p=p+geom_vline(xintercept = rs_threshold[2], linetype = 2)
         if(any(reporter_res2$ReporterScore<rs_threshold[1]))p=p+geom_vline(xintercept = rs_threshold[1], linetype = 2)
@@ -186,6 +193,7 @@ filter_report=function(reporter_res,rs_threshold){
     assign("rs_threshold",rs_threshold,envir)
     #return(list(reporter_res2=reporter_res2,cols1=cols1,title=title,breaks=breaks))
 }
+
 get_facet_anno=function(reporter_res,facet_anno){
     if(!is.null(facet_anno)){
         tmpdf=facet_anno
@@ -208,7 +216,7 @@ get_facet_anno=function(reporter_res,facet_anno){
         }
         else {
             #other organisms
-            load_Pathway_htable(envir = environment())
+            load_Pathway_htable(envir = environment(),verbose = F)
             tmpdf=Pathway_htable[,c("level1_name","Pathway_id")]
             tmpdf$Pathway_id=gsub("map",attributes(reporter_res)$type,tmpdf$Pathway_id)
         }

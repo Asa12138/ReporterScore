@@ -89,7 +89,8 @@ KO_enrich_internal=function(ko_stat,padj_threshold=0.05,
     all_KOs=lapply(modulelist$KOs,\(i)strsplit(i,",")[[1]])%>%do.call(c,.)
     res.dt=dplyr::filter(res.dt,KO_id%in%all_KOs)
 
-    if(!is.null(logFC_threshold)){
+    if(!"logFC"%in%colnames(res.dt)){
+        message("No logFC in the data.frame, calculate.")
         vs_group=grep("average",colnames(res.dt),value = T)
         if(length(vs_group)!=2)stop("logFC only available for two groups")
         tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
@@ -97,6 +98,9 @@ KO_enrich_internal=function(ko_stat,padj_threshold=0.05,
         if (is.null(add_mini))
             add_mini = min(tmp[tmp > 0]) * 0.05
         res.dt$logFC=log2((res.dt[,vs_group[2]]+add_mini)/(res.dt[,vs_group[1]]+add_mini))
+    }
+
+    if(!is.null(logFC_threshold)){
         sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold,abs(logFC)>logFC_threshold)%>%dplyr::pull(KO_id)
     }
     else sig_KO=dplyr::filter(res.dt,p.adjust<padj_threshold)%>%dplyr::pull(KO_id)%>%unique()
@@ -165,14 +169,7 @@ KO_enrich_internal=function(ko_stat,padj_threshold=0.05,
     }
     else if(mode==3){
         if(!weight%in%colnames(res.dt)){
-            vs_group=grep("average",colnames(res.dt),value = T)
-            if(length(vs_group)!=2)stop("logFC only available for two groups")
-            tmp=c(res.dt[,vs_group[1]],res.dt[,vs_group[2]])
-
-            if (is.null(add_mini))
-                add_mini = min(tmp[tmp > 0]) * 0.05
-            res.dt$logFC=log2((res.dt[,vs_group[2]]+add_mini)/(res.dt[,vs_group[1]]+add_mini))
-            res.dt_sort <- res.dt %>% dplyr::arrange(dplyr::desc(logFC))
+            message("Use logFC as the weight.")
             kos <- res.dt_sort$logFC
             names(kos) <- res.dt_sort$KO_id
         }
@@ -181,7 +178,8 @@ KO_enrich_internal=function(ko_stat,padj_threshold=0.05,
             names(kos) <- res.dt$KO_id
             kos=sort(kos,decreasing = T)
         }
-        e <- clusterProfiler::GSEA(kos, TERM2GENE = path2ko, TERM2NAME = path2name,verbose=F,pvalueCutoff = 1)
+        e <- clusterProfiler::GSEA(kos, TERM2GENE = path2ko, TERM2NAME = path2name,verbose=F,
+                                   pvalueCutoff = 1,pAdjustMethod = p.adjust.method)
         if(verbose)pcutils::dabiao("`clusterProfiler::GSEA` done")
         attributes(e)$type=type
         return(e)
@@ -241,6 +239,7 @@ as.enrich_res=function(gsea_res){
 #'
 plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
                           facet_level=FALSE,facet_anno=NULL,facet_str_width=15,...){
+
     Description=Significant_K_num=NULL
     flag=FALSE
     if(inherits(enrich_res,"enrich_res"))GO=enrich_res
@@ -270,6 +269,7 @@ plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
                 geom_bar(stat = "identity",width=0.7, position='dodge')+#柱子宽度
                 scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
                 theme_bw()
+
         }
         if(mode==2){
             p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=-log(p.adjust), fill=Group, size=Significant_K_num))+
@@ -282,12 +282,32 @@ plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
     else {
         #经典图
         if(mode==1){
-            p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=Significant_K_num/Exist_K_num, fill=p.adjust))+
-                geom_bar(stat = "identity",width=0.7)+#柱子宽度
-                scale_fill_gradient(low = "red",high ="blue",limits=c(0,padj_threshold))+#颜色自己可以换
-                labs(x = "Feature ratio")+
-                scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
-                theme_bw()
+            if("NES"%in%colnames(GO)){
+                GO$Group=ifelse(GO$NES>0,"Up","Down")
+                p=ggplot(data=GO, aes(y=reorder(Description, -NES),x=NES, fill=Group))+
+                    geom_bar(stat = "identity",width=0.7)+#柱子宽度
+                    scale_fill_manual(values=c("red","blue"))+#颜色自己可以换
+                    labs(x = "NES")+
+                    scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
+                    theme_bw()
+            }
+            else if("GSA.scores"%in%colnames(GO)){
+                GO$Group=ifelse(GO$`GSA.scores`>0,"Up","Down")
+                p=ggplot(data=GO, aes(y=reorder(Description, -`GSA.scores`),x=`GSA.scores`, fill=Group))+
+                    geom_bar(stat = "identity",width=0.7)+#柱子宽度
+                    scale_fill_manual(values=c("red","blue"))+#颜色自己可以换
+                    labs(x = "GSA.scores")+
+                    scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
+                    theme_bw()
+            }
+            else {
+                p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=Significant_K_num/Exist_K_num, fill=p.adjust))+
+                    geom_bar(stat = "identity",width=0.7)+#柱子宽度
+                    scale_fill_gradient(low = "red",high ="blue",limits=c(0,padj_threshold))+#颜色自己可以换
+                    labs(x = "Feature ratio")+
+                    scale_y_discrete(labels = \(x)stringr::str_wrap(x, width = str_width))+
+                    theme_bw()
+            }
         }
         if(mode==2){
             p=ggplot(data=GO, aes(y=reorder(Description, -p.adjust),x=Significant_K_num/Exist_K_num,
@@ -300,8 +320,12 @@ plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
                 theme_bw()
         }
     }
-    if(facet_level)p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
-        theme(strip.text.y = element_text(angle = 0))
+    if(facet_level){
+        p=p+facet_grid(facet_level~.,scales = "free_y",space = "free",labeller = label_wrap_gen(facet_str_width))+
+            theme(strip.text.y = element_text(angle = 0),
+                  strip.background = element_rect(fill = "grey90"),
+                  strip.text = element_text(face = "bold",color="black"))
+    }
 
     if(length(grep("^GO",GO$ID))>0)p=p+labs(title = "GO Enrichment",y = "GO Term")
     if(length(grep("^hsa|^map|^M",GO$ID))>0)p=p+labs(title = "KEGG Pathways Enrichment",y = "Pathway")
@@ -339,9 +363,9 @@ plot.enrich_res<-function(x,mode=1,str_width=50,padj_threshold=0.05,
 #' @examples
 #' \donttest{
 #' data("reporter_score_res")
-#' gsea_res=KO_gsea(reporter_score_res)
+#' gsea_res=KO_gsea(reporter_score_res,p.adjust.method="none")
 #' enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
-#' plot(as.enrich_res(gsea_res@result))
+#' plot(as.enrich_res(gsea_res))
 #' }
 KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
                  padj_threshold=1,p.adjust.method='BH',
@@ -352,6 +376,123 @@ KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
                        type,feature,
                        modulelist,verbose,mode=3,weight)
 }
+
+#' gene set analysis
+#' @examples
+#' debug(KO_gsa_internal)
+#' KO_gsa_internal(KO_abundance,"Group",metadata)
+KO_gsa_internal=function(kodf,group,metadata=NULL,resp.type="Two class unpaired",modulelist=NULL,p.adjust.method="BH",verbose=TRUE,perm=1000){
+    if(verbose)pcutils::dabiao("Checking group")
+    if(!is.null(metadata)){
+        if(length(group)!=1)stop("'group' should be one column name of metadata when metadata exsit!")
+        idx = rownames(metadata) %in% colnames(kodf)
+        metadata = metadata[idx, , drop = FALSE]
+        kodf = kodf[, rownames(metadata),drop=FALSE]
+        if(verbose)message(nrow(metadata)," samples are matched for next step.")
+        if(length(idx)<2)stop("too less common samples")
+        sampFile = data.frame(group=metadata[, group], row.names = row.names(metadata))
+    }
+    else {
+        if(length(group)!=ncol(kodf))stop("'group' length should equal to columns number of kodf when metadata is NULL!")
+        sampFile =data.frame(row.names =colnames(kodf),group=group)
+    }
+    if(verbose)pcutils::dabiao("Removing all-zero rows: ",sum(rowSums(abs(kodf))==0))
+    kodf=kodf[rowSums(abs(kodf))>0,]
+    tkodf=t(kodf)%>%as.data.frame()
+
+    res.dt=data.frame("KO_id"=rownames(kodf),row.names = rownames(kodf))
+    if(is.numeric(sampFile$group)){
+        #stop("group should be a category variable.")
+        vs_group="Numeric variable"
+    }
+    else {
+        vs_group=levels(factor(sampFile$group))
+        if(length(vs_group)==1)stop("'group' should be at least two elements factor")
+        for (i in vs_group) {
+            tmpdf=data.frame(average=apply(kodf[,which(sampFile$group==i)],1,mean),sd=apply(kodf[,which(sampFile$group==i)],1,sd))
+            colnames(tmpdf)=paste0(colnames(tmpdf),"_",i)
+            res.dt=cbind(res.dt,tmpdf)
+        }
+        if(length(vs_group)==2){
+            #update, make sure the control group is first one.
+            res.dt$diff_mean=res.dt[,paste0("average_",vs_group[2])]-res.dt[,paste0("average_",vs_group[1])]
+        }
+        high_group <- apply(res.dt[,paste0("average_",vs_group)], 1, function(a) which(a == max(a))[[1]])
+        res.dt$Highest=vs_group[high_group]
+    }
+
+    sampFile$group=as.numeric(as.factor(sampFile$group))
+    #if(length(unique(sampFile$group))!=2)
+
+    if(is.null(modulelist))stop("no modulelist")
+    genesets=transform_modulelist(modulelist)
+
+    lib_ps("GSA",library = F)
+    GSA.obj<-GSA::GSA(as.matrix(kodf),sampFile$group,genenames=rownames(kodf), genesets=genesets,
+                 resp.type=resp.type, nperms=perm)
+
+    res.dt=cbind(res.dt,gene.scores=GSA.obj$gene.scores)
+
+    gsa_res=as.data.frame(GSA.obj[c("GSA.scores","pvalues.lo","pvalues.hi")])
+    gsa_res$p.value=apply(gsa_res,1,\(i)ifelse(i[1]>0,i[3],i[2]))
+    gsa_res$p.adjust=p.adjust(gsa_res$p.value,method = p.adjust.method)
+
+    path_res<- data.frame(row.names =modulelist$id, ID = modulelist$id,
+                          Description = modulelist$Description,
+                          K_num=modulelist$K_num,
+                          Exist_K_num= sapply(genesets, \(i){sum(rownames(kodf)%in%i)}),
+                          gsa_res
+                          )
+    class(path_res)=c("enrich_res",class(path_res))
+    path_res
+}
+
+
+#' Perform KO gene set analysis
+#'
+#' @param reporter_res reporter_res
+#' @param method Problem type: "quantitative" for a continuous parameter; "Two class unpaired" ; "Survival" for censored survival outcome; "Multiclass" : more than 2 groups, coded 1,2,3...; "Two class paired" for paired outcomes, coded -1,1 (first pair), -2,2 (second pair), etc
+#' @param p.adjust.method "BH"
+#' @param verbose T
+#' @param perm 1000
+#'
+#' @return enrich_res object
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' data("reporter_score_res")
+#' gsa_res=KO_gsa(reporter_score_res,p.adjust.method='none')
+#' plot(gsa_res)
+#' }
+KO_gsa=function(reporter_res,method="Two class unpaired",p.adjust.method='BH',verbose=TRUE,perm=1000){
+
+    KO_id=p.adjust=NULL
+    pcutils::lib_ps("clusterProfiler",library = F)
+    stopifnot(inherits(reporter_res,"reporter_score"))
+    if(inherits(reporter_res,"reporter_score")){
+        kodf=reporter_res$kodf
+        modulelist=reporter_res$modulelist
+        if(is.character(modulelist)){
+            load_GOlist(envir = environment())
+            modulelist=eval(parse(text = modulelist))
+        }
+        group=reporter_res$group
+        metadata=reporter_res$metadata
+        type=attributes(reporter_res$reporter_s)$type
+        feature=attributes(reporter_res$reporter_s)$feature
+    }
+
+    KOlist=NULL
+    if(is.null(modulelist)){
+        modulelist=get_modulelist(type,feature,verbose)
+    }
+    if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
+
+    KO_gsa_internal(kodf,group,metadata,resp.type =method,modulelist = modulelist,p.adjust.method = p.adjust.method,verbose = verbose,perm=perm)
+
+}
+
 
 G_gsea=function(){
 

@@ -42,9 +42,10 @@ print.reporter_score=function(x,...){
 #' @param p.adjust.method1 p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}
 #' @param p.adjust.method2 p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#' @param perm permutation number, default: 1000.
-#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
-#' @param min_exist_ratio min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
+#' @param perm permutation number, default: 4999.
+#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)
+#' @param max_exist_KO max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)
+#'
 #' @aliases GRSA
 #' @aliases RSA
 #'
@@ -86,8 +87,8 @@ reporter_score=function(kodf,group,metadata=NULL,
                         feature="ko",type=c("pathway","module")[1],
                         p.adjust.method2='BH',
                         modulelist=NULL,
-                        threads=1,perm =1000,
-                        min_exist_KO=3,min_exist_ratio=0.2){
+                        threads=1,perm =4999,
+                        min_exist_KO=3,max_exist_KO=600){
     KOlist=NULL
 
     stopifnot(mode%in%c("mixed","directed"))
@@ -102,6 +103,23 @@ reporter_score=function(kodf,group,metadata=NULL,
         }
     }
 
+    if(!is.null(metadata)){
+        if(length(group)!=1)stop("'group' should be one column name of metadata when metadata exsit!")
+        idx = rownames(metadata) %in% colnames(kodf)
+        metadata = metadata[idx, , drop = FALSE]
+        kodf = kodf[, rownames(metadata),drop=FALSE]
+        if(verbose)message(nrow(metadata)," samples are matched for next step.")
+        if(length(idx)<2)stop("too less common samples")
+        sampFile = data.frame(group=metadata[, group], row.names = row.names(metadata))
+    }
+    else {
+        if(length(group)!=ncol(kodf))stop("'group' length should equal to columns number of kodf when metadata is NULL!")
+        sampFile =data.frame(row.names =colnames(kodf),group=group)
+    }
+
+    if(verbose)pcutils::dabiao("Removing all-zero rows: ",sum(rowSums(abs(kodf))==0))
+    kodf=kodf[rowSums(abs(kodf))>0,]
+
     if(verbose)pcutils::dabiao("1.KO test")
     ko_pvalue=ko.test(kodf,group,metadata,method = method,pattern = pattern,threads =threads,
                       p.adjust.method =p.adjust.method1,verbose = verbose)
@@ -111,15 +129,13 @@ reporter_score=function(kodf,group,metadata=NULL,
     reporter_s=get_reporter_score(ko_stat,type = type,feature = feature,threads = threads,
                                   p.adjust.method = p.adjust.method2,
                                   modulelist = modulelist,
-                                  perm = perm,verbose = verbose,min_exist_KO=min_exist_KO,min_exist_ratio=min_exist_ratio)
+                                  perm = perm,verbose = verbose,min_exist_KO=min_exist_KO,max_exist_KO=max_exist_KO)
     if(verbose)pcutils::dabiao("All done")
 
     if(is.null(modulelist)){
         modulelist=get_modulelist(type,feature,verbose = F)
     }
     #if(!all(c("id","K_num","KOs","Description")%in%colnames(modulelist)))stop("check your modulelist format!")
-
-    kodf=kodf[rowSums(abs(kodf))>0,]
 
     res=list(kodf=kodf,ko_stat=ko_stat,reporter_s=reporter_s,modulelist=modulelist,group=group,metadata=metadata)
     class(res)="reporter_score"
@@ -246,7 +262,8 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
             pval <- stats::wilcox.test(val~group)$p.value
         }
         if(method=="t.test"){
-            pval <- stats::t.test(val~group)$p.value
+            if(sd(val)==0)pval=1
+            else pval <- stats::t.test(val~group)$p.value
         }
         if(method=="kruskal.test"){
             pval <- stats::kruskal.test(val~group)$p.value
@@ -305,7 +322,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
 
     res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
 
-    resinfo <- paste0('Compared groups: ', paste(vs_group,collapse = ', '), "\n",
+    resinfo <- paste0('\nCompared groups: ', paste(vs_group,collapse = ', '), "\n",
                       'Total KO number: ', reps, "\n",
                       'Compare method: ', method, "\n",
                       'Time use: ', stime, attr(stime, 'units'), "\n")
@@ -495,6 +512,8 @@ pvalue2zs=function(ko_pvalue,mode=c("directed","mixed")[1],p.adjust.method='BH')
     #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2
     if(mode=="mixed"){
         res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+        if(quantile(res.dt$p.adjust,0.1,na.rm = T)==1)warning("most of p.adjust are 1! try use the p.adjust.method='none'\n")
+
         #逆正态分布
         zs <- stats::qnorm(1-(res.dt$p.adjust))
         #防止太小的p.adjust产生Inf
@@ -506,10 +525,11 @@ pvalue2zs=function(ko_pvalue,mode=c("directed","mixed")[1],p.adjust.method='BH')
     if(mode=="directed"){
         if(!"type"%in%colnames(res.dt))stop("directed mode only use for two groups differential analysis or multi-groups correlation analysis.")
         res.dt$origin_p.value=ko_pvalue$p.value
-        res.dt$origin_p.adjust=ko_pvalue$p.adjust
+        if("p.adjust"%in%colnames(res.dt))res.dt$origin_p.adjust=ko_pvalue$p.adjust
         pn_sign=2
         res.dt$p.value=res.dt$p.value/pn_sign
         res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
+        if(quantile(res.dt$p.adjust,0.1,na.rm = T)==0.5)warning("most of p.adjust are 1! try use the p.adjust.method='none'\n")
 
         #这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？
         # up_down_ratio=table(res.dt%>%dplyr::filter(abs(p.adjust)<=stats::quantile(res.dt$p.adjust,0.05,na.rm=TRUE))%>%dplyr::pull(type))
@@ -592,12 +612,12 @@ get_modulelist=function(type,feature,verbose=T){
 #' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
 #' @param feature one of "ko", "gene", "compound"
 #' @param threads threads
-#' @param perm permutation number, default: 1000
+#' @param perm permutation number, default: 4999
 #' @param verbose logical
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param p.adjust.method p.adjust.method, see \code{\link[stats]{p.adjust}}
-#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
-#' @param min_exist_ratio min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)
+#' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)
+#' @param max_exist_KO max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)
 #'
 #' @return reporter_res dataframe
 #' @export
@@ -610,8 +630,8 @@ get_modulelist=function(type,feature,verbose=T){
 #' reporter_s1=get_reporter_score(ko_stat)
 #' }
 get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",threads=1,
-                            modulelist=NULL,perm =1000,verbose=TRUE,p.adjust.method="BH",
-                            min_exist_KO=3,min_exist_ratio=0.5){
+                            modulelist=NULL,perm =4999,verbose=TRUE,p.adjust.method="BH",
+                            min_exist_KO=3,max_exist_KO=600){
     KOlist=i=NULL
     type_flag=FALSE
     t1 <- Sys.time()
@@ -666,7 +686,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         significant_KO=sum(z$Significantly!="None")
 
         #如果一条通路里压根没找到几个ko，就不应该有reporterscore
-        if((exist_KO<min_exist_KO)&(exist_KO/modulelist$K_num[i]<min_exist_ratio))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
+        if((exist_KO<min_exist_KO)|(exist_KO>max_exist_KO))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
 
         #KOnum <- modulelist$K_num[i]
         #KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
@@ -677,9 +697,18 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         Z_score=sum(z$Z_score) / sqrt(KOnum)
 
         reporter_score <- (Z_score - mean_sd$mean_sd[1])/mean_sd$mean_sd[2]
-        p.value=sum(Z_score>mean_sd$vec)/length(mean_sd$vec)
-        p.value=ifelse(reporter_score>0,1-p.value,p.value)
-        if(verbose&(i%%100==0))message(paste(i,"pathways done."))
+
+        if(attributes(ko_stat)$mode=="directed"){
+            if(reporter_score>0){
+                p.value=(sum(mean_sd$vec>=Z_score)+1)/(length(mean_sd$vec)+1)
+            }
+            else {
+                p.value=(sum(mean_sd$vec<=Z_score)+1)/(length(mean_sd$vec)+1)
+            }
+        }
+        else p.value=(sum(mean_sd$vec>=Z_score)+1)/(length(mean_sd$vec)+1)
+
+        if(verbose&(i%%50==0))message(paste(i,"pathways done."))
         c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value)
     }
     {
@@ -710,6 +739,12 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     if(type=="ALL")reporter_res$ONT=modulelist$ONT
 
     reporter_res$p.adjust=stats::p.adjust(reporter_res$p.value,p.adjust.method)
+    if(attributes(ko_stat)$mode=="directed"){
+        reporter_res=dplyr::arrange(reporter_res,-abs(ReporterScore))
+    }
+    else {
+        reporter_res=dplyr::arrange(reporter_res,-(ReporterScore))
+    }
     attributes(reporter_res)$mode=attributes(ko_stat)$mode
     attributes(reporter_res)$method=attributes(ko_stat)$method
     attributes(reporter_res)$vs_group=attributes(ko_stat)$vs_group

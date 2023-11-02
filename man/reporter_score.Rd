@@ -20,9 +20,9 @@ reporter_score(
   p.adjust.method2 = "BH",
   modulelist = NULL,
   threads = 1,
-  perm = 1000,
+  perm = 4999,
   min_exist_KO = 3,
-  min_exist_ratio = 0.2
+  max_exist_KO = 600
 )
 }
 \arguments{
@@ -56,11 +56,11 @@ reporter_score(
 
 \item{threads}{default 1}
 
-\item{perm}{permutation number, default: 1000.}
+\item{perm}{permutation number, default: 4999.}
 
-\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)}
+\item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)}
 
-\item{min_exist_ratio}{min exist KO ratio in a pathway (default, 0.5, when a pathway contains KOs less than 3 & ratio less than 0.5, there will be no RS)}
+\item{max_exist_KO}{max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)}
 }
 \value{
 reporter_score object：

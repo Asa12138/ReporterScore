@@ -84,8 +84,8 @@ plot(fisher_res)
 }
 \donttest{
 data("reporter_score_res")
-gsea_res=KO_gsea(reporter_score_res)
+gsea_res=KO_gsea(reporter_score_res,p.adjust.method="none")
 enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
-plot(as.enrich_res(gsea_res@result))
+plot(as.enrich_res(gsea_res))
 }
 }

@@ -79,7 +79,7 @@ update_KO_file=function(download_dir=NULL,RDSfile=NULL){
     pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
-#' Build a custom moduleist
+#' Build a custom modulelist
 #'
 #' @param pathway2ko user input annotation of Pathway to KO mapping, a data.frame of 2 column with pathway and ko.
 #' @param pathway2desc user input of Pathway TO Description mapping, a data.frame of 2 column with pathway and description.
@@ -109,6 +109,12 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL,verbose=T){
     if(verbose)message("please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.")
     pathway_list$Description=ifelse(is.na(pathway_list$Description),pathway_list$id,pathway_list$Description)
     pathway_list
+}
+
+#' Transform a modulelist to a list
+#' @export
+transform_modulelist=function(mymodulelist){
+    setNames(strsplit(mymodulelist$KOs,","),mymodulelist$id)
 }
 
 #' Load the KOlist (from KEGG)
@@ -740,6 +746,7 @@ update_GOinfo=function(download_dir=NULL,obo_file=NULL){
     GOinfo=df
     attributes(GOinfo)$download_time=Sys.time()
     save(GOinfo,file =paste0(pack_dir,"/new_GOinfo.rda"))
+    pcutils::dabiao(paste0("Update done at ",Sys.time()))
 }
 
 #' Load the GOinfo (from GO)
@@ -748,7 +755,7 @@ update_GOinfo=function(download_dir=NULL,obo_file=NULL){
 #' @param verbose logical
 #'
 #' @export
-#' @return KO_htable in `.GlobalEnv`
+#' @return GOinfo in `.GlobalEnv`
 load_GOinfo=function(envir=.GlobalEnv,verbose=TRUE){
     prefix="GOinfo"
     GOinfo_file=file.path(tools::R_user_dir("ReporterScore"),paste0("new_",prefix,".rda"))
@@ -850,3 +857,74 @@ load_GOinfo=function(envir=.GlobalEnv,verbose=TRUE){
 # }
 
 #metacyc数据库
+
+
+
+#CARD数据库
+#' update_CARDinfo
+#'
+#' @param download_dir download_dir
+#' @param obo_file obo_file from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2
+#'
+#' @export
+#'
+update_CARDinfo=function(download_dir=NULL,card_data=NULL){
+    pack_dir=tools::R_user_dir("ReporterScore")
+    if(!dir.exists(pack_dir))dir.create(pack_dir,recursive = TRUE)
+
+    if(is.null(download_dir))download_dir="ReporterScore_temp_download"
+
+    if(is.null(card_data)){
+        pcutils::dabiao("Trying to download files from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2 ")
+        ori_time=getOption("timeout")
+        on.exit(options(timeout = ori_time))
+
+        dir.create(download_dir,recursive = T)
+        options(timeout = 300)
+        tryCatch(expr = {
+            download.file("https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2",destfile =file.path(download_dir,"card-data.tar.bz2"))
+        },error=function(e){
+            stop("Try download yourself from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2 ")
+        })
+        card_data=file.path(download_dir,"card-data.tar.bz2")
+    }
+    else {
+        if(!(file.exists(card_data)&grepl("card-data.tar.bz2",card_data)))stop("Wrong file: ",card_data)
+    }
+
+    R.utils::bunzip2(card_data,destname=file.path(download_dir,"card-data.tar"),remove=FALSE,overwrite=TRUE)
+    untar(tarfile = file.path(download_dir,"card-data.tar"),exdir = file.path(download_dir,"card-data"))
+
+    {ARO_index=readr::read_delim(file.path(download_dir,"card-data","aro_index.tsv"),delim = "\t")%>%as.data.frame()}%>%suppressMessages()
+    {antibiotics=readr::read_delim(file.path(download_dir,"card-data","shortname_antibiotics.tsv"),delim = "\t")%>%as.data.frame()}%>%suppressMessages()
+
+    ARO_index=dplyr::distinct(ARO_index,`ARO Accession`,.keep_all = T)
+    rownames(ARO_index)=gsub("ARO:","",(ARO_index$`ARO Accession`))
+    CARDinfo=list(ARO_index=ARO_index,antibiotics=antibiotics)
+    attributes(CARDinfo)$download_time=Sys.time()
+    save(CARDinfo,file =paste0(pack_dir,"/new_CARDinfo.rda"))
+    pcutils::dabiao(paste0("Update done at ",Sys.time()))
+}
+
+#' Load the CARDinfo (from CARD)
+#'
+#' @param envir `.GlobalEnv` (default) or `environment()`
+#' @param verbose logical
+#'
+#' @export
+#' @return CARDinfo in `.GlobalEnv`
+load_CARDinfo=function(envir=.GlobalEnv,verbose=TRUE){
+    prefix="CARDinfo"
+    GOinfo_file=file.path(tools::R_user_dir("ReporterScore"),paste0("new_",prefix,".rda"))
+
+    if(file.exists(GOinfo_file))load(GOinfo_file,envir = envir)
+    else stop("use `update_CARDinfo()` first")
+
+    if(verbose){
+        pcutils::dabiao("load ",prefix)
+        if(!is.null(attributes(CARDinfo)$"download_time")){
+            pcutils::dabiao(paste0(prefix," download time: ",attributes(CARDinfo)$"download_time"))
+            message("If you want to update ",prefix,", use `update_CARDinfo()`")
+        }
+    }
+}

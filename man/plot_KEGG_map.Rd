@@ -29,6 +29,8 @@ plot_KEGG_map(
 \item{color_var}{use which variable to color}
 
 \item{save_dir}{where to save the png files}
+
+\item{color}{color}
 }
 \value{
 png files
@@ -38,8 +40,9 @@ plot_KEGG_map
 }
 \examples{
 \donttest{
-plot_KEGG_map(ko_stat,map_id="map00780",type="pathway",feature="ko",color_var="Z_score")
-
+data("reporter_score_res")
+plot_KEGG_map(reporter_score_res$ko_stat,map_id="map00780",type="pathway",feature="ko",color_var="Z_score")
+data(genedf)
 a=clusterProfiler::bitr(rownames(genedf),"SYMBOL","ENTREZID",OrgDb = org.Hs.eg.db::org.Hs.eg.db)
 genedf=hebing(genedf[a$SYMBOL,],a$ENTREZID,1,"sum")
 plot_KEGG_map(genedf,map_id="hsa04640",type="hsa",feature="gene",color_var="WT1")
