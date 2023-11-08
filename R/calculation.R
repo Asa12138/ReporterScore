@@ -74,11 +74,11 @@ print.reporter_score=function(x,...){
 #' @examples
 #' \donttest{
 #' data("KO_abundance_test")
-#' reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
+#' reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed",perm=999)
 #' reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
-#'      method = "kruskal.test",p.adjust.method1 = "none")
+#'      method = "kruskal.test",p.adjust.method1 = "none",perm=999)
 #' reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
-#'      method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2))
+#'      method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2),perm=999)
 #' }
 reporter_score=function(kodf,group,metadata=NULL,
                         method="wilcox.test",pattern=NULL,p.adjust.method1='BH',
@@ -627,7 +627,7 @@ get_modulelist=function(type,feature,verbose=T){
 #' data(KO_abundance_test)
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' ko_stat=pvalue2zs(ko_pvalue,mode="directed")
-#' reporter_s1=get_reporter_score(ko_stat)
+#' reporter_s1=get_reporter_score(ko_stat,perm=999)
 #' }
 get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",threads=1,
                             modulelist=NULL,perm =4999,verbose=TRUE,p.adjust.method="BH",
@@ -684,10 +684,14 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
 
         #significant_KO=sum(z$p.adjust<p_th)
         significant_KO=sum(z$Significantly!="None")
+        sig_up=sum(z$Significantly=="Enriched")
+        sig_down=sum(z$Significantly=="Depleted")
 
         #如果一条通路里压根没找到几个ko，就不应该有reporterscore
-        if((exist_KO<min_exist_KO)|(exist_KO>max_exist_KO))return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
-
+        if((exist_KO<min_exist_KO)|(exist_KO>max_exist_KO)){
+            if(attributes(ko_stat)$mode=="directed")return(c(exist_KO,significant_KO,sig_up,sig_down,NA,NA,NA,NA,NA))
+            else return(c(exist_KO,significant_KO,NA,NA,NA,NA,NA))
+        }
         #KOnum <- modulelist$K_num[i]
         #KOnum <- ifelse(length(clean.KO) >= KOnum, KOnum, length(clean.KO))
 
@@ -709,7 +713,8 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         else p.value=(sum(mean_sd$vec>=Z_score)+1)/(length(mean_sd$vec)+1)
 
         if(verbose&(i%%50==0))message(paste(i,"pathways done."))
-        c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value)
+        if(attributes(ko_stat)$mode=="directed")return(c(exist_KO,significant_KO,sig_up,sig_down,Z_score,mean_sd$mean_sd,reporter_score,p.value))
+        else return(c(exist_KO,significant_KO,Z_score,mean_sd$mean_sd,reporter_score,p.value))
     }
     {
     if(threads>1){
@@ -731,7 +736,8 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
     }}
     #simplify method
     res=do.call(rbind,res)
-    colnames(res)=c("Exist_K_num","Significant_K_num","Z_score","BG_Mean","BG_Sd","ReporterScore","p.value")
+    if(attributes(ko_stat)$mode=="directed")colnames(res)=c("Exist_K_num","Significant_K_num","Significant_up_num","Significant_down_num","Z_score","BG_Mean","BG_Sd","ReporterScore","p.value")
+    else colnames(res)=c("Exist_K_num","Significant_K_num","Z_score","BG_Mean","BG_Sd","ReporterScore","p.value")
     res=as.data.frame(res)
     reporter_res <- data.frame(ID = modulelist$id,
                                Description = modulelist$Description,

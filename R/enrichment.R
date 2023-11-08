@@ -1,6 +1,6 @@
 cid2keggid=function(id=c("5281127"),
-                        from="PubChem CID",
-                        to=c("KEGG"),check_api=FALSE){
+                    from="PubChem CID",
+                    to=c("KEGG"),check_api=FALSE){
     #install_github("dgrapov/CTSgetR")
 
     lib_ps("CTSgetR","httr",library = F)
@@ -54,9 +54,9 @@ KO_enrich=function(ko_stat,padj_threshold=0.05,
 }
 
 KO_enrich_internal=function(ko_stat,padj_threshold=0.05,
-                   logFC_threshold=NULL,add_mini=NULL,p.adjust.method='BH',
-                   type=c("pathway","module")[1],feature="ko",
-                   modulelist=NULL,verbose=TRUE,mode=1,weight="logFC"){
+                            logFC_threshold=NULL,add_mini=NULL,p.adjust.method='BH',
+                            type=c("pathway","module")[1],feature="ko",
+                            modulelist=NULL,verbose=TRUE,mode=1,weight="logFC"){
 
     KO_id=p.adjust=NULL
     pcutils::lib_ps("clusterProfiler",library = F)
@@ -247,7 +247,7 @@ plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
         multi_enrich_res=enrich_res
         if(is.null(names(multi_enrich_res)))names(multi_enrich_res)=paste0("Res",seq_along(multi_enrich_res))
         GO=lapply(names(multi_enrich_res),
-                            \(i){data.frame(multi_enrich_res[[i]][,c("ID","Description","Exist_K_num","Significant_K_num","p.adjust")],Group=i,row.names = NULL)})%>%
+                  \(i){data.frame(multi_enrich_res[[i]][,c("ID","Description","Exist_K_num","Significant_K_num","p.adjust")],Group=i,row.names = NULL)})%>%
             do.call(rbind,.)
         attributes(GO)$type=attributes(multi_enrich_res[[1]])$type
         flag=TRUE
@@ -429,7 +429,7 @@ KO_gsa_internal=function(kodf,group,metadata=NULL,resp.type="Two class unpaired"
 
     lib_ps("GSA",library = F)
     GSA.obj<-GSA::GSA(as.matrix(kodf),sampFile$group,genenames=rownames(kodf), genesets=genesets,
-                 resp.type=resp.type, nperms=perm)
+                      resp.type=resp.type, nperms=perm)
 
     res.dt=cbind(res.dt,gene.scores=GSA.obj$gene.scores)
 
@@ -442,7 +442,7 @@ KO_gsa_internal=function(kodf,group,metadata=NULL,resp.type="Two class unpaired"
                           K_num=modulelist$K_num,
                           Exist_K_num= sapply(genesets, \(i){sum(rownames(kodf)%in%i)}),
                           gsa_res
-                          )
+    )
     class(path_res)=c("enrich_res",class(path_res))
     path_res
 }

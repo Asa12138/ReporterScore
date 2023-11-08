@@ -165,9 +165,9 @@ filter_report=function(reporter_res,rs_threshold){
         if(nrow(reporter_res2)<1)stop("No pathway left.")
         if(length(vs_group)==2){
             reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0,
-                                          paste0("Enrich in ",vs_group[2]),
-                                          paste0("Enrich in ",vs_group[1]))
-            cols1=setNames(c('P'='orange','N'='seagreen'), paste0("Enrich in ",vs_group[2:1]))
+                                          paste0("Enriched in ",vs_group[2]),
+                                          paste0("Enriched in ",vs_group[1]))
+            cols1=setNames(c('P'='orange','N'='seagreen'), paste0("Enriched in ",vs_group[2:1]))
         }
         else {
             reporter_res2$Group <- ifelse(reporter_res2$ReporterScore > 0,"Increase","Decrease")

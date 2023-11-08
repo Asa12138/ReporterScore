@@ -598,6 +598,17 @@ load_org_pathway=function(org="hsa",envir=.GlobalEnv,verbose=TRUE){
     }
 }
 
+#' Custom modulelist from a specific organism
+#'
+#' @param org kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"
+#' @param feature one of "ko", "gene", "compound"
+#' @param verbose logical
+#'
+#' @return modulelist
+#' @export
+#'
+#' @examples
+#' custom_modulelist_from_org()
 custom_modulelist_from_org=function(org="hsa",feature="ko",verbose=TRUE){
     load_org_pathway(org = org,envir = environment(),verbose = verbose)
     org_path=get(paste0(org,"_kegg_pathway"))
