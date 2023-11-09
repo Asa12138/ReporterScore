@@ -512,7 +512,7 @@ pvalue2zs=function(ko_pvalue,mode=c("directed","mixed")[1],p.adjust.method='BH')
     #mixed不考虑正负号，p.adjust不除以2，考虑的话除以2
     if(mode=="mixed"){
         res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method)
-        if(quantile(res.dt$p.adjust,0.1,na.rm = T)==1)warning("most of p.adjust are 1! try use the p.adjust.method='none'\n")
+        if(quantile(res.dt$p.adjust,0.1,na.rm = T)==1)warning("most of p.adjust are 1! try use the p.adjust.method1='none'\n")
 
         #逆正态分布
         zs <- stats::qnorm(1-(res.dt$p.adjust))
@@ -698,7 +698,7 @@ get_reporter_score=function(ko_stat,type=c("pathway","module")[1],feature="ko",t
         KOnum=exist_KO
         #以整个输入ko文件作为背景,抽取KOnum应该是exist_KO，而不是所有的KOnum，可以在iMeta文章看到
         mean_sd <- random_mean_sd(clean.KO, KOnum, perm =perm)
-        Z_score=sum(z$Z_score) / sqrt(KOnum)
+        Z_score=sum(z$Z_score,na.rm = T) / sqrt(KOnum)
 
         reporter_score <- (Z_score - mean_sd$mean_sd[1])/mean_sd$mean_sd[2]
 
