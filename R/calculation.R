@@ -285,6 +285,7 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
             pval <- stats::cor.test(val,group2,method = method)$p.value
         }
         if(verbose&(i%%1000==0))message(paste(i,"features done."))
+        if(is.na(pval))pval=1
         pval
     }
 
