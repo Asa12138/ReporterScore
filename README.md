@@ -10,7 +10,7 @@ Generalized Reporter Score-based Enrichment Analysis for Omics Data
 
 To cite ReporterScore in publications use:
 
-C. Peng, Q. Chen, S. Tan, C. Jiang, Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data. bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.
+C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter Score-based Enrichment Analysis for Omics Data. bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.
 
 ## Install
 

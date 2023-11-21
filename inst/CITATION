@@ -2,15 +2,18 @@ citHeader("To cite ReporterScore in publications use:")
 
 citEntry(
     entry  = "article",
-    title = "ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome",
+    title = "Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data",
     author = personList(
         as.person("Chen Peng"),
+	as.person("Qiong Chen"),
+	as.person("Shangjin Tan"),
+	as.person("Xiaotao Shen"),
         as.person("Chao Jiang")
     ),
-    journal = "NA",
+    journal = "bioRxiv",
     year = "2023",
-    url = "https://github.com/Asa12138/ReporterScore",
-    textVersion = paste("Chen Peng, Chao Jiang.",
-                        "ReporterScore: an R package for ReporterScore Functional Enrichment in Microbiome.",
-                        "R package (2023), https://github.com/Asa12138/ReporterScore")
+    url = "https://doi.org/10.1101/2023.10.13.562235",
+    textVersion = paste("C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang.",
+                        "Generalized Reporter Score-based Enrichment Analysis for Omics Data.",
+                        "bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.")
 )
