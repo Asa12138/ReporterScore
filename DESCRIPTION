@@ -49,7 +49,7 @@ Suggests:
 Remotes: 
     github::Asa12138/pcutils
 Depends: 
-    R (>= 4.0.0)
+    R (>= 4.1.0)
 VignetteBuilder: knitr
 BugReports: https://github.com/Asa12138/ReporterScore/issues
 URL: https://github.com/Asa12138/ReporterScore
