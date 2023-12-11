@@ -6,6 +6,9 @@
 \usage{
 transform_modulelist(mymodulelist)
 }
+\arguments{
+\item{mymodulelist}{mymodulelist}
+}
 \description{
 Transform a modulelist to a list
 }

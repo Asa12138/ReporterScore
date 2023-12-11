@@ -1,7 +1,7 @@
 Package: ReporterScore
 Type: Package
-Title: ReporterScore Functional Enrichment Method for Microbiome
-Version: 1.0.0
+Title: Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data
+Version: 1.0.1
 Authors@R:
     person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"))
 Description: The original reporter-score method comes from Patil, K. R. et al. PNAS 2005.
@@ -43,7 +43,9 @@ Suggests:
     pctax,
     CTSgetR,
     httr,
-    pathview
+    pathview,
+    GSA,
+    R.utils
 Remotes: 
     github::Asa12138/pcutils
 Depends: 

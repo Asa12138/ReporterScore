@@ -90,10 +90,10 @@ One step to get the reporter score of your KO abundance table.
 \examples{
 \donttest{
 data("KO_abundance_test")
-reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed")
+reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed",perm=999)
 reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
-     method = "kruskal.test",p.adjust.method1 = "none")
+     method = "kruskal.test",p.adjust.method1 = "none",perm=999)
 reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
-     method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2))
+     method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2),perm=999)
 }
 }

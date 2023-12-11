@@ -377,10 +377,7 @@ KO_gsea=function(ko_stat,weight="logFC",add_mini=NULL,
                        modulelist,verbose,mode=3,weight)
 }
 
-#' gene set analysis
-#' @examples
-#' debug(KO_gsa_internal)
-#' KO_gsa_internal(KO_abundance,"Group",metadata)
+
 KO_gsa_internal=function(kodf,group,metadata=NULL,resp.type="Two class unpaired",modulelist=NULL,p.adjust.method="BH",verbose=TRUE,perm=1000){
     if(verbose)pcutils::dabiao("Checking group")
     if(!is.null(metadata)){

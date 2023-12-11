@@ -9,7 +9,7 @@ update_CARDinfo(download_dir = NULL, card_data = NULL)
 \arguments{
 \item{download_dir}{download_dir}
 
-\item{obo_file}{obo_file from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2}
+\item{card_data}{card_data from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2}
 }
 \description{
 update_CARDinfo

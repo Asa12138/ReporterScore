@@ -112,6 +112,9 @@ custom_modulelist=function(pathway2ko,pathway2desc=NULL,verbose=T){
 }
 
 #' Transform a modulelist to a list
+#'
+#' @param mymodulelist mymodulelist
+#'
 #' @export
 transform_modulelist=function(mymodulelist){
     setNames(strsplit(mymodulelist$KOs,","),mymodulelist$id)
@@ -875,7 +878,7 @@ load_GOinfo=function(envir=.GlobalEnv,verbose=TRUE){
 #' update_CARDinfo
 #'
 #' @param download_dir download_dir
-#' @param obo_file obo_file from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2
+#' @param card_data card_data from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2
 #'
 #' @export
 #'
