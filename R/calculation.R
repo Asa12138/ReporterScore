@@ -81,7 +81,7 @@ print.reporter_score=function(x,...){
 #'      method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2),perm=999)
 #' }
 reporter_score=function(kodf,group,metadata=NULL,
-                        method="wilcox.test",pattern=NULL,p.adjust.method1='BH',
+                        method="wilcox.test",pattern=NULL,p.adjust.method1='none',
                         mode=c("mixed","directed")[1],
                         verbose=TRUE,
                         feature="ko",type=c("pathway","module")[1],
@@ -167,7 +167,7 @@ reporter_score=function(kodf,group,metadata=NULL,
 #' ko_pvalue=ko.test(KO_abundance,"Group",metadata)
 #' }
 ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
-                 p.adjust.method='BH',threads=1,verbose=TRUE){
+                 p.adjust.method='none',threads=1,verbose=TRUE){
     i=NULL
     t1 <- Sys.time()
 
@@ -339,7 +339,6 @@ ko.test=function(kodf,group,metadata=NULL,method="wilcox.test",pattern=NULL,
 if(F){
     # 安装和加载所需的包
     # 设置随机数种子
-    set.seed(123)
 
     # 设置参数
     n <- 50  # 随机向量数量
@@ -569,11 +568,10 @@ pvalue2zs=function(ko_pvalue,mode=c("directed","mixed")[1],p.adjust.method='BH')
 }
 
 random_mean_sd <- function(vec, Knum, perm = 1000){
-    #set.seed((Knum + 1))
     #Permutation就是不放回抽样😭，Bootstrap才是有放回
 
     replace=FALSE
-    temp=sapply(1:perm, \(i){sum(sample(vec, Knum,replace = replace))/sqrt(Knum)})
+    temp=vapply(1:perm, \(i){sum(sample(vec, Knum,replace = replace))/sqrt(Knum)},numeric(1))
     list(vec=temp,mean_sd=c(mean(temp), stats::sd(temp)))
 }
 
@@ -925,7 +923,6 @@ if(F){
 #' @param metadata sample information data.frame contains group
 #' @param k_num if NULL, perform the \code{\link[pctax]{cm_test_k}}, else an integer
 #' @param filter_var see \code{\link[pctax]{c_means}}
-#' @param seed set.seed
 #' @param verbose verbose
 #' @param method method from \code{\link{reporter_score}}
 #' @param ... additional arguments for \code{\link{reporter_score}}
@@ -939,7 +936,7 @@ if(F){
 #' rsa_cm_res=RSA_by_cm(KO_abundance,"Group2",metadata,method = "pearson")
 #' }
 RSA_by_cm=function(kodf,group,metadata=NULL,
-                   k_num=NULL,filter_var=0.7,seed=1234,
+                   k_num=NULL,filter_var=0.7,
                    verbose=TRUE,method="pearson",...){
     pcutils::lib_ps("pctax",library = F)
     if(verbose)pcutils::dabiao("Checking group")
@@ -970,7 +967,7 @@ RSA_by_cm=function(kodf,group,metadata=NULL,
         }
     }
     if(verbose)pcutils::dabiao("Choose k_num: ",k_num,". Start to cluster")
-    set.seed(seed)
+
     cm_res=pctax::c_means(kodf_g,k_num = k_num,filter_var = filter_var)
 
     if(verbose)pcutils::dabiao("Get ReporterScore for each cluster")

@@ -243,7 +243,7 @@ plot_enrich_res<-function(enrich_res,mode=1,str_width=50,padj_threshold=0.05,
     Description=Significant_K_num=NULL
     flag=FALSE
     if(inherits(enrich_res,"enrich_res"))GO=enrich_res
-    else if(is.list(enrich_res)&all(sapply(enrich_res,\(i)inherits(i,"enrich_res")))){
+    else if(is.list(enrich_res)&all(vapply(enrich_res,\(i)inherits(i,"enrich_res"),logical(1)))){
         multi_enrich_res=enrich_res
         if(is.null(names(multi_enrich_res)))names(multi_enrich_res)=paste0("Res",seq_along(multi_enrich_res))
         GO=lapply(names(multi_enrich_res),
@@ -437,7 +437,7 @@ KO_gsa_internal=function(kodf,group,metadata=NULL,resp.type="Two class unpaired"
     path_res<- data.frame(row.names =modulelist$id, ID = modulelist$id,
                           Description = modulelist$Description,
                           K_num=modulelist$K_num,
-                          Exist_K_num= sapply(genesets, \(i){sum(rownames(kodf)%in%i)}),
+                          Exist_K_num= vapply(genesets, \(i){sum(rownames(kodf)%in%i)},numeric(1)),
                           gsa_res
     )
     class(path_res)=c("enrich_res",class(path_res))
@@ -490,7 +490,3 @@ KO_gsa=function(reporter_res,method="Two class unpaired",p.adjust.method='BH',ve
 
 }
 
-
-G_gsea=function(){
-
-}

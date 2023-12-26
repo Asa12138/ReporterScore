@@ -287,7 +287,7 @@ brite2df2=function(lines,id_pattern="\\s+[CG]\\d{5}  "){
     }
     df=lapply(df,as.data.frame)
 
-    ncols=sapply(df, ncol)
+    ncols=vapply(df, ncol,numeric(1))
     df_res=list()
     for (col in unique(ncols)) {
         tmp=df[ncols==col]
@@ -642,8 +642,8 @@ update_GO_file=function(){
     #all(names(GO_data$GO2ONT)==names(GO_data$PATHID2EXTID))
     GO_modulelist=
         data.frame(id=names(GO_data$GO2ONT),ONT=GO_data$GO2ONT,
-               K_num=sapply(GO_data$PATHID2EXTID,length),
-               KOs=sapply(GO_data$PATHID2EXTID,paste0,collapse=","),
+               K_num=vapply(GO_data$PATHID2EXTID,length,numeric(1)),
+               KOs=vapply(GO_data$PATHID2EXTID,paste0,collapse=",",numeric(1)),
                Description=GO_data$PATHID2NAME[names(GO_data$GO2ONT)],
                row.names = NULL)
     GOlist=split(GO_modulelist,GO_modulelist$ONT)

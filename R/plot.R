@@ -263,7 +263,7 @@ plot_report_circle_packing=function(reporter_res,rs_threshold=1.64,mode=1,facet_
         filter_report(reporter_res,rs_threshold)
         flag=TRUE
     }
-    else if(all(sapply(reporter_res,\(i){inherits(i,"reporter_score")}))){
+    else if(all(vapply(reporter_res,\(i){inherits(i,"reporter_score")},logical(1)))){
         multi_reporter_res=reporter_res
         if(is.null(names(multi_reporter_res)))names(multi_reporter_res)=paste0("Res",seq_along(multi_reporter_res))
         ncluster=length(multi_reporter_res)
@@ -372,7 +372,7 @@ plot_significance<-function(reporter_res,map_id) {
     if(nrow(reporter_res2)<1)return(NULL)
     reporter_res2=reporter_res2[,c("ID","BG_Mean", "BG_Sd", "Z_score","p.value","ReporterScore")]
     # 生成正态分布数据
-    set.seed(123)  # 设置随机种子以确保结果可重复
+    # set.seed(123)  # 设置随机种子以确保结果可重复
     df=apply(reporter_res2, 1, \(i)rnorm(perm, mean = as.numeric(i[2]), sd = as.numeric(i[3])))
     df2=reshape2::melt(as.data.frame(df),variable.name = "ID")%>%suppressMessages()
 
@@ -975,21 +975,21 @@ plot_htable=function(type="ko",select=NULL,htable=NULL){
         scale_x_continuous(expand = c(0,0),limits = c(0,max(a$n)*1.1))
 }
 
-if(F){
-    Pathway_htable
-    tr=pctax::df2tree(Module_htable[,c(2:3,5)])
-    ggtree::ggtree(tr,layout = "radial")
-
-    f_tax=data.frame(Module_htable[1:4],row.names = Module_htable[,4,drop=T])
-
-    f_tax=data.frame(Pathway_htable[1:3],row.names = Pathway_htable[,3,drop=T])
-    otutab = reporter_score_res$reporter_s["ReporterScore"]%>%na.omit()
-    tr=ann_tree(f_tax = f_tax,otutab = otutab)
-    easy_tree(tr,"level1_name")
-
-    f_tax2=right_join(f_tax,reporter_score_res$reporter_s[,c("ID","ReporterScore")],by=c("Pathway_id"="ID"))
-    f_tax2=filter(f_tax2,abs(ReporterScore)>1.64)
-    p=data.frame(f_tax2)%>%my_circle_packing()
-    p+scale_fill_gradient2()
-}
+# if(F){
+#     Pathway_htable
+#     tr=pctax::df2tree(Module_htable[,c(2:3,5)])
+#     ggtree::ggtree(tr,layout = "radial")
+#
+#     f_tax=data.frame(Module_htable[1:4],row.names = Module_htable[,4,drop=T])
+#
+#     f_tax=data.frame(Pathway_htable[1:3],row.names = Pathway_htable[,3,drop=T])
+#     otutab = reporter_score_res$reporter_s["ReporterScore"]%>%na.omit()
+#     tr=ann_tree(f_tax = f_tax,otutab = otutab)
+#     easy_tree(tr,"level1_name")
+#
+#     f_tax2=right_join(f_tax,reporter_score_res$reporter_s[,c("ID","ReporterScore")],by=c("Pathway_id"="ID"))
+#     f_tax2=filter(f_tax2,abs(ReporterScore)>1.64)
+#     p=data.frame(f_tax2)%>%my_circle_packing()
+#     p+scale_fill_gradient2()
+# }
 

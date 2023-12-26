@@ -11,7 +11,6 @@ RSA_by_cm(
   metadata = NULL,
   k_num = NULL,
   filter_var = 0.7,
-  seed = 1234,
   verbose = TRUE,
   method = "pearson",
   ...
@@ -27,8 +26,6 @@ RSA_by_cm(
 \item{k_num}{if NULL, perform the \code{\link[pctax]{cm_test_k}}, else an integer}
 
 \item{filter_var}{see \code{\link[pctax]{c_means}}}
-
-\item{seed}{set.seed}
 
 \item{verbose}{verbose}
 

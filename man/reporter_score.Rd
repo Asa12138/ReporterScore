@@ -12,7 +12,7 @@ reporter_score(
   metadata = NULL,
   method = "wilcox.test",
   pattern = NULL,
-  p.adjust.method1 = "BH",
+  p.adjust.method1 = "none",
   mode = c("mixed", "directed")[1],
   verbose = TRUE,
   feature = "ko",

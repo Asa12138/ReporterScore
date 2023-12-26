@@ -1,12 +1,16 @@
+\.Rhistory
+\.RData
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ReporterScore_temp*/
 ReporterScore_temp*
-.gitgnore
+\.gitgnore
 ^test\.R
 article
 article/*
 README\.Rmd
+README\.md
 README\.html
 README_*/
 README_*
+\.DS_Store

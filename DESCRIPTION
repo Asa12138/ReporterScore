@@ -1,14 +1,13 @@
 Package: ReporterScore
 Type: Package
 Title: Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data
-Version: 1.0.1
+Version: 0.99.0
 Authors@R:
-    person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"))
+    person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9449-7606"))
 Description: The original reporter-score method comes from Patil, K. R. et al. PNAS 2005.
     In this package, we provide two reporter-score methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
 RoxygenNote: 7.2.3
 Imports: 
     dplyr,
@@ -46,10 +45,10 @@ Suggests:
     pathview,
     GSA,
     R.utils
-Remotes: 
-    github::Asa12138/pcutils
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.2.0)
+biocViews: ReproterScore, GeneSetEnrichment, GO, KEGG,
+    Multi-group, Pathways, Visualization
 VignetteBuilder: knitr
 BugReports: https://github.com/Asa12138/ReporterScore/issues
 URL: https://github.com/Asa12138/ReporterScore

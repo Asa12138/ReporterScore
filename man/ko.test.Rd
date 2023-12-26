@@ -10,7 +10,7 @@ ko.test(
   metadata = NULL,
   method = "wilcox.test",
   pattern = NULL,
-  p.adjust.method = "BH",
+  p.adjust.method = "none",
   threads = 1,
   verbose = TRUE
 )
