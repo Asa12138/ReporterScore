@@ -1,3 +1,16 @@
+---
+title: 'ReporterScore'
+author: "pengchen"
+date: "2023-07-18"
+output: 
+    html_document:
+        keep_md: true
+        toc: true
+        toc_depth: 3
+        toc_float: true
+---
+
+
 
 # ReporterScore
 
@@ -6,19 +19,20 @@ Generalized Reporter Score-based Enrichment Analysis for Omics Data
 <img src="README_files/1-workflow.png" width="2481" />
 
 
-# Citation
+## Citation
 
 To cite ReporterScore in publications use:
 
 C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter Score-based Enrichment Analysis for Omics Data. bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.
 
+
 ## Install
 
 
 ```r
-if(!require("devtools"))install.packages("devtools")
-devtools::install_github('Asa12138/pcutils')
-devtools::install_github('Asa12138/ReporterScore',dependencies=T)
+if (!require("devtools")) install.packages("devtools")
+devtools::install_github("Asa12138/pcutils")
+devtools::install_github("Asa12138/ReporterScore", dependencies = TRUE)
 library(ReporterScore)
 ```
 
@@ -33,7 +47,7 @@ An example code tailored for a KO abundance table is as follows:
 
 ```r
 data("KO_abundance_test")
-head(KO_abundance[,1:6])
+head(KO_abundance[, 1:6])
 ```
 
 ```
@@ -71,7 +85,7 @@ The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, a
 
 2. `ReporterScore` has built-in KEGG pathway-compound and module-compound databases (2023-08 version) for compound abundance table. You can use `load_CPDlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API).
 
-3. `ReporterScore` has built-in pathway-ko, pathway-gene, and pathway-compound databases of human (hsa) and mouse (mmu) for ko/gene/compound abundance table. You can use `custom_modulelist_from_org()` to have a look. Use `get_org_pathway()` to update these databases and download other organism databases (by KEGG API).
+3. `ReporterScore` has built-in pathway-ko, pathway-gene, and pathway-compound databases of human (hsa) and mouse (mmu) for ko/gene/compound abundance table. You can use `custom_modulelist_from_org()` to have a look. Use `update_org_pathway()` to update these databases and download other organism databases (by KEGG API).
 
 4. `ReporterScore` has built-in GO-gene database, You can use `load_GOlist()` to have a look and use `update_GO_file()` to update these databases (by KEGG API).
 
@@ -79,23 +93,23 @@ The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, a
 
 
 ```r
-#1. KEGG pathway-KO and module-KO databases
+# 1. KEGG pathway-KO and module-KO databases
 load_KOlist()
 head(KOlist$pathway)
 
-#2. KEGG pathway-compound and module-compound databases
+# 2. KEGG pathway-compound and module-compound databases
 load_CPDlist()
 head(CPDlist$pathway)
 
-#3. human (hsa) pathway-ko/gene/compound databases
-hsa_pathway_gene=custom_modulelist_from_org("hsa",feature = c("ko","gene","compound")[2])
+# 3. human (hsa) pathway-ko/gene/compound databases
+hsa_pathway_gene <- custom_modulelist_from_org("hsa", feature = c("ko", "gene", "compound")[2])
 head(hsa_pathway_gene)
 
-#4. GO-gene database
+# 4. GO-gene database
 load_GOlist()
 head(GOlist$BP)
 
-#5. customize your own pathway databases
+# 5. customize your own pathway databases
 ?custom_modulelist()
 ```
 
@@ -119,42 +133,124 @@ The first level will be set as the **control group**, you can change the factor 
 For example, we want to compare two groups 'WT-OE', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
 
 
-```r
-cat("Comparison: ",levels(factor(metadata$Group)))
-## Comparison:  WT OE
 
-reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed",method = "wilcox.test")
+```r
+cat("Comparison: ", levels(factor(metadata$Group)))
+```
+
+```
+## Comparison:  WT OE
+```
+
+```r
+reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed", method = "wilcox.test",perm = 999)
+```
+
+```
 ## 30 samples are matched for next step.
+```
+
+```
 ## ===========================Removing all-zero rows: 0============================
+```
+
+```
 ## ===================================1.KO test====================================
+```
+
+```
 ## =================================Checking group=================================
+```
+
+```
 ## 30 samples are matched for next step.
+```
+
+```
 ## ===========================Removing all-zero rows: 0============================
+```
+
+```
 ## ==============================Calculating each KO===============================
+```
+
+```
 ## ===========================Using method: wilcox.test============================
+```
+
+```
 ## 1000 features done.
+```
+
+```
 ## 2000 features done.
+```
+
+```
 ## 3000 features done.
+```
+
+```
 ## 4000 features done.
+```
+
+```
 ## 
 ## Compared groups: WT, OE
 ## Total KO number: 4535
 ## Compare method: wilcox.test
-## Time use: 1.169
+## Time use: 1.109
+```
+
+```
 ## =========================2.Transfer p.value to z-score==========================
+```
+
+```
 ## ==========================3.Calculating reporter score==========================
+```
+
+```
 ## ================================Use feature: ko=================================
+```
+
+```
 ## ===============================Checking rownames================================
+```
+
+```
 ## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-07-28 14:07:08====================
+```
+
+```
+## ===================KOlist download time: 2023-08-14 16:00:52====================
+```
+
+```
 ## If you want to update KOlist, use `update_KO_file()`
+```
+
+```
 ## ============================Calculating each pathway============================
+```
+
+```
 ## 100 pathways done.
+```
+
+```
 ## 400 pathways done.
+```
+
+```
 ## ID number: 481
-## Time use: 7.630
+## Time use: 1.414
+```
+
+```
 ## ====================================All done====================================
 ```
+
 
 The result is a "reporter_score" object:
 
@@ -173,8 +269,20 @@ Plot the most significantly enriched pathways:
 
 
 ```r
-#View(reporter_score_res$reporter_s)
-plot_report(reporter_score_res,rs_threshold = c(-2.5,2.5))
+# View(reporter_res$reporter_s)
+plot_report(reporter_res, rs_threshold = c(-2.5, 2.5),facet_level = T)
+```
+
+```
+## ==============================load Pathway_htable===============================
+```
+
+```
+## ===============Pathway_htable download time: 2023-08-14 23:08:28================
+```
+
+```
+## If you want to update Pathway_htable, use `update_htable(type='pathway')`
 ```
 
 ![](README_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
@@ -184,8 +292,62 @@ Plot the most significantly enriched pathways (circle packing):
 
 
 ```r
-#View(reporter_score_res$reporter_s)
-plot_report_circle_packing(reporter_score_res,rs_threshold = c(-2.5,2.5))
+attributes(reporter_res$reporter_s)
+```
+
+```
+## $names
+##  [1] "ID"                   "Description"          "K_num"               
+##  [4] "Exist_K_num"          "Significant_K_num"    "Significant_up_num"  
+##  [7] "Significant_down_num" "Z_score"              "BG_Mean"             
+## [10] "BG_Sd"                "ReporterScore"        "p.value"             
+## [13] "p.adjust"            
+## 
+## $row.names
+##   [1] "map03010" "map00860" "map00785" "map05230" "map00780" "map04922"
+##   [7] "map00540" "map00900" "map00040" "map01523" "map03430" "map00130"
+##  [13] "map00520" "map00340" "map00710" "map00640" "map00620" "map00440"
+##  [19] "map03440" "map04112" "map00531" "map02010" "map04141" "map00561"
+##  [25] "map01110" "map03008" "map00550" "map00740" "map00405" "map04068"
+##  [31] "map00380" "map02060" "map03030" "map05418" "map00052" "map03060"
+##  [37] "map05134" "map00970" "map00121" "map00400" "map01250" "map00541"
+##  [43] "map04122" "map04727" "map00500" "map01120" "map00670" "map02040"
+##  [49] "map04142" "map00030" "map00630" "map00280" "map00790" "map00760"
+##  [55] "map00230" "map00310" "map00960" "map04146" "map00543" "map00998"
+##  [61] "map04213" "map00626" "map00946" "map00920" "map02030" "map00470"
+##  [67] "map00627" "map05208" "map03320" "map00061" "map05415" "map00330"
+##  [73] "map00730" "map04151" "map04210" "map00910" "map01501" "map02024"
+##  [79] "map03020" "map00625" "map01232" "map04070" "map05146" "map00071"
+##  [85] "map00720" "map05111" "map00523" "map05200" "map04016" "map01212"
+##  [91] "map01502" "map01200" "map04621" "map00140" "map04910" "map00950"
+##  [97] "map01053" "map01524" "map00621" "map05132"
+##  [ reached getOption("max.print") -- omitted 381 entries ]
+## 
+## $class
+## [1] "data.frame"
+## 
+## $mode
+## [1] "directed"
+## 
+## $method
+## [1] "wilcox.test"
+## 
+## $vs_group
+## [1] "WT" "OE"
+## 
+## $perm
+## [1] 999
+## 
+## $type
+## [1] "pathway"
+## 
+## $feature
+## [1] "ko"
+```
+
+```r
+# View(reporter_res$reporter_s)
+plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
 ```
 
 ```
@@ -221,7 +383,7 @@ When we focus on one pathway, e.g. "map00780":
 
 
 ```r
-plot_KOs_in_pathway(reporter_score_res,map_id = "map00780")
+plot_KOs_in_pathway(reporter_res, map_id = "map00780")
 ```
 
 ![](README_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
@@ -230,7 +392,7 @@ Or show the distribution of Z-scores
 
 
 ```r
-plot_KOs_distribution(reporter_score_res,map_id = "map00780")
+plot_KOs_distribution(reporter_res, map_id = "map00780")
 ```
 
 ![](README_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
@@ -239,7 +401,7 @@ Or display as a network:
 
 
 ```r
-plot_KOs_network(reporter_score_res,map_id = c("map00780","map00785","map00900"),main="",mark_module = T)
+plot_KOs_network(reporter_res, map_id = c("map00780", "map00785", "map00900"), main = "", mark_module = TRUE)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
@@ -248,7 +410,7 @@ And we also look at the KOs abundance in a pathway:
 
 
 ```r
-plot_KOs_box(reporter_score_res,map_id = "map00780",only_sig = TRUE)
+plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
 ```
 
 ```
@@ -265,7 +427,7 @@ Or display as a heatmap:
 
 
 ```r
-plot_KOs_heatmap(reporter_score_res,map_id = "map00780",only_sig = TRUE,heatmap_param = list(cutree_rows=2))
+plot_KOs_heatmap(reporter_res, map_id = "map00780", only_sig = TRUE, heatmap_param = list(cutree_rows = 2))
 ```
 
 ```
@@ -278,7 +440,7 @@ Or plot the KEGG pathway:
 
 
 ```r
-plot_KEGG_map(reporter_score_res$ko_stat,map_id="map00780",color_var="Z_score")
+plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 ```
 
 <img src="README_files/ko00780.Z_score.png" width="732" />
@@ -289,11 +451,13 @@ If our experimental design is more than two groups or longitudinal, we can choos
 
 
 ```r
-cat("Comparison: ",levels(factor(metadata$Group2)))
+cat("Comparison: ", levels(factor(metadata$Group2)))
 ## Comparison:  G1 G2 G3
 
-reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
-      method = "spearman",p.adjust.method1 = "none",perm = 999)
+reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "directed",
+    method = "spearman", p.adjust.method1 = "none", perm = 999
+)
 ## 30 samples are matched for next step.
 ## ===========================Removing all-zero rows: 0============================
 ## ===================================1.KO test====================================
@@ -311,22 +475,22 @@ reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="directed
 ## Compared groups: G1, G2, G3
 ## Total KO number: 4535
 ## Compare method: spearman
-## Time use: 0.528
+## Time use: 0.619
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## ================================Use feature: ko=================================
 ## ===============================Checking rownames================================
 ## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-07-28 14:07:08====================
+## ===================KOlist download time: 2023-08-14 16:00:52====================
 ## If you want to update KOlist, use `update_KO_file()`
 ## ============================Calculating each pathway============================
 ## 100 pathways done.
 ## 400 pathways done.
 ## ID number: 481
-## Time use: 1.786
+## Time use: 1.455
 ## ====================================All done====================================
 
-plot_KOs_in_pathway(reporter_score_res2,map_id = "map02060")+scale_y_log10()
+plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
 ```
 
 ![](README_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
@@ -339,14 +503,14 @@ We use 1,5,1 to found pathways with the down-up-down pattern
 
 
 ```r
-reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",method = "pearson",pattern = c("G1"=1,"G2"=5,"G3"=1))
-plot_report(reporter_score_res3,rs_threshold = 3,show_ID = T)
+reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata, mode = "directed", method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1))
+plot_report(reporter_res3, rs_threshold = 3, show_ID = TRUE)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 ```r
-plot_KOs_in_pathway(reporter_score_res3,map_id = "map00860")
+plot_KOs_in_pathway(reporter_res3, map_id = "map00860")
 ```
 
 ![](README_files/figure-html/unnamed-chunk-17-2.png)<!-- -->
@@ -355,15 +519,15 @@ To explore potential patterns within the data, clustering methods, such as C-mea
 
 
 ```r
-rsa_cm_res=RSA_by_cm(KO_abundance,"Group2",metadata,method = "pearson",k_num = 3,perm=999)
-#show the patterns
-plot_c_means(rsa_cm_res,filter_membership = 0.7)
+rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, method = "pearson", k_num = 3, perm = 999)
+# show the patterns
+plot_c_means(rsa_cm_res, filter_membership = 0.7)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
 ```r
-plot_report_bar(rsa_cm_res,rs_threshold = 2.5)
+plot_report_bar(rsa_cm_res, rs_threshold = 2.5)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-18-2.png)<!-- -->
@@ -386,21 +550,21 @@ So that you can get reporter score step by step.
 
 
 ```r
-#View(reporter_score_res2$reporter_s)
-#reporter_score
-filter(reporter_score_res$reporter_s,abs(ReporterScore)>1.64,p.adjust<0.05)%>%pull(ID)->RS
-#fisher
-fisher_res=KO_fisher(reporter_score_res)
-filter(fisher_res,p.adjust<0.05)%>%pull(ID)->Fisher
-#enricher
-enrich_res=KO_enrich(reporter_score_res)
-filter(enrich_res,p.adjust<0.05)%>%pull(ID)->clusterProfiler
-#GESA
+# View(reporter_res2$reporter_s)
+# reporter_score
+filter(reporter_res$reporter_s, abs(ReporterScore) > 1.64, p.adjust < 0.05) %>% pull(ID) -> RS
+# fisher
+fisher_res <- KO_fisher(reporter_res)
+filter(fisher_res, p.adjust < 0.05) %>% pull(ID) -> Fisher
+# enricher
+enrich_res <- KO_enrich(reporter_res)
+filter(enrich_res, p.adjust < 0.05) %>% pull(ID) -> clusterProfiler
+# GESA
 set.seed(1234)
-gsea_res=KO_gsea(reporter_score_res,weight = "Z_score")
-filter(gsea_res@result,p.adjust<0.05)%>%pull(ID)->GSEA
+gsea_res <- KO_gsea(reporter_res, weight = "Z_score")
+filter(data.frame(gsea_res), p.adjust < 0.05) %>% pull(ID) -> GSEA
 
-venn_res=list(RS=RS,Fisher=Fisher,CP=clusterProfiler,GSEA=GSEA)
+venn_res <- list(GRSA = RS, Fisher = Fisher, CP = clusterProfiler, GSEA = GSEA)
 library(pcutils)
 venn(venn_res)
 ```
@@ -408,7 +572,7 @@ venn(venn_res)
 ![](README_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
 
 ```r
-venn(venn_res,"network")
+venn(venn_res, "network")
 ```
 
 ![](README_files/figure-html/unnamed-chunk-19-2.png)<!-- -->
@@ -479,11 +643,11 @@ plot_htable(type = "ko")
 
 
 ```r
-KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
+KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
 ## =================================load KO_htable=================================
 ## ==================KO_htable download time: 2023-08-15 00:00:31==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
-pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])+ggsci::scale_fill_d3()
+pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) + ggsci::scale_fill_d3()
 ```
 
 ![](README_files/figure-html/unnamed-chunk-21-1.png)<!-- -->

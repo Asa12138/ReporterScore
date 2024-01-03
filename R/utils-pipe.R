@@ -11,10 +11,13 @@
 #' @param lhs A value or the magrittr placeholder.
 #' @param rhs A function call using the magrittr semantics.
 #' @return The result of calling `rhs(lhs)`.
+#' @examples
+#' seq_len(5)%>%sum
+#'
 NULL
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
+if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 
 deprecated <- function(old, new) {
@@ -42,7 +45,9 @@ deprecated("get_KOs", get_features)
 #' @export plot_report_bar
 deprecated("plot_report_bar", plot_report)
 #' @export download_org_pathway
-deprecated("download_org_pathway", get_org_pathway)
+deprecated("download_org_pathway", update_org_pathway)
+#' @export get_org_pathway
+deprecated("get_org_pathway", update_org_pathway)
 
 #' Some functions from other packages
 #' @importFrom pcutils lib_ps

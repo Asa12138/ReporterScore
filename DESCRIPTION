@@ -1,6 +1,6 @@
 Package: ReporterScore
 Type: Package
-Title: Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data
+Title: Generalized Reporter Score-based Enrichment Analysis for Omics Data
 Version: 0.99.0
 Authors@R:
     person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9449-7606"))
@@ -35,20 +35,19 @@ Suggests:
     doSNOW,
     enrichplot,
     pheatmap,
-    MetaNet,
     igraph,
     readr,
     ggrepel,
-    pctax,
-    CTSgetR,
     httr,
     pathview,
     GSA,
-    R.utils
+    R.utils,
+    MetaNet,
+    pctax
 Depends: 
     R (>= 4.2.0)
-biocViews: ReproterScore, GeneSetEnrichment, GO, KEGG,
-    Multi-group, Pathways, Visualization
+biocViews: GeneSetEnrichment, GO, KEGG,
+     Pathways, Visualization
 VignetteBuilder: knitr
 BugReports: https://github.com/Asa12138/ReporterScore/issues
 URL: https://github.com/Asa12138/ReporterScore

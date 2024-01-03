@@ -9,7 +9,7 @@ gene2ko(genedf, org = "hsa")
 \arguments{
 \item{genedf}{,rowname is gene symbol (e.g. PFKM), colnames is samples}
 
-\item{org}{kegg organism, listed in 'https://www.genome.jp/kegg/catalog/org_list.html', default, "hsa"}
+\item{org}{kegg organism, listed in 'https://www.genome.jp/kegg/catalog/org_list.html', default, 'hsa'}
 }
 \value{
 kodf
@@ -19,5 +19,5 @@ You can use `clusterProfiler::bitr()` to transfer your table from other gene_id 
 }
 \examples{
 data(genedf)
-KOdf=gene2ko(genedf,org="hsa")
+KOdf <- gene2ko(genedf, org = "hsa")
 }

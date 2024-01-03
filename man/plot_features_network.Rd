@@ -43,11 +43,14 @@ plot_features_network(
 
 \item{...}{additional arguments for \code{\link[MetaNet]{c_net_plot}}}
 }
+\value{
+ggplot
+}
 \description{
 Plot features network
 }
 \examples{
 data("reporter_score_res")
-plot_features_network(reporter_score_res,map_id="map05230")
-plot_features_network(reporter_score_res,map_id="map00780",near_pathway=TRUE)
+plot_features_network(reporter_score_res, map_id = "map05230")
+plot_features_network(reporter_score_res, map_id = "map00780", near_pathway = TRUE)
 }

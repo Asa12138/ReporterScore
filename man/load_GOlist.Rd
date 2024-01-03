@@ -2,9 +2,12 @@
 % Please edit documentation in R/check_files.R
 \name{load_GOlist}
 \alias{load_GOlist}
-\title{Load the GOlist (from GO)}
+\alias{load_GOinfo}
+\title{Load the GOlist (from GO database)}
 \usage{
 load_GOlist(envir = .GlobalEnv, verbose = TRUE)
+
+load_GOinfo(envir = .GlobalEnv, verbose = TRUE)
 }
 \arguments{
 \item{envir}{`.GlobalEnv` (default) or `environment()`}
@@ -12,8 +15,16 @@ load_GOlist(envir = .GlobalEnv, verbose = TRUE)
 \item{verbose}{logical}
 }
 \value{
-KO_htable in `.GlobalEnv`
+GOlist in `.GlobalEnv`
+
+GOinfo in `.GlobalEnv`
 }
 \description{
-Load the GOlist (from GO)
+Load the GOlist (from GO database)
+
+Load the GOinfo (from GO)
+}
+\examples{
+load_GOlist()
+
 }

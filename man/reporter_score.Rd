@@ -36,23 +36,23 @@ reporter_score(
 \itemize{
 \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
-\item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
+\item 'pearson', 'kendall', or 'spearman' (correlation), see \code{\link[stats]{cor}}.}}
 
-\item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
+\item{pattern}{a named vector matching the group, e.g. c('G1'=1,'G2'=3,'G3'=2), use the correlation analysis with specific pattern to calculate p-value.}
 
 \item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 
-\item{mode}{"mixed" or "directed" (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
+\item{mode}{'mixed' or 'directed' (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
 
 \item{verbose}{logical}
 
-\item{feature}{one of "ko", "gene", "compound"}
+\item{feature}{one of 'ko', 'gene', 'compound'}
 
-\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
+\item{type}{'pathway' or 'module' for default KOlist for microbiome, 'CC', 'MF', 'BP', 'ALL' for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as 'hsa' (if your kodf is come from a specific organism, you should specify type here).}
 
 \item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
-\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+\item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
 \item{threads}{default 1}
 
@@ -88,12 +88,19 @@ for the `reporter_s` in result, whose columns represent:
 One step to get the reporter score of your KO abundance table.
 }
 \examples{
-\donttest{
 data("KO_abundance_test")
-reporter_score_res=reporter_score(KO_abundance,"Group",metadata,mode="directed",perm=999)
-reporter_score_res2=reporter_score(KO_abundance,"Group2",metadata,mode="mixed",
-     method = "kruskal.test",p.adjust.method1 = "none",perm=999)
-reporter_score_res3=reporter_score(KO_abundance,"Group2",metadata,mode="directed",
-     method = "pearson",pattern = c("G1"=1,"G2"=3,"G3"=2),perm=999)
+reporter_score_res <- reporter_score(KO_abundance, "Group", metadata,
+    mode = "directed", perm = 999
+)
+message("The following example require some time to run:")
+\donttest{
+reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "mixed",
+    method = "kruskal.test", p.adjust.method1 = "none", perm = 999
+)
+reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "directed",
+    method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 999
+)
 }
 }

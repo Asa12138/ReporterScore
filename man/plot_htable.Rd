@@ -21,5 +21,5 @@ Plot htable levels
 }
 \examples{
 data("KO_abundance_test")
-plot_htable(select=rownames(KO_abundance))
+plot_htable(select = rownames(KO_abundance))
 }

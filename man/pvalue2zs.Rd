@@ -4,14 +4,14 @@
 \alias{pvalue2zs}
 \title{Transfer p-value of KOs to Z-score}
 \usage{
-pvalue2zs(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method = "BH")
+pvalue2zs(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH")
 }
 \arguments{
 \item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}} or your statistics test data.frame contains column: `p.value`}
 
-\item{mode}{"mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details}
+\item{mode}{'mixed' or 'directed' (only for two groups differential analysis or multi-groups correlation analysis.), see details}
 
-\item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method1}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 }
 \value{
 ko_stat dataframe
@@ -20,7 +20,7 @@ ko_stat dataframe
 Transfer p-value of KOs to Z-score
 }
 \details{
-"\strong{mixed}" mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
+'\strong{mixed}' mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
 In this mode, the reporter score is \strong{undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
 
 steps:
@@ -31,7 +31,7 @@ steps:
 
 \eqn{Z_{koi}=\theta ^{-1}(1-P_{koi})}
 
-3. "Upgrade" KO to pathway: \eqn{Z_{koi}}, calculate the Z value of the pathway, the formula:
+3. 'Upgrade' KO to pathway: \eqn{Z_{koi}}, calculate the Z value of the pathway, the formula:
 
 \eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}
 
@@ -43,7 +43,7 @@ where k means A total of k KOs were annotated to the corresponding pathway;
 
 \eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
 
-Instead, "\strong{directed}" mode is a derived version of "mixed", referenced from \code{https://github.com/wangpeng407/ReporterScore}.
+Instead, '\strong{directed}' mode is a derived version of 'mixed', referenced from \code{https://github.com/wangpeng407/ReporterScore}.
 
 This approach is based on the same assumption of many differential analysis methods: the expression of most genes has no significant change.
 
@@ -63,7 +63,7 @@ since the above P value is less than 0.5, all Z values will be greater than 0;
 
 so \eqn{Z_{koi}} is greater than 0 Up-regulation, \eqn{Z_{koi}} less than 0 is down-regulation;
 
-4. "Upgrade" KO to pathway: \eqn{Z_{koi}}, calculate the Z value of the pathway, the formula:
+4. 'Upgrade' KO to pathway: \eqn{Z_{koi}}, calculate the Z value of the pathway, the formula:
 
  \eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}
 
@@ -81,11 +81,9 @@ In this mode, the Reporter score is directed, and a larger positive value repres
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 }
 \examples{
-\donttest{
 data(KO_abundance_test)
-ko_pvalue=ko.test(KO_abundance,"Group",metadata)
-ko_stat=pvalue2zs(ko_pvalue,mode="directed")
-}
+ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 }
 \references{
 1. Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology. Proc Natl Acad Sci U S A 102, 2685–2689 (2005).

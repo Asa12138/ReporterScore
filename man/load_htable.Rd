@@ -2,9 +2,33 @@
 % Please edit documentation in R/check_files.R
 \name{load_htable}
 \alias{load_htable}
-\title{Load the KO_htable (from KEGG)}
+\alias{load_KOlist}
+\alias{load_CPDlist}
+\alias{load_KO_desc}
+\alias{load_KO_htable}
+\alias{load_Pathway_htable}
+\alias{load_Module_htable}
+\alias{load_Compound_htable}
+\alias{load_org_pathway}
+\title{Load the specific table (from KEGG)}
 \usage{
 load_htable(type, envir = .GlobalEnv, verbose = TRUE)
+
+load_KOlist(envir = .GlobalEnv, verbose = TRUE)
+
+load_CPDlist(envir = .GlobalEnv, verbose = TRUE)
+
+load_KO_desc(envir = .GlobalEnv, verbose = TRUE)
+
+load_KO_htable(envir = .GlobalEnv, verbose = TRUE)
+
+load_Pathway_htable(envir = .GlobalEnv, verbose = TRUE)
+
+load_Module_htable(envir = .GlobalEnv, verbose = TRUE)
+
+load_Compound_htable(envir = .GlobalEnv, verbose = TRUE)
+
+load_org_pathway(org = "hsa", envir = .GlobalEnv, verbose = TRUE)
 }
 \arguments{
 \item{type}{"ko", "module", "pathway", "compound" ...}
@@ -12,10 +36,48 @@ load_htable(type, envir = .GlobalEnv, verbose = TRUE)
 \item{envir}{`.GlobalEnv` (default) or `environment()`}
 
 \item{verbose}{logical}
+
+\item{org}{kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"}
 }
 \value{
 KO_htable in `.GlobalEnv`
+
+KOlist in `.GlobalEnv`
+
+CPDlist in `.GlobalEnv`
+
+KO description in `.GlobalEnv`
+
+KO_htable in `.GlobalEnv`
+
+Pathway_htable in `.GlobalEnv`
+
+Module_htable in `.GlobalEnv`
+
+Compound_htable in `.GlobalEnv`
+
+KOlist in `.GlobalEnv`
 }
 \description{
+Load the specific table (from KEGG)
+
+Load the KOlist (from KEGG)
+
+Load the CPDlist (from KEGG)
+
+Load the KO description (from KEGG)
+
 Load the KO_htable (from KEGG)
+
+Load the Pathway_htable (from KEGG)
+
+Load the Module_htable (from KEGG)
+
+Load the Compound_htable (from KEGG)
+
+Load the pathway information for an organism (from KEGG)
+}
+\examples{
+load_htable("pathway")
+head(KO_htable)
 }

@@ -12,11 +12,15 @@ get_features(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
 
 \item{ko_stat}{NULL or ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+\item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 }
 \value{
 KOids, or dataframe with these KOids.
 }
 \description{
 get features in a modulelist
+}
+\examples{
+get_features(map_id = "map00010")
+
 }

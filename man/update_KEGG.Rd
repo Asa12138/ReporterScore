@@ -2,10 +2,56 @@
 % Please edit documentation in R/check_files.R
 \name{update_KEGG}
 \alias{update_KEGG}
+\alias{update_KO_file}
+\alias{update_htable}
+\alias{update_org_pathway}
+\alias{download_org_pathway}
 \title{Update files from KEGG}
 \usage{
-update_KEGG()
+update_KEGG(download_dir = NULL)
+
+update_KO_file(download_dir = NULL, RDSfile = NULL)
+
+update_htable(type, keg_file = NULL, download = FALSE, download_dir = NULL)
+
+update_org_pathway(
+  org = "hsa",
+  RDS_file = NULL,
+  download = TRUE,
+  download_dir = NULL
+)
+}
+\arguments{
+\item{download_dir}{where to save the .keg file?}
+
+\item{RDSfile}{saved KO_files.RDS file}
+
+\item{type}{"ko", "module", "pathway", "compound" ...}
+
+\item{keg_file}{path of a .keg file, such as ko00001.keg from https://www.genome.jp/kegg-bin/download_htext?htext=ko00001&format=htext.}
+
+\item{download}{save the .keg file?}
+
+\item{org}{kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"}
+
+\item{RDS_file}{path of a org.RDS file if you saved before.}
+}
+\value{
+No value
 }
 \description{
-Update files from KEGG
+Download links:
+
+\code{https://rest.kegg.jp/list/pathway}
+\code{https://rest.kegg.jp/link/pathway/ko}
+\code{https://rest.kegg.jp/link/pathway/compound}
+\code{https://rest.kegg.jp/list/module}
+\code{https://rest.kegg.jp/link/module/ko}
+\code{https://rest.kegg.jp/link/module/compound}
+}
+\examples{
+message("The following example will download some files:")
+\donttest{
+# update_KEGG()
+}
 }

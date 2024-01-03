@@ -12,7 +12,7 @@ get_reporter_score(
   modulelist = NULL,
   perm = 4999,
   verbose = TRUE,
-  p.adjust.method = "BH",
+  p.adjust.method2 = "BH",
   min_exist_KO = 3,
   max_exist_KO = 600
 )
@@ -20,19 +20,19 @@ get_reporter_score(
 \arguments{
 \item{ko_stat}{ko_stat result from \code{\link{pvalue2zs}}}
 
-\item{type}{"pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).}
+\item{type}{'pathway' or 'module' for default KOlist for microbiome, 'CC', 'MF', 'BP', 'ALL' for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as 'hsa' (if your kodf is come from a specific organism, you should specify type here).}
 
-\item{feature}{one of "ko", "gene", "compound"}
+\item{feature}{one of 'ko', 'gene', 'compound'}
 
 \item{threads}{threads}
 
-\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+\item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
 \item{perm}{permutation number, default: 4999}
 
 \item{verbose}{logical}
 
-\item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method2}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 
 \item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)}
 
@@ -45,10 +45,8 @@ reporter_res dataframe
 Calculate reporter score
 }
 \examples{
-\donttest{
 data(KO_abundance_test)
-ko_pvalue=ko.test(KO_abundance,"Group",metadata)
-ko_stat=pvalue2zs(ko_pvalue,mode="directed")
-reporter_s1=get_reporter_score(ko_stat,perm=999)
-}
+ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+reporter_s1 <- get_reporter_score(ko_stat, perm = 999)
 }

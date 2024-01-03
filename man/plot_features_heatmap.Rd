@@ -42,10 +42,13 @@ plot_features_heatmap(
 
 \item{heatmap_param}{parameters pass to \code{\link[pheatmap]{pheatmap}}}
 }
+\value{
+ggplot
+}
 \description{
 Plot features heatmap
 }
 \examples{
 data("reporter_score_res")
-plot_features_heatmap(reporter_score_res,map_id="map00780")
+plot_features_heatmap(reporter_score_res, map_id = "map00780")
 }

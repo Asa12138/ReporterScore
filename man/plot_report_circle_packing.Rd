@@ -7,7 +7,7 @@
 plot_report_circle_packing(
   reporter_res,
   rs_threshold = 1.64,
-  mode = 1,
+  mode = 2,
   facet_anno = NULL,
   show_ID = FALSE,
   Pathway_description = TRUE,
@@ -43,5 +43,5 @@ Plot the reporter_res as circle_packing
 }
 \examples{
 data("reporter_score_res")
-plot_report_circle_packing(reporter_score_res,rs_threshold=c(2,-2),str_width=40)
+plot_report_circle_packing(reporter_score_res, rs_threshold = c(2, -2), str_width = 40)
 }

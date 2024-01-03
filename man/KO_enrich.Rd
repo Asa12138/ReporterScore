@@ -3,6 +3,8 @@
 \name{KO_enrich}
 \alias{KO_enrich}
 \alias{KO_fisher}
+\alias{as.enrich_res}
+\alias{plot_enrich_res}
 \alias{KO_gsea}
 \title{Perform enrichment analysis}
 \usage{
@@ -30,6 +32,21 @@ KO_fisher(
   verbose = TRUE
 )
 
+as.enrich_res(gsea_res)
+
+plot_enrich_res(
+  enrich_res,
+  mode = 1,
+  padj_threshold = 0.05,
+  show_ID = FALSE,
+  Pathway_description = TRUE,
+  facet_level = FALSE,
+  facet_anno = NULL,
+  str_width = 50,
+  facet_str_width = 15,
+  ...
+)
+
 KO_gsea(
   ko_stat,
   weight = "logFC",
@@ -45,7 +62,7 @@ KO_gsea(
 \arguments{
 \item{ko_stat}{ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.}
 
-\item{padj_threshold}{p.adjust threshold to determine whether a feature significant or not. p.adjust < padj_threshold, default: 0.05}
+\item{padj_threshold}{p.adjust threshold}
 
 \item{logFC_threshold}{logFC threshold to determine whether a feature significant or not. abs(logFC)>logFC_threshold, default: NULL}
 
@@ -61,31 +78,54 @@ KO_gsea(
 
 \item{verbose}{logical}
 
+\item{gsea_res}{gsea_res from KO_gsea}
+
+\item{enrich_res}{enrich_res object}
+
+\item{mode}{plot style: 1~2}
+
+\item{show_ID}{show pathway id}
+
+\item{Pathway_description}{show KO description rather than KO id.}
+
+\item{facet_level}{facet plot if the type is "pathway" or "module"}
+
+\item{facet_anno}{annotation table for facet, two columns, first is level summary, second is pathway id.}
+
+\item{str_width}{default: 50}
+
+\item{facet_str_width}{str width for facet label}
+
+\item{...}{add}
+
 \item{weight}{the metric used for ranking, default: logFC}
 }
 \value{
 A data frame containing the enrichment results.
 
 data.frame
+
+enrich_res object
+
+ggplot
 }
 \description{
 This function performs KO enrichment analysis using the `clusterProfiler` package.
 }
 \examples{
-\donttest{
 data("reporter_score_res")
-enrich_res=KO_enrich(reporter_score_res)
+enrich_res <- KO_enrich(reporter_score_res)
 plot(enrich_res)
-}
 \donttest{
 data("reporter_score_res")
-fisher_res=KO_fisher(reporter_score_res)
+fisher_res <- KO_fisher(reporter_score_res)
 plot(fisher_res)
 }
 \donttest{
 data("reporter_score_res")
-gsea_res=KO_gsea(reporter_score_res,p.adjust.method="none")
-enrichplot::gseaplot(gsea_res,geneSetID = gsea_res@result$ID[1])
-plot(as.enrich_res(gsea_res))
+gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
+enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
+gsea_res_df <- as.enrich_res(gsea_res)
+plot(gsea_res_df)
 }
 }

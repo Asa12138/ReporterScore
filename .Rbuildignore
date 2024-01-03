@@ -5,7 +5,6 @@
 ReporterScore_temp*/
 ReporterScore_temp*
 \.gitgnore
-^test\.R
 article
 article/*
 README\.Rmd

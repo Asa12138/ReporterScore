@@ -19,7 +19,7 @@ KO_gsa(
 
 \item{p.adjust.method}{"BH"}
 
-\item{verbose}{T}
+\item{verbose}{TRUE}
 
 \item{perm}{1000}
 }
@@ -30,9 +30,7 @@ enrich_res object
 Perform KO gene set analysis
 }
 \examples{
-\donttest{
 data("reporter_score_res")
-gsa_res=KO_gsa(reporter_score_res,p.adjust.method='none')
+gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none")
 plot(gsa_res)
-}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{load_CARDinfo}
 \alias{load_CARDinfo}
-\title{Load the CARDinfo (from CARD)}
+\title{Load the CARDinfo (from CARD database)}
 \usage{
 load_CARDinfo(envir = .GlobalEnv, verbose = TRUE)
 }
@@ -15,5 +15,8 @@ load_CARDinfo(envir = .GlobalEnv, verbose = TRUE)
 CARDinfo in `.GlobalEnv`
 }
 \description{
-Load the CARDinfo (from CARD)
+Load the CARDinfo (from CARD database)
+}
+\examples{
+load_CARDinfo()
 }

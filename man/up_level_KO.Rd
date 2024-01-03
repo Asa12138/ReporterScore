@@ -15,11 +15,11 @@ up_level_KO(
 \arguments{
 \item{KO_abundance}{KO_abundance}
 
-\item{level}{one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".}
+\item{level}{one of 'pathway', 'module', 'level1', 'level2', 'level3', 'module1', 'module2', 'module3'.}
 
 \item{show_name}{logical}
 
-\item{modulelist}{NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
+\item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
 \item{verbose}{logical}
 }
@@ -30,6 +30,7 @@ data.frame
 Upgrade the KO level
 }
 \examples{
-KO_level1=up_level_KO(KO_abundance,level = "level1",show_name = TRUE)
-pcutils::stackplot(KO_level1[-which(rownames(KO_level1)=="Unknown"),])
+data("KO_abundance_test")
+KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
+# pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ])
 }

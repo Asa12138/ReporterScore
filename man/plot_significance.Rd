@@ -19,5 +19,5 @@ Plot the significance of pathway
 }
 \examples{
 data("reporter_score_res")
-plot_significance(reporter_score_res,map_id=c("map05230","map03010"))
+plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
 }

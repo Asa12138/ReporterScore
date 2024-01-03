@@ -47,5 +47,5 @@ Plot the reporter_res
 }
 \examples{
 data("reporter_score_res")
-plot_report(reporter_score_res,rs_threshold=c(2.5,-2.5),y_text_size=10,str_width=40)
+plot_report(reporter_score_res, rs_threshold = c(2.5, -2.5), y_text_size = 10, str_width = 40)
 }

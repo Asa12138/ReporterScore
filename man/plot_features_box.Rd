@@ -39,12 +39,16 @@ plot_features_box(
 
 \item{str_width}{str_width to wrap}
 }
+\value{
+ggplot
+}
 \description{
 Plot features boxplot
 }
 \examples{
 data("reporter_score_res")
 plot_features_box(reporter_score_res,
-     select_ko=c("K00059","K00208","K00647","K00652","K00833","K01012"))
-plot_features_box(reporter_score_res,select_ko="K00059",KO_description=TRUE)
+    select_ko = c("K00059", "K00208", "K00647", "K00652", "K00833", "K01012")
+)
+plot_features_box(reporter_score_res, select_ko = "K00059", KO_description = TRUE)
 }

@@ -2,12 +2,31 @@
 % Please edit documentation in R/check_files.R
 \name{update_GO_file}
 \alias{update_GO_file}
-\title{Update the GO2gene files from GO}
+\alias{update_GOinfo}
+\title{Update the GO2gene files (from GO database)}
 \usage{
-update_GO_file()
+update_GO_file(download_dir = NULL, GO_file = NULL)
+
+update_GOinfo(download_dir = NULL, obo_file = NULL)
+}
+\arguments{
+\item{download_dir}{download_dir}
+
+\item{GO_file}{GO_file}
+
+\item{obo_file}{obo_file from http://current.geneontology.org/ontology/go.obo}
+}
+\value{
+No value
 }
 \description{
 Download links:
-
 \code{http://geneontology.org/docs/download-ontology/}
+\code{https://asa12138.github.io/FileList/GOlist.rda}
+}
+\examples{
+message("The following example will download some files:")
+\donttest{
+# update_GO_file()
+}
 }

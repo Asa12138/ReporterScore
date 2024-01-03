@@ -10,7 +10,7 @@ ko.test(
   metadata = NULL,
   method = "wilcox.test",
   pattern = NULL,
-  p.adjust.method = "none",
+  p.adjust.method1 = "none",
   threads = 1,
   verbose = TRUE
 )
@@ -26,11 +26,11 @@ ko.test(
 \itemize{
 \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
-\item "pearson", "kendall", or "spearman" (correlation), see \code{\link[stats]{cor}}.}}
+\item 'pearson', 'kendall', or 'spearman' (correlation), see \code{\link[stats]{cor}}.}}
 
-\item{pattern}{a named vector matching the group, e.g. c("G1"=1,"G2"=3,"G3"=2), use the correlation analysis with specific pattern to calculate p-value.}
+\item{pattern}{a named vector matching the group, e.g. c('G1'=1,'G2'=3,'G3'=2), use the correlation analysis with specific pattern to calculate p-value.}
 
-\item{p.adjust.method}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method1}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 
 \item{threads}{default 1}
 
@@ -43,8 +43,6 @@ ko_pvalue dataframej
 Differential analysis or Correlation analysis for KO-abundance table
 }
 \examples{
-\donttest{
 data("KO_abundance_test")
-ko_pvalue=ko.test(KO_abundance,"Group",metadata)
-}
+ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 }

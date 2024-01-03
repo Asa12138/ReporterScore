@@ -4,7 +4,7 @@
 \name{ReporterScore-package}
 \alias{ReporterScore}
 \alias{ReporterScore-package}
-\title{ReporterScore: Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data}
+\title{ReporterScore: Generalized Reporter Score-based Enrichment Analysis for Omics Data}
 \description{
 The original reporter-score method comes from Patil, K. R. et al. PNAS 2005. In this package, we provide two reporter-score methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
 }
