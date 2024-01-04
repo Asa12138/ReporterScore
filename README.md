@@ -1,22 +1,9 @@
----
-title: 'ReporterScore'
-author: "pengchen"
-date: "2023-07-18"
-output: 
-    html_document:
-        keep_md: true
-        toc: true
-        toc_depth: 3
-        toc_float: true
----
-
-
 
 # ReporterScore
 
 Generalized Reporter Score-based Enrichment Analysis for Omics Data
 
-<img src="README_files/1-workflow.png" width="2481" />
+<img src="README_files/1-workflow.png" width="1985" />
 
 
 ## Citation
@@ -102,7 +89,8 @@ load_CPDlist()
 head(CPDlist$pathway)
 
 # 3. human (hsa) pathway-ko/gene/compound databases
-hsa_pathway_gene <- custom_modulelist_from_org("hsa", feature = c("ko", "gene", "compound")[2])
+hsa_pathway_gene <- custom_modulelist_from_org(org = "hsa", 
+                                               feature = c("ko", "gene", "compound")[2])
 head(hsa_pathway_gene)
 
 # 4. GO-gene database
@@ -199,7 +187,7 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed
 ## Compared groups: WT, OE
 ## Total KO number: 4535
 ## Compare method: wilcox.test
-## Time use: 1.109
+## Time use: 1.153
 ```
 
 ```
@@ -244,7 +232,7 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed
 
 ```
 ## ID number: 481
-## Time use: 1.414
+## Time use: 1.570
 ```
 
 ```
@@ -304,23 +292,23 @@ attributes(reporter_res$reporter_s)
 ## [13] "p.adjust"            
 ## 
 ## $row.names
-##   [1] "map03010" "map00860" "map00785" "map05230" "map00780" "map04922"
-##   [7] "map00540" "map00900" "map00040" "map01523" "map03430" "map00130"
-##  [13] "map00520" "map00340" "map00710" "map00640" "map00620" "map00440"
-##  [19] "map03440" "map04112" "map00531" "map02010" "map04141" "map00561"
-##  [25] "map01110" "map03008" "map00550" "map00740" "map00405" "map04068"
-##  [31] "map00380" "map02060" "map03030" "map05418" "map00052" "map03060"
-##  [37] "map05134" "map00970" "map00121" "map00400" "map01250" "map00541"
-##  [43] "map04122" "map04727" "map00500" "map01120" "map00670" "map02040"
-##  [49] "map04142" "map00030" "map00630" "map00280" "map00790" "map00760"
-##  [55] "map00230" "map00310" "map00960" "map04146" "map00543" "map00998"
-##  [61] "map04213" "map00626" "map00946" "map00920" "map02030" "map00470"
-##  [67] "map00627" "map05208" "map03320" "map00061" "map05415" "map00330"
-##  [73] "map00730" "map04151" "map04210" "map00910" "map01501" "map02024"
-##  [79] "map03020" "map00625" "map01232" "map04070" "map05146" "map00071"
-##  [85] "map00720" "map05111" "map00523" "map05200" "map04016" "map01212"
-##  [91] "map01502" "map01200" "map04621" "map00140" "map04910" "map00950"
-##  [97] "map01053" "map01524" "map00621" "map05132"
+##   [1] "map03010" "map00785" "map00860" "map05230" "map00780" "map00130"
+##   [7] "map04922" "map00900" "map03430" "map00340" "map00540" "map00520"
+##  [13] "map01523" "map00040" "map03440" "map00620" "map00710" "map00440"
+##  [19] "map00640" "map04112" "map00531" "map02010" "map04141" "map00561"
+##  [25] "map01110" "map03008" "map00740" "map00550" "map05418" "map00380"
+##  [31] "map04068" "map00405" "map05134" "map02060" "map03030" "map00052"
+##  [37] "map00500" "map00970" "map00400" "map03060" "map01250" "map04727"
+##  [43] "map00541" "map00121" "map04142" "map04122" "map01120" "map02040"
+##  [49] "map00630" "map00280" "map04213" "map00670" "map00030" "map00626"
+##  [55] "map00790" "map00230" "map00310" "map00760" "map00543" "map00960"
+##  [61] "map04146" "map02030" "map00998" "map00061" "map00920" "map00627"
+##  [67] "map00946" "map05415" "map00730" "map00470" "map00330" "map00625"
+##  [73] "map03320" "map00910" "map04151" "map01501" "map05208" "map04210"
+##  [79] "map02024" "map03020" "map04070" "map00523" "map00720" "map01232"
+##  [85] "map05146" "map05111" "map05200" "map01212" "map00071" "map04016"
+##  [91] "map04910" "map01200" "map01502" "map05152" "map01053" "map00621"
+##  [97] "map01524" "map04621" "map04212" "map00950"
 ##  [ reached getOption("max.print") -- omitted 381 entries ]
 ## 
 ## $class
@@ -443,7 +431,7 @@ Or plot the KEGG pathway:
 plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 ```
 
-<img src="README_files/ko00780.Z_score.png" width="732" />
+<img src="README_files/ko00780.Z_score.png" width="586" />
 
 ### Example for multi-group or longitudinal
 
@@ -475,7 +463,7 @@ reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
 ## Compared groups: G1, G2, G3
 ## Total KO number: 4535
 ## Compare method: spearman
-## Time use: 0.619
+## Time use: 0.521
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## ================================Use feature: ko=================================
@@ -487,7 +475,7 @@ reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
 ## 100 pathways done.
 ## 400 pathways done.
 ## ID number: 481
-## Time use: 1.455
+## Time use: 1.619
 ## ====================================All done====================================
 
 plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
