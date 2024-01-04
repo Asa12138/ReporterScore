@@ -79,5 +79,5 @@ Load the pathway information for an organism (from KEGG)
 }
 \examples{
 load_htable("pathway")
-head(KO_htable)
+head(Pathway_htable)
 }

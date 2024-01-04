@@ -252,7 +252,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
 #' @return KO_htable in `.GlobalEnv`
 #' @examples
 #' load_htable("pathway")
-#' head(KO_htable)
+#' head(Pathway_htable)
 load_htable <- function(type, envir = .GlobalEnv, verbose = TRUE) {
     type <- match.arg(type, c("ko", "module", "pathway", "compound"))
     switch(type,
@@ -597,7 +597,7 @@ load_org_pathway <- function(org = "hsa", envir = .GlobalEnv, verbose = TRUE) {
     if (file.exists(path_file)) {
         load(path_file, envir = envir)
     } else if (org %in% c("hsa", "mmu")) {
-        data(paste0(org, "_kegg_pathway"), package = "ReporterScore", envir = envir)
+        data(list = paste0(org, "_kegg_pathway"), package = "ReporterScore", envir = envir)
     } else {
         message("No pathway information for organism '", org, "', download?\n")
         flag <- readline("yes/no(y/n)?")

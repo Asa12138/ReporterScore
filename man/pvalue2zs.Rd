@@ -81,7 +81,7 @@ In this mode, the Reporter score is directed, and a larger positive value repres
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 }
 \examples{
-data(KO_abundance_test)
+data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 }

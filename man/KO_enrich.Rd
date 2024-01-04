@@ -4,7 +4,6 @@
 \alias{KO_enrich}
 \alias{KO_fisher}
 \alias{as.enrich_res}
-\alias{plot_enrich_res}
 \alias{KO_gsea}
 \title{Perform enrichment analysis}
 \usage{
@@ -34,19 +33,6 @@ KO_fisher(
 
 as.enrich_res(gsea_res)
 
-plot_enrich_res(
-  enrich_res,
-  mode = 1,
-  padj_threshold = 0.05,
-  show_ID = FALSE,
-  Pathway_description = TRUE,
-  facet_level = FALSE,
-  facet_anno = NULL,
-  str_width = 50,
-  facet_str_width = 15,
-  ...
-)
-
 KO_gsea(
   ko_stat,
   weight = "logFC",
@@ -62,7 +48,7 @@ KO_gsea(
 \arguments{
 \item{ko_stat}{ko_stat dataframe from \code{\link[ReporterScore]{ko.test}}.}
 
-\item{padj_threshold}{p.adjust threshold}
+\item{padj_threshold}{p.adjust threshold to determine whether a feature significant or not. p.adjust < padj_threshold, default: 0.05}
 
 \item{logFC_threshold}{logFC threshold to determine whether a feature significant or not. abs(logFC)>logFC_threshold, default: NULL}
 
@@ -80,24 +66,6 @@ KO_gsea(
 
 \item{gsea_res}{gsea_res from KO_gsea}
 
-\item{enrich_res}{enrich_res object}
-
-\item{mode}{plot style: 1~2}
-
-\item{show_ID}{show pathway id}
-
-\item{Pathway_description}{show KO description rather than KO id.}
-
-\item{facet_level}{facet plot if the type is "pathway" or "module"}
-
-\item{facet_anno}{annotation table for facet, two columns, first is level summary, second is pathway id.}
-
-\item{str_width}{default: 50}
-
-\item{facet_str_width}{str width for facet label}
-
-\item{...}{add}
-
 \item{weight}{the metric used for ranking, default: logFC}
 }
 \value{
@@ -106,8 +74,6 @@ A data frame containing the enrichment results.
 data.frame
 
 enrich_res object
-
-ggplot
 }
 \description{
 This function performs KO enrichment analysis using the `clusterProfiler` package.

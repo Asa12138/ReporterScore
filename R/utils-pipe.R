@@ -12,7 +12,7 @@
 #' @param rhs A function call using the magrittr semantics.
 #' @return The result of calling `rhs(lhs)`.
 #' @examples
-#' seq_len(5)%>%sum
+#' seq_len(5) %>% sum()
 #'
 NULL
 
@@ -46,8 +46,6 @@ deprecated("get_KOs", get_features)
 deprecated("plot_report_bar", plot_report)
 #' @export download_org_pathway
 deprecated("download_org_pathway", update_org_pathway)
-#' @export get_org_pathway
-deprecated("get_org_pathway", update_org_pathway)
 
 #' Some functions from other packages
 #' @importFrom pcutils lib_ps

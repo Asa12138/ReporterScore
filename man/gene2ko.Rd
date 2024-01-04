@@ -18,6 +18,6 @@ kodf
 You can use `clusterProfiler::bitr()` to transfer your table from other gene_id to gene_symbol.
 }
 \examples{
-data(genedf)
+data("genedf")
 KOdf <- gene2ko(genedf, org = "hsa")
 }

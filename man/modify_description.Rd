@@ -24,5 +24,6 @@ reporter_res
 Modify the pathway description before plotting
 }
 \examples{
+data("reporter_score_res")
 modify_description(reporter_score_res, pattern = " - Homo sapiens (human)")
 }

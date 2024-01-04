@@ -45,7 +45,7 @@ reporter_res dataframe
 Calculate reporter score
 }
 \examples{
-data(KO_abundance_test)
+data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 reporter_s1 <- get_reporter_score(ko_stat, perm = 999)

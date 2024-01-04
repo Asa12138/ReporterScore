@@ -471,7 +471,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' 3. \code{https://github.com/wangpeng407/ReporterScore}
 #'
 #' @examples
-#' data(KO_abundance_test)
+#' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
@@ -633,7 +633,7 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
 #' @export
 #'
 #' @examples
-#' data(KO_abundance_test)
+#' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 #' reporter_s1 <- get_reporter_score(ko_stat, perm = 999)
@@ -947,6 +947,7 @@ custom_modulelist_from_org <- function(org = "hsa", feature = "ko", verbose = TR
 #' @export
 #' @return reporter_res
 #' @examples
+#' data("reporter_score_res")
 #' modify_description(reporter_score_res, pattern = " - Homo sapiens (human)")
 modify_description <- function(reporter_res, pattern = " - Homo sapiens (human)", replacement = "") {
     if (inherits(reporter_res, "reporter_score")) {
@@ -1045,7 +1046,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
 #' @export
 #'
 #' @examples
-#' data(genedf)
+#' data("genedf")
 #' KOdf <- gene2ko(genedf, org = "hsa")
 gene2ko <- function(genedf, org = "hsa") {
     load_org_pathway(org = org, envir = environment())

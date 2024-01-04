@@ -225,8 +225,10 @@ as.enrich_res <- function(gsea_res) {
 #'
 #' @return ggplot
 #' @export
-#' @rdname KO_enrich
-#'
+#' @examples
+#' data("reporter_score_res")
+#' enrich_res <- KO_enrich(reporter_score_res)
+#' plot(enrich_res)
 plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
                             show_ID = FALSE, Pathway_description = TRUE,
                             facet_level = FALSE, facet_anno = NULL, str_width = 50, facet_str_width = 15, ...) {
@@ -308,13 +310,13 @@ pre_enrich_res <- function(enrich_res, padj_threshold = 0.05,
     } else if ("NES" %in% colnames(GO)) {
         GO$order_value <- -GO$NES
         GO$x <- GO$NES
-        GO$Group=ifelse(GO$NES>0,"Up","Down")
+        GO$Group <- ifelse(GO$NES > 0, "Up", "Down")
         GO$fill <- GO$Group
         x_lab <- "NES"
     } else if ("GSA.scores" %in% colnames(GO)) {
         GO$order_value <- -GO$GSA.scores
         GO$x <- GO$GSA.scores
-        GO$Group=ifelse(GO$`GSA.scores`>0,"Up","Down")
+        GO$Group <- ifelse(GO$`GSA.scores` > 0, "Up", "Down")
         GO$fill <- GO$Group
         x_lab <- "GSA.scores"
     } else {
@@ -337,7 +339,7 @@ pre_enrich_res <- function(enrich_res, padj_threshold = 0.05,
 }
 
 #' Plot enrich_res
-#'
+#' @param x enrich_res object
 #' @rdname plot_enrich_res
 #'
 #' @return ggplot
