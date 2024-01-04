@@ -91,9 +91,11 @@ print.reporter_score <- function(x, ...) {
 #' )
 #' }
 reporter_score <- function(
-    kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("mixed", "directed")[1], verbose = TRUE,
+    kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
     feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH", modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600) {
     KOlist <- NULL
+
+    check_kodf_modulelist(kodf, type, feature, modulelist, verbose, mode = 1)
 
     stopifnot(mode %in% c("mixed", "directed"))
     method <- match.arg(method, c("t.test", "wilcox.test", "kruskal.test", "anova", "pearson", "kendall", "spearman", "lm"))
@@ -103,11 +105,6 @@ reporter_score <- function(
         }
         if (mode != "directed") {
             stop("method should be \"directed\" when you specify a pattern")
-        }
-    }
-    if (type %in% c("pathway", "module")) {
-        if (feature == "gene") {
-            stop("If the feature of your table is \"gene\", please sepcify the \"type\" arugment as an org in listed in https://www.genome.jp/kegg/catalog/org_list.html or \"CC\", \"MF\", \"BP\", \"ALL\" for default GOlist")
         }
     }
 
@@ -145,6 +142,7 @@ reporter_score <- function(
         pcutils::dabiao("2.Transfer p.value to z-score")
     }
     ko_stat <- pvalue2zs(ko_pvalue, mode = mode, p.adjust.method1 = p.adjust.method1)
+    attributes(ko_stat)$check <- TRUE
     if (verbose) {
         pcutils::dabiao("3.Calculating reporter score")
     }
@@ -159,7 +157,6 @@ reporter_score <- function(
     if (is.null(modulelist)) {
         modulelist <- get_modulelist(type, feature, verbose = FALSE)
     }
-    # if(!all(c('id','K_num','KOs','Description')%in%colnames(modulelist)))stop('check your modulelist format!')
 
     res <- list(kodf = kodf, ko_stat = ko_stat, reporter_s = reporter_s, modulelist = modulelist, group = group, metadata = metadata)
     class(res) <- "reporter_score"
@@ -644,36 +641,11 @@ get_reporter_score <- function(
     type_flag <- FALSE
     t1 <- Sys.time()
 
-    pcutils::dabiao("Use feature: ", feature)
-    if (verbose) {
-        pcutils::dabiao("Checking rownames")
-        if (feature == "ko") {
-            rowname_check <- grepl("K\\d{5}", rownames(ko_stat))
-            if (!all(rowname_check)) {
-                warning("Some of your ko_stat are not KO id, check the format! (e.g. K00001)\n")
-            }
-        }
-        if (feature == "gene") {
-            message("please make sure your input table rows are gene symbol!\n")
-        }
-        if (feature == "compound") {
-            rowname_check <- grepl("C\\d{5}", rownames(ko_stat))
-            if (!all(rowname_check)) {
-                warning("Some of your ko_stat are not KEGG compound id, check the format! (e.g. C00001)\n")
-            }
-        }
-    }
-    if (!all(c("KO_id", "Z_score") %in% colnames(ko_stat))) {
-        stop("Some wrong with ko_stat")
-    }
+    check_kodf_modulelist(ko_stat, type, feature, modulelist, verbose, mode = 2)
 
     if (is.null(modulelist)) {
         modulelist <- get_modulelist(type, feature, verbose)
         type_flag <- TRUE
-    }
-
-    if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) {
-        stop("check your modulelist format!")
     }
 
     # calculate each pathway
@@ -805,6 +777,60 @@ get_reporter_score <- function(
         message(resinfo)
     }
     return(reporter_res)
+}
+
+check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, mode = 1) {
+    if (!is.null(attributes(ko_stat)$check)) {
+        if (attributes(ko_stat)$check) {
+            return(invisible())
+        }
+    }
+    if (mode == 1) {
+    } else {
+        if (!all(c("KO_id", "Z_score") %in% colnames(ko_stat))) {
+            stop("Some wrong with ko_stat, please check if the colnames of ko_stat contains KO_id and Z_score?")
+        }
+        if (!all(rownames(ko_stat) == ko_stat$KO_id)) {
+            stop("Rownames of ko_stat do not match the KO_id in ko_stat")
+        }
+    }
+
+    if (verbose) pcutils::dabiao("Use feature: ", feature)
+    if (verbose) pcutils::dabiao("Checking rownames")
+    if (feature == "ko") {
+        rowname_check <- grepl("K\\d{5}", rownames(ko_stat))
+        if (!all(rowname_check)) {
+            if (verbose) message("Some of your ko_stat are not KO id, check the format! (e.g. K00001)\n")
+        }
+    }
+    if (feature == "gene") {
+        if (verbose) message("please make sure your input table rows are gene symbol!\n")
+    }
+    if (feature == "compound") {
+        rowname_check <- grepl("C\\d{5}", rownames(ko_stat))
+        if (!all(rowname_check)) {
+            if (verbose) message("Some of your ko_stat are not KEGG compound id, check the format! (e.g. C00001)\n")
+        }
+    }
+
+    if (is.null(modulelist)) {
+        modulelist <- get_modulelist(type, feature, verbose = FALSE)
+    }
+
+    if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) {
+        stop("Please check your modulelist format!")
+    }
+
+    all_kos <- unique(transform_modulelist(modulelist, 2)[, 2])
+    ko_ratio <- sum(rownames(ko_stat) %in% all_kos) / nrow(ko_stat)
+
+    if (ko_ratio == 0) {
+        stop("All your ", feature, "s do not exist in the modulelist! Please check your input table and modulelist (or  parameters `feature` and `type`).")
+    } else if (ko_ratio < 0.1) {
+        warning("Only ", 100 * round(ko_ratio, 4), "% of your ", feature, "s in the modulelist! Please make sure your input table and modulelist (or  parameters `feature` and `type`) are right.")
+    } else {
+        if (verbose) message(100 * round(ko_ratio, 4), "% of your ", feature, "s in the modulelist!")
+    }
 }
 
 #' get features in a modulelist
