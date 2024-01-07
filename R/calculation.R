@@ -77,18 +77,19 @@ print.reporter_score <- function(x, ...) {
 #' @examples
 #' data("KO_abundance_test")
 #' reporter_score_res <- reporter_score(KO_abundance, "Group", metadata,
-#'     mode = "directed", perm = 999
+#'     mode = "directed", perm = 499
 #' )
+#' head(reporter_score_res$reporter_s)
 #' message("The following example require some time to run:")
 #' \donttest{
-#' reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-#'     mode = "mixed",
-#'     method = "kruskal.test", p.adjust.method1 = "none", perm = 999
-#' )
-#' reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-#'     mode = "directed",
-#'     method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 999
-#' )
+#'  reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+#'      mode = "mixed",
+#'      method = "kruskal.test", p.adjust.method1 = "none", perm = 499
+#'  )
+#'  reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+#'      mode = "directed",
+#'      method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
+#'  )
 #' }
 reporter_score <- function(
     kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
@@ -633,11 +634,11 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
-#' reporter_s1 <- get_reporter_score(ko_stat, perm = 999)
+#' reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 get_reporter_score <- function(
     ko_stat, type = c("pathway", "module")[1], feature = "ko", threads = 1, modulelist = NULL, perm = 4999, verbose = TRUE, p.adjust.method2 = "BH",
     min_exist_KO = 3, max_exist_KO = 600) {
-    KOlist <- i <- NULL
+    ReporterScore <- KOlist <- i <- NULL
     type_flag <- FALSE
     t1 <- Sys.time()
 
@@ -897,7 +898,7 @@ get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
 #' @examples
 #' mydat <- data.frame(pathway = paste0("PATHWAY", rep(seq_len(2), each = 5)), ko = paste0("K", 1:10))
 #' mymodulelist <- custom_modulelist(mydat)
-#' mymodulelist
+#' print(mymodulelist)
 #' transform_modulelist(mymodulelist)
 custom_modulelist <- function(pathway2ko, pathway2desc = NULL, verbose = TRUE) {
     Pathway <- NULL
@@ -1009,7 +1010,6 @@ modify_description <- function(reporter_res, pattern = " - Homo sapiens (human)"
 #' @examples
 #' data("KO_abundance_test")
 #' KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
-#' # pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ])
 up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modulelist = NULL, verbose = TRUE) {
     a <- KO_abundance
     a$KO_id <- rownames(a)
@@ -1105,13 +1105,99 @@ if (FALSE) {
     plot_KOs_in_pathway(test1, map_id = "map03010")
 }
 
+
+
+#' Test the proper clusters k for c_means
+#'
+#' @param otu_group grouped otutab
+#' @param filter_var filter the highest var
+#' @param fast whether do the gap_stat?
+#'
+#' @return ggplot
+#' @export
+#'
+#' @rdname c_means
+cm_test_k <- function(otu_group, filter_var, fast = TRUE) {
+    data_scaled <- filter_top_var(otu_group, filter_var)
+
+    # 判断聚类个数
+    # 输入文件最好是按你想要的分组合并过的
+    lib_ps("factoextra", library = FALSE)
+    #-------determining the number of clusters
+    # 1 Elbow method
+    cp1 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "wss", verbose = TRUE) +
+        labs(subtitle = "Elbow method")
+    # 2 Silhouette method
+    cp2 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "silhouette") +
+        labs(subtitle = "Silhouette method")
+    # 3 Gap statistic
+    # nboot = 50 to keep the function speedy.
+    # recommended value: nboot= 500 for your analysis.
+    # Use verbose = FALSE to hide computing progression.
+    cp3 <- NULL
+    if (!fast) {
+        cp3 <- factoextra::fviz_nbclust(data_scaled, kmeans, nstart = 25, method = "gap_stat", nboot = 50) +
+            labs(subtitle = "Gap statistic method")
+    }
+    return(list(cp1 = cp1, cp2 = cp2, cp3 = cp3))
+}
+
+filter_top_var <- function(otu_group, filter_var) {
+    # trans
+    pcutils::dabiao("Filter top ", (1 - filter_var) * 100, "% var and scale")
+    group.var <- apply(otu_group, 1, var)
+    otu_group.sel <- otu_group[group.var >= quantile(group.var, filter_var), ] # 挑出变化较大的部分
+    weight <- c(apply(otu_group.sel, 1, var))
+    data_scaled <- pcutils::trans(otu_group.sel, method = "standardize", MARGIN = 1)
+    data_scaled
+}
+
+#' C-means cluster
+#'
+#' @param otu_group standardize data
+#' @param k_num cluster number
+#' @param filter_var filter the highest var
+#'
+#' @return ggplot
+#' @export
+#'
+#' @examples
+#' data(otutab, package = "pcutils")
+#' pcutils::hebing(otutab, metadata$Group) -> otu_group
+#' cm_test_k(otu_group, filter_var = 0.7)
+#' cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
+#' plot(cm_res, 0.8)
+c_means <- function(otu_group, k_num, filter_var) {
+    lib_ps("e1071", library = FALSE)
+
+    data_scaled <- filter_top_var(otu_group, filter_var)
+
+    #-----Start clustering
+    # set.seed(123)
+    cm <- e1071::cmeans(data_scaled, center = k_num, iter.max = 500)
+
+    cm_data <- cbind.data.frame(
+        Name = row.names(data_scaled), data_scaled,
+        Weight = apply(otu_group[rownames(data_scaled), ], 1, var),
+        Cluster = cm$cluster,
+        Membership = apply(cm$membership, 1, max)
+    )
+    res <- list(
+        data = otu_group, filter_var = filter_var, data_scaled = data_scaled,
+        cm_data = cm_data, centers = cm$centers, membership = cm$membership
+    )
+    class(res) <- "cm_res"
+    return(res)
+}
+
+
 #' Reporter score analysis after C-means clustering
 #'
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
 #' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
 #' @param metadata sample information data.frame contains group
-#' @param k_num if NULL, perform the \code{\link[pctax]{cm_test_k}}, else an integer
-#' @param filter_var see \code{\link[pctax]{c_means}}
+#' @param k_num if NULL, perform the cm_test_k, else an integer
+#' @param filter_var see c_means
 #' @param verbose verbose
 #' @param method method from \code{\link{reporter_score}}
 #' @param ... additional arguments for \code{\link{reporter_score}}
@@ -1123,11 +1209,12 @@ if (FALSE) {
 #' @examples
 #' message("The following example require some time to run:")
 #' \donttest{
-#' rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, method = "pearson")
-#' extract_cluster(rsa_cm_res, cluster = 1)
+#'  data("KO_abundance_test")
+#'  rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, k_num = 3,
+#'      filter_var = 0.7, method = "pearson", perm=199)
+#'  extract_cluster(rsa_cm_res, cluster = 1)
 #' }
 RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0.7, verbose = TRUE, method = "pearson", ...) {
-    pcutils::lib_ps("pctax", library = FALSE)
     if (verbose) {
         pcutils::dabiao("Checking group")
     }
@@ -1154,7 +1241,7 @@ RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0
 
     pcutils::hebing(kodf, sampFile$group, 2) -> kodf_g
     if (is.null(k_num)) {
-        cm_test_k_res <- pctax::cm_test_k(kodf_g, filter_var = filter_var)
+        cm_test_k_res <- cm_test_k(kodf_g, filter_var = filter_var)
         print(cm_test_k_res)
         while (TRUE) {
             if (!is.null(k_num)) {
@@ -1175,7 +1262,7 @@ RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0
         pcutils::dabiao("Choose k_num: ", k_num, ". Start to cluster")
     }
 
-    cm_res <- pctax::c_means(kodf_g, k_num = k_num, filter_var = filter_var)
+    cm_res <- c_means(kodf_g, k_num = k_num, filter_var = filter_var)
 
     if (verbose) {
         pcutils::dabiao("Get ReporterScore for each cluster")

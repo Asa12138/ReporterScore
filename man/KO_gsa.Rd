@@ -31,6 +31,6 @@ Perform KO gene set analysis
 }
 \examples{
 data("reporter_score_res")
-gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none")
+gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none",perm=200)
 plot(gsa_res)
 }

@@ -1,4 +1,12 @@
 reporter_color <- c("#e31a1c", "#1f78b4", "#b15928", "#810f7c", "#FFF021", "#b2df8a")
+reporter_theme <- {
+    ggplot2::theme_classic(base_size = 13) +
+        ggplot2::theme(
+            axis.text = element_text(color = "black"),
+            plot.margin = grid::unit(rep(0.5, 4), "lines"),
+            strip.background = ggplot2::element_rect(fill = NA)
+        )
+}
 
 #' Plot the reporter_res
 #'
@@ -23,11 +31,12 @@ reporter_color <- c("#e31a1c", "#1f78b4", "#b15928", "#810f7c", "#FFF021", "#b2d
 #' plot_report(reporter_score_res, rs_threshold = c(2.5, -2.5), y_text_size = 10, str_width = 40)
 plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size = 13, str_width = 100, show_ID = FALSE,
                         Pathway_description = TRUE, facet_level = FALSE, facet_anno = NULL, facet_str_width = 15) {
+    Group <- Description <- ReporterScore <- Exist_K_num <- NULL
+    reporter_res2=cols1=title=breaks=NULL
+
     reporter_res <- pre_reporter_res(reporter_res, rs_threshold)
     flag <- attributes(reporter_res)$flag
     filter_report(reporter_res, rs_threshold)
-
-    Group <- Description <- ReporterScore <- Exist_K_num <- NULL
 
     if (flag) {
         reporter_res2$Group <- reporter_res2$Cluster
@@ -106,6 +115,7 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
 }
 
 pre_reporter_res <- function(reporter_res, rs_threshold) {
+    reporter_res2=cols1=title=breaks=NULL
     if (inherits(reporter_res, "reporter_score")) {
         reporter_res <- reporter_res$reporter_s
     }
@@ -268,6 +278,7 @@ get_facet_anno <- function(reporter_res, facet_anno, mode = c("bar", "circle")[1
 plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode = 2, facet_anno = NULL,
                                        show_ID = FALSE, Pathway_description = TRUE,
                                        str_width = 10, show_level_name = "all", show_tip_label = TRUE) {
+    reporter_res2=cols1=title=breaks=ID=NULL
     reporter_res <- pre_reporter_res(reporter_res, rs_threshold)
     flag <- attributes(reporter_res)$flag
     filter_report(reporter_res, rs_threshold)
@@ -334,6 +345,7 @@ plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode =
 #' data("reporter_score_res")
 #' plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
 plot_significance <- function(reporter_res, map_id) {
+    value=ID=NULL
     if (inherits(reporter_res, "reporter_score")) reporter_res <- reporter_res$reporter_s
 
     lib_ps("ggrepel", library = FALSE)
@@ -390,6 +402,7 @@ plot_significance <- function(reporter_res, map_id) {
 #' data("reporter_score_res")
 #' plot_features_distribution(reporter_score_res, map_id = c("map05230", "map03010"))
 plot_features_distribution <- function(reporter_res, map_id, text_size = 4, text_position = NULL, rug_length = 0.04) {
+    ID=value=Z_score=Significantly=NULL
     stopifnot(inherits(reporter_res, "reporter_score"))
 
     ko_stat <- reporter_res$ko_stat
@@ -450,7 +463,7 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
                                      modulelist = NULL, select_ko = NULL,
                                      box_color = reporter_color, show_number = TRUE, scale = FALSE, feature_type = "KOs",
                                      line_color = c("Depleted" = "seagreen", "Enriched" = "orange", "None" = "grey", "Significant" = "red2")) {
-    Group <- value <- Group2 <- value2 <- Group1 <- value1 <- type <- Significantly <- KOlist <- p.adjust <- NULL
+    Group <- value <- KO_id <- Group2 <- value2 <- Group1 <- value1 <- type <- Significantly <- KOlist <- p.adjust <- n <- NULL
     if (is.null(names(line_color))) names(line_color) <- c("Depleted", "Enriched", "None", "Significant")[seq_along(line_color)]
     pcutils::lib_ps("ggnewscale", "reshape2", library = FALSE)
     flag <- FALSE
@@ -489,7 +502,10 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
         if (scale) kodf_A <- pcutils::trans(kodf_A, method = "standardize", margin = 1)
         kodf_A$KO_id <- rownames(kodf_A)
         line_df <- reshape2::melt(kodf_A, id.vars = "KO_id", variable.name = "Sample_id")
-        line_df <- dplyr::left_join(line_df, data.frame(Sample_id = rownames(metadata), metadata[group], check.names = FALSE), by = "Sample_id")
+        line_df <- dplyr::left_join(line_df,
+                                    data.frame(Sample_id = rownames(metadata),
+                                               metadata[group], check.names = FALSE),
+                                    by = "Sample_id")
         line_df <- dplyr::left_join(line_df, A[, c("KO_id", "Significantly")], by = "KO_id")
         if (show_number) {
             num <- dplyr::count(A, Significantly) %>% dplyr::mutate(label = paste0(Significantly, ": ", n))
@@ -563,87 +579,6 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
     p
 }
 
-
-#' plot_KEGG_map
-#'
-#' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
-#' @param map_id the pathway or module id
-#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
-#' @param feature one of "ko", "gene", "compound"
-#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
-#' @param color_var use which variable to color
-#' @param save_dir where to save the png files
-#' @param color color
-#'
-#' @references https://zhuanlan.zhihu.com/p/357687076
-#' @return png files
-#' @export
-#'
-#' @examples
-#' message("The following example will download some files:")
-#' \donttest{
-#' data("reporter_score_res")
-#' plot_KEGG_map(reporter_score_res$ko_stat, map_id = "map00780", type = "pathway", feature = "ko", color_var = "Z_score")
-#' # data("genedf")
-#' # a <- clusterProfiler::bitr(rownames(genedf), "SYMBOL", "ENTREZID", OrgDb = org.Hs.eg.db::org.Hs.eg.db)
-#' # genedf <- hebing(genedf[a$SYMBOL, ], a$ENTREZID, 1, "sum")
-#' # plot_KEGG_map(genedf, map_id = "hsa04640", type = "hsa", feature = "gene", color_var = "WT1")
-#' }
-plot_KEGG_map <- function(ko_stat, map_id = "map00780", modulelist = NULL, type = "pathway", feature = "ko",
-                          color_var = "Z_score", save_dir = "ReporterScore_temp_download/", color = c("blue", "grey", "red")) {
-    if (inherits(ko_stat, "reporter_score")) {
-        reporter_res <- ko_stat
-        ko_stat <- reporter_res$ko_stat
-        modulelist <- reporter_res$modulelist
-        if (is.character(modulelist)) {
-            load_GOlist(envir = environment())
-            modulelist <- eval(parse(text = modulelist))
-        }
-        flag <- TRUE
-        RS <- reporter_res$reporter_s[reporter_res$reporter_s$ID == map_id, "ReporterScore"]
-    }
-    if (is.null(modulelist)) modulelist <- get_modulelist(type = type, feature = feature, verbose = FALSE)
-
-    A <- get_KOs(map_id = map_id, ko_stat = ko_stat, modulelist = modulelist)
-    if (nrow(A) < 1) A <- ko_stat
-
-    lib_ps("pathview")
-    if (type == "pathway") type <- "ko"
-    if (type == "module") stop("need pathway")
-    pathway.id <- gsub("[^0-9]", "", map_id)
-
-    dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
-    filename <- paste0(type, pathway.id, ".", color_var, ".png")
-
-    if (is.numeric(A[, color_var, drop = TRUE])) {
-        discrete <- FALSE
-        limit <- max(abs(A[, color_var, drop = TRUE]))
-        both.dirs <- TRUE
-    } else {
-        stop("need numeric")
-    }
-    params <- list(
-        pathway.id = pathway.id, species = type, kegg.dir = save_dir, out.suffix = color_var, res = 500,
-        discrete = discrete, limit = limit, both.dirs = both.dirs, low = color[1], mid = color[2], high = color[3]
-    )
-
-    if (feature %in% c("ko")) {
-        do.call(pathview::pathview, pcutils::update_param(list(gene.data = A[color_var], gene.idtype = "KEGG"), params))
-    }
-    if (feature %in% "gene") {
-        message('please make sure the rownames of your input is entrezid\ndo a transfer like\n`a=clusterProfiler::bitr(rownames(ko_stat),"SYMBOL","ENTREZID",OrgDb = org.Hs.eg.db::org.Hs.eg.db)\nrownames(ko_stat)=a$ENTREZID`')
-
-        do.call(pathview::pathview, pcutils::update_param(list(gene.data = A[color_var], gene.idtype = "entrez"), params))
-    }
-    if (feature == "compound") {
-        do.call(pathview::pathview, pcutils::update_param(list(cpd.data = A[color_var], cpd.idtype = "kegg"), params))
-    }
-    file.copy(filename, file.path(save_dir, filename), overwrite = TRUE)
-    file.remove(filename)
-    message("result have been saved in ", file.path(save_dir, filename))
-    # pcutils::read.file(file.path(save_dir, filename))
-}
-
 #' Plot features boxplot
 #'
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples. or result of `get_reporter_score`
@@ -671,6 +606,7 @@ plot_features_box <- function(kodf, group = NULL, metadata = NULL,
                               box_param = NULL,
                               modulelist = NULL,
                               KO_description = FALSE, str_width = 50) {
+    Significantly=NULL
     flag <- FALSE
     if (inherits(kodf, "reporter_score")) {
         reporter_res <- kodf
@@ -770,6 +706,7 @@ plot_features_heatmap <- function(kodf, group = NULL, metadata = NULL,
                                   modulelist = NULL,
                                   KO_description = FALSE, str_width = 50,
                                   heatmap_param = list()) {
+    Significantly=NULL
     pcutils::lib_ps("pheatmap", library = FALSE)
     flag <- FALSE
     if (inherits(kodf, "reporter_score")) {
@@ -835,6 +772,8 @@ plot_features_heatmap <- function(kodf, group = NULL, metadata = NULL,
     )
 }
 
+
+
 #' Plot features network
 #'
 #' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
@@ -864,6 +803,7 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
                                   mark_module = FALSE, mark_color = NULL,
                                   return_net = FALSE,
                                   ...) {
+    id=KOs=module=ReporterScore=NULL
     pcutils::lib_ps("ggnewscale", "reshape2", "MetaNet", library = FALSE)
 
     if (inherits(ko_stat, "reporter_score")) {
@@ -908,7 +848,7 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
     ko_net <- MetaNet::twocol_edgelist(id2ko)
     ko_net <- MetaNet::c_net_set(ko_net, ko_stat, vertex_class = "Significantly")
     igraph::graph.attributes(ko_net)$n_type <- "ko_net"
-    igraph::vertex.attributes(ko_net)[["color"]] <- MetaNet::tidai(igraph::vertex.attributes(ko_net)[["v_class"]], kos_color)
+    igraph::vertex.attributes(ko_net)[["color"]] <- pcutils::tidai(igraph::vertex.attributes(ko_net)[["v_class"]], kos_color)
     tmp_v <- MetaNet::get_v(ko_net)
     if (!pathway_label) tmp_v$label <- ifelse(tmp_v$v_group == "Pathway", NA, tmp_v$label)
     if (!kos_label) tmp_v$label <- ifelse(tmp_v$v_group == "KOs", NA, tmp_v$label)
@@ -940,6 +880,9 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
         plot(ko_net, vertex.color = kos_color, vertex.label = tmp_v$label, ...)
     }
 }
+#' @export plot_KOs_network
+assign("plot_KOs_network", plot_features_network, envir = asNamespace(packageName()))
+
 
 #' Plot c_means result
 #'
@@ -958,6 +901,76 @@ plot_c_means <- function(rsa_cm_res, filter_membership, mode = 1, show.clust.cen
     plot(rsa_cm_res$cm_res, filter_membership = filter_membership, show.clust.cent = show.clust.cent, mode = mode, show_num = show_num, ...)
 }
 
+#' Plot c_means result
+#'
+#' @param x a cm_res object
+#' @param ... additional
+#' @param filter_membership filter membership
+#' @param mode 1~2
+#' @param show.clust.cent show cluster center?
+#' @param show_num show number of each cluster?
+#'
+#' @return ggplot
+#' @exportS3Method
+#' @method plot cm_res
+plot.cm_res <- function(x, filter_membership, mode = 1, show.clust.cent = TRUE, show_num = TRUE, ...) {
+    Group= value= Name= Cluster = Membership=NULL
+    lib_ps("factoextra", library = FALSE)
+
+    cm_data <- x$cm_data
+    pcutils::dabiao("filter clusters, Membership >= ", filter_membership)
+    cm_group <- cm_data[cm_data$Membership >= filter_membership, ] # 筛选部分显著被聚类的项
+    if (show_num) {
+        tmp <- cm_group %>%
+            count(Cluster) %>%
+            mutate(new_cluster = paste0(Cluster, ": ", n))
+        cm_group$Cluster <- setNames(tmp$new_cluster, tmp$Cluster)[cm_group$Cluster]
+    }
+    data_scaled <- x$data_scaled
+
+    if (mode == 2) {
+        # show the cluster
+        p <- factoextra::fviz_cluster(list(data = data_scaled[rownames(cm_group), ], cluster = cm_group$Cluster),
+                                      geom = c("point"),
+                                      ellipse = TRUE,
+                                      ellipse.alpha = 0.3, # used to be 0.6 if only points are plotted.
+                                      ellipse.type = "norm",
+                                      ellipse.level = 0.68,
+                                      repel = TRUE, show.clust.cent = show.clust.cent
+        ) + reporter_theme
+    }
+    if (mode == 1) {
+        cm_group.melt <- reshape2::melt(cm_group, id.vars = c("Cluster", "Membership", "Name", "Weight"), variable.name = "Group")
+        cm_group.melt$Cluster <- factor(cm_group.melt$Cluster)
+
+        p <- ggplot() +
+            geom_line(
+                data = cm_group.melt,
+                aes(x = Group, y = value, group = Name, color = Cluster, alpha = Membership),
+                linewidth = 0.8
+            ) +
+            reporter_theme +
+            scale_x_discrete(expand = c(0, 0)) +
+            theme(plot.margin = unit(c(1, 2, 1, 1), "lines"))
+        if (show.clust.cent) {
+            centers <- x$centers %>% as.data.frame()
+
+            if (show_num) {
+                centers$Cluster <- tmp$new_cluster
+            } else {
+                centers$Cluster <- rownames(centers)
+            }
+
+            centers_dat <- reshape2::melt(centers, id.vars = "Cluster", variable.name = "Group")
+
+            p <- p +
+                scale_alpha_continuous(range = c(0.2, 0.5)) +
+                geom_line(data = centers_dat, aes(x = Group, y = value, group = Cluster, color = Cluster), linewidth = 3)
+        }
+    }
+    cols1 <- pcutils::get_cols(length(unique(cm_group$Cluster)))
+    return(p + scale_color_manual(values = cols1) + scale_fill_manual(values = cols1))
+}
 
 #' Plot htable levels
 #'
@@ -972,6 +985,8 @@ plot_c_means <- function(rsa_cm_res, filter_membership, mode = 1, show.clust.cen
 #' data("KO_abundance_test")
 #' plot_htable(select = rownames(KO_abundance))
 plot_htable <- function(type = "ko", select = NULL, htable = NULL) {
+    n=level2_name=level1_name=NULL
+
     title <- ""
     if (is.null(htable)) {
         type <- match.arg(type, c("ko", "module", "pathway", "compound"))
@@ -1035,4 +1050,82 @@ plot_htable <- function(type = "ko", select = NULL, htable = NULL) {
         theme_classic() +
         theme(axis.text.y = element_text(color = patt[a$level1_name])) +
         scale_x_continuous(expand = c(0, 0), limits = c(0, max(a$n) * 1.1))
+}
+
+
+#' plot_KEGG_map
+#'
+#' @param ko_stat ko_stat result from \code{\link{pvalue2zs}} or result of `get_reporter_score`
+#' @param map_id the pathway or module id
+#' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
+#' @param feature one of "ko", "gene", "compound"
+#' @param type "pathway" or "module" for default KOlist for microbiome, "CC", "MF", "BP", "ALL" for default GOlist for homo sapiens. And org in listed in 'https://www.genome.jp/kegg/catalog/org_list.html' such as "hsa" (if your kodf is come from a specific organism, you should specify type here).
+#' @param color_var use which variable to color
+#' @param save_dir where to save the png files
+#' @param color color
+#'
+#' @references https://zhuanlan.zhihu.com/p/357687076
+#' @return png files
+#' @export
+#'
+#' @examples
+#' message("The following example will download some files:")
+#' \dontrun{
+#' data("reporter_score_res")
+#' plot_KEGG_map(reporter_score_res$ko_stat, map_id = "map00780",
+#'      type = "pathway", feature = "ko", color_var = "Z_score")
+#' }
+plot_KEGG_map <- function(ko_stat, map_id = "map00780", modulelist = NULL, type = "pathway", feature = "ko",
+                          color_var = "Z_score", save_dir = "ReporterScore_temp_download/", color = c("blue", "grey", "red")) {
+    if (inherits(ko_stat, "reporter_score")) {
+        reporter_res <- ko_stat
+        ko_stat <- reporter_res$ko_stat
+        modulelist <- reporter_res$modulelist
+        if (is.character(modulelist)) {
+            load_GOlist(envir = environment())
+            modulelist <- eval(parse(text = modulelist))
+        }
+        flag <- TRUE
+        RS <- reporter_res$reporter_s[reporter_res$reporter_s$ID == map_id, "ReporterScore"]
+    }
+    if (is.null(modulelist)) modulelist <- get_modulelist(type = type, feature = feature, verbose = FALSE)
+
+    A <- get_KOs(map_id = map_id, ko_stat = ko_stat, modulelist = modulelist)
+    if (nrow(A) < 1) A <- ko_stat
+
+    lib_ps("pathview")
+    if (type == "pathway") type <- "ko"
+    if (type == "module") stop("need pathway")
+    pathway.id <- gsub("[^0-9]", "", map_id)
+
+    dir.create(save_dir, recursive = TRUE, showWarnings = FALSE)
+    filename <- paste0(type, pathway.id, ".", color_var, ".png")
+
+    if (is.numeric(A[, color_var, drop = TRUE])) {
+        discrete <- FALSE
+        limit <- max(abs(A[, color_var, drop = TRUE]))
+        both.dirs <- TRUE
+    } else {
+        stop("need numeric")
+    }
+    params <- list(
+        pathway.id = pathway.id, species = type, kegg.dir = save_dir, out.suffix = color_var, res = 500,
+        discrete = discrete, limit = limit, both.dirs = both.dirs, low = color[1], mid = color[2], high = color[3]
+    )
+
+    if (feature %in% c("ko")) {
+        do.call(pathview::pathview, pcutils::update_param(list(gene.data = A[color_var], gene.idtype = "KEGG"), params))
+    }
+    if (feature %in% "gene") {
+        message('please make sure the rownames of your input is entrezid\ndo a transfer like\n`a=clusterProfiler::bitr(rownames(ko_stat),"SYMBOL","ENTREZID",OrgDb = org.Hs.eg.db::org.Hs.eg.db)\nrownames(ko_stat)=a$ENTREZID`')
+
+        do.call(pathview::pathview, pcutils::update_param(list(gene.data = A[color_var], gene.idtype = "entrez"), params))
+    }
+    if (feature == "compound") {
+        do.call(pathview::pathview, pcutils::update_param(list(cpd.data = A[color_var], cpd.idtype = "kegg"), params))
+    }
+    file.copy(filename, file.path(save_dir, filename), overwrite = TRUE)
+    file.remove(filename)
+    message("result have been saved in ", file.path(save_dir, filename))
+    # pcutils::read.file(file.path(save_dir, filename))
 }

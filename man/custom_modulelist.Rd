@@ -33,6 +33,6 @@ Transform a modulelist to a list
 \examples{
 mydat <- data.frame(pathway = paste0("PATHWAY", rep(seq_len(2), each = 5)), ko = paste0("K", 1:10))
 mymodulelist <- custom_modulelist(mydat)
-mymodulelist
+print(mymodulelist)
 transform_modulelist(mymodulelist)
 }

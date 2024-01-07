@@ -1,17 +1,19 @@
 Package: ReporterScore
 Type: Package
 Title: Generalized Reporter Score-based Enrichment Analysis for Omics Data
-Version: 0.99.0
+Version: 0.1.0
 Authors@R:
     person("Peng", "Chen",email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9449-7606"))
-Description: The original reporter-score method comes from Patil, K. R. et al. PNAS 2005.
-    In this package, we provide two reporter-score methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
+Description: Inspired by the classic RSA, we developed the improved Generalized Reporter 
+    Score-based Analysis (GRSA) method, implemented in the R package ReporterScore, along 
+    with comprehensive visualization methods and pathway databases. GRSA is a threshold-free 
+    method that works well with all types of biomedical features, such as genes, chemical compounds, 
+    and microbial species. Importantly, the GRSA supports multi-group and longitudinal experimental 
+    designs, because of the included multi-group-compatible statistical methods. 
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.2.3
 Imports: 
-    dplyr,
-    ggplot2 (>= 3.2.0),
     magrittr,
     pcutils,
     utils,
@@ -24,30 +26,26 @@ Imports:
 Suggests: 
     knitr,
     rmarkdown,
-    ggpubr,
-    tibble,
     plyr,
-    vegan,
-    clusterProfiler,
-    org.Hs.eg.db,
-    KEGGREST,
+    e1071,
+    factoextra,
     snow,
     doSNOW,
-    enrichplot,
     pheatmap,
-    igraph,
     readr,
     ggrepel,
-    httr,
+    R.utils,
+    KEGGREST,
+    clusterProfiler,
+    enrichplot,
     pathview,
     GSA,
-    R.utils,
-    MetaNet,
-    pctax
+    igraph,
+    MetaNet
 Depends: 
-    R (>= 4.2.0)
-biocViews: GeneSetEnrichment, GO, KEGG,
-     Pathways, Visualization
+    R (>= 4.2.0),
+    dplyr,
+    ggplot2 (>= 3.2.0)
 VignetteBuilder: knitr
 BugReports: https://github.com/Asa12138/ReporterScore/issues
 URL: https://github.com/Asa12138/ReporterScore

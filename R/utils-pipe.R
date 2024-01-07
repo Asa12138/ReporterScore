@@ -19,7 +19,6 @@ NULL
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
 if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
-
 deprecated <- function(old, new) {
     assign(old, new, envir = asNamespace(packageName()))
 }
@@ -38,8 +37,6 @@ deprecated("plot_KOs_in_pathway", plot_features_in_pathway)
 deprecated("plot_KOs_heatmap", plot_features_heatmap)
 #' @export plot_KOs_box
 deprecated("plot_KOs_box", plot_features_box)
-#' @export plot_KOs_network
-deprecated("plot_KOs_network", plot_features_network)
 #' @export get_KOs
 deprecated("get_KOs", get_features)
 #' @export plot_report_bar

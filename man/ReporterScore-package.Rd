@@ -6,7 +6,7 @@
 \alias{ReporterScore-package}
 \title{ReporterScore: Generalized Reporter Score-based Enrichment Analysis for Omics Data}
 \description{
-The original reporter-score method comes from Patil, K. R. et al. PNAS 2005. In this package, we provide two reporter-score methods (mixed/directed) to get reporter-score for KEGG pathway or modules.
+Inspired by the classic RSA, we developed the improved Generalized Reporter Score-based Analysis (GRSA) method, implemented in the R package ReporterScore, along with comprehensive visualization methods and pathway databases. GRSA is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, and microbial species. Importantly, the GRSA supports multi-group and longitudinal experimental designs, because of the included multi-group-compatible statistical methods.
 }
 \seealso{
 Useful links:

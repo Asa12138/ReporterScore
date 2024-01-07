@@ -32,5 +32,4 @@ Upgrade the KO level
 \examples{
 data("KO_abundance_test")
 KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
-# pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ])
 }

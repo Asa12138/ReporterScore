@@ -19,7 +19,7 @@ update CARDinfo from (from CARD database)
 }
 \examples{
 message("The following example will download some files:")
-\donttest{
+\dontrun{
 # update_CARDinfo()
 }
 }

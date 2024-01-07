@@ -5,7 +5,7 @@
 #'
 #' @examples
 #' message("The following example will download some files:")
-#' \donttest{
+#' \dontrun{
 #' # update_KEGG()
 #' }
 update_KEGG <- function(download_dir = NULL) {
@@ -74,6 +74,7 @@ update_KO_file <- function(download_dir = NULL, RDSfile = NULL) {
         KO_files <- readRDS(RDSfile)
     }
 
+    pathway=ko=NULL
     KOlist <- list()
     KOlist$pathway <- KO_files$path2ko %>%
         dplyr::mutate(pathway = gsub("path:", "", pathway), ko = gsub("ko:", "", ko)) %>%
@@ -197,6 +198,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
         save(Pathway_htable, file = paste0(pack_dir, "/new_Pathway_htable.rda"))
     }
     if (type == "compound") {
+        B=NULL
         compounds_brites <- brite_file2df(br_id = "br08902") %>% dplyr::filter(B == "Compounds")
         if (!is.null(keg_file)) {
             if (!dir.exists(keg_file)) {
@@ -344,8 +346,9 @@ load_CPDlist <- function(envir = .GlobalEnv, verbose = TRUE) {
 #' @export
 #' @return KO description in `.GlobalEnv`
 load_KO_desc <- function(envir = .GlobalEnv, verbose = TRUE) {
+    KO_id=NULL
     load_KO_htable(envir = environment(), verbose = verbose)
-    ko_desc <- dplyr::distinct(KO_htable[, c("KO_id", "KO_name")]) %>% dplyr::arrange(KO_id)
+    ko_desc <- dplyr::distinct_all(KO_htable[, c("KO_id", "KO_name")]) %>% dplyr::arrange(KO_id)
     assign("ko_desc", ko_desc, envir = envir)
 }
 
@@ -634,7 +637,7 @@ load_org_pathway <- function(org = "hsa", envir = .GlobalEnv, verbose = TRUE) {
 #' \code{https://asa12138.github.io/FileList/GOlist.rda}
 #' @examples
 #' message("The following example will download some files:")
-#' \donttest{
+#' \dontrun{
 #' # update_GO_file()
 #' }
 update_GO_file <- function(download_dir = NULL, GO_file = NULL) {
@@ -826,7 +829,7 @@ load_GOinfo <- function(envir = .GlobalEnv, verbose = TRUE) {
 #' @return No value
 #' @examples
 #' message("The following example will download some files:")
-#' \donttest{
+#' \dontrun{
 #' # update_CARDinfo()
 #' }
 update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
@@ -851,7 +854,7 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
     } else {
         if (!(file.exists(card_data) & grepl("card-data.tar.bz2", card_data))) stop("Wrong file: ", card_data)
     }
-
+    lib_ps("R.utils",library = FALSE)
     R.utils::bunzip2(card_data, destname = file.path(download_dir, "card-data.tar"), remove = FALSE, overwrite = TRUE)
     untar(tarfile = file.path(download_dir, "card-data.tar"), exdir = file.path(download_dir, "card-data"))
 
@@ -862,6 +865,7 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
         antibiotics <- readr::read_delim(file.path(download_dir, "card-data", "shortname_antibiotics.tsv"), delim = "\t") %>% as.data.frame()
     } %>% suppressMessages()
 
+    `ARO Accession`=NULL
     ARO_index <- dplyr::distinct(ARO_index, `ARO Accession`, .keep_all = TRUE)
     rownames(ARO_index) <- gsub("ARO:", "", (ARO_index$`ARO Accession`))
     CARDinfo <- list(ARO_index = ARO_index, antibiotics = antibiotics)
