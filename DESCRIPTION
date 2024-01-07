@@ -39,9 +39,7 @@ Suggests:
     clusterProfiler,
     enrichplot,
     pathview,
-    GSA,
-    igraph,
-    MetaNet
+    GSA
 Depends: 
     R (>= 4.2.0),
     dplyr,
