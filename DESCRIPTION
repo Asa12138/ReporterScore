@@ -15,6 +15,8 @@ Encoding: UTF-8
 RoxygenNote: 7.2.3
 Imports: 
     magrittr,
+    dplyr,
+    ggplot2 (>= 3.2.0),
     pcutils,
     utils,
     scales,
@@ -43,9 +45,7 @@ Suggests:
     igraph,
     MetaNet
 Depends: 
-    R (>= 4.2.0),
-    dplyr,
-    ggplot2 (>= 3.2.0)
+    R (>= 4.2.0)
 VignetteBuilder: knitr
 BugReports: https://github.com/Asa12138/ReporterScore/issues
 URL: https://github.com/Asa12138/ReporterScore

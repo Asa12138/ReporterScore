@@ -14,7 +14,7 @@ reporter_theme <- {
 #' @param rs_threshold plot threshold vector, default:1.64
 #' @param y_text_size y_text_size
 #' @param str_width str_width to wrap
-#' @param mode 1～2 plot style.
+#' @param mode 1~2 plot style.
 #' @param show_ID show pathway id
 #' @param Pathway_description show KO description rather than KO id.
 #' @param facet_level facet plot if the type is "pathway" or "module"
@@ -261,7 +261,7 @@ get_facet_anno <- function(reporter_res, facet_anno, mode = c("bar", "circle")[1
 #' @param reporter_res result of `get_reporter_score`
 #' @param rs_threshold plot threshold vector, default:1.64
 #' @param str_width str_width to wrap
-#' @param mode 1～2 plot style.
+#' @param mode 1~2 plot style.
 #' @param Pathway_description show KO description rather than KO id.
 #' @param facet_anno annotation table for facet, more two columns, last is pathway name, last second is pathway id.
 #' @param show_ID show pathway id

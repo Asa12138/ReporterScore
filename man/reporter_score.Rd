@@ -63,7 +63,7 @@ reporter_score(
 \item{max_exist_KO}{max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)}
 }
 \value{
-reporter_score object：
+reporter_score object:
 \item{kodf}{your input KO_abundance table}
 \item{ko_stat}{ko statistics result contains p.value and z_score}
 \item{reporter_s}{the reporter score in each pathway}
