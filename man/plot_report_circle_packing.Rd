@@ -21,7 +21,7 @@ plot_report_circle_packing(
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
-\item{mode}{1～2 plot style.}
+\item{mode}{1~2 plot style.}
 
 \item{facet_anno}{annotation table for facet, more two columns, last is pathway name, last second is pathway id.}
 

@@ -23,7 +23,7 @@ plot_report(
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
-\item{mode}{1～2 plot style.}
+\item{mode}{1~2 plot style.}
 
 \item{y_text_size}{y_text_size}
 

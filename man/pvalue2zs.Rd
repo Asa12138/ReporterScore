@@ -21,7 +21,7 @@ Transfer p-value of KOs to Z-score
 }
 \details{
 '\strong{mixed}' mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
-In this mode, the reporter score is \strong{undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway！(Liu, L. et al. iMeta 2023.)
+In this mode, the reporter score is \strong{undirected}, and the larger the reporter score, the more significant the enrichment, but it cannot indicate the up-and-down regulation information of the pathway! (Liu, L. et al. iMeta 2023.)
 
 steps:
 
@@ -41,7 +41,7 @@ where k means A total of k KOs were annotated to the corresponding pathway;
 
 \eqn{Z_{adjustedpathway}=(Z_{pathway}-\mu _k)/\sigma _k}
 
-\eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
+\eqn{\mu _k} is The mean of the random distribution, \eqn{\sigma _k} is the standard deviation of the random distribution.
 
 Instead, '\strong{directed}' mode is a derived version of 'mixed', referenced from \code{https://github.com/wangpeng407/ReporterScore}.
 
@@ -73,7 +73,7 @@ so \eqn{Z_{koi}} is greater than 0 Up-regulation, \eqn{Z_{koi}} less than 0 is d
 
 \eqn{Z_{adjustedpathway}=(Z_{pathway}-\mu _k)/\sigma _k}
 
-\eqn{μ_k} is The mean of the random distribution, \eqn{σ_k} is the standard deviation of the random distribution.
+\eqn{\mu _k} is The mean of the random distribution, \eqn{\sigma _k} is the standard deviation of the random distribution.
 
 The finally obtained \eqn{Z_{adjustedpathway}} is the Reporter score value enriched for each pathway.
 In this mode, the Reporter score is directed, and a larger positive value represents a significant up-regulation enrichment, and a smaller negative values represent significant down-regulation enrichment.
