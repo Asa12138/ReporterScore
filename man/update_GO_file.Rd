@@ -27,6 +27,6 @@ Download links:
 \examples{
 message("The following example will download some files:")
 \dontrun{
-# update_GO_file()
+update_GO_file()
 }
 }

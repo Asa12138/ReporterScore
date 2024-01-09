@@ -30,7 +30,8 @@ enrich_res object
 Perform KO gene set analysis
 }
 \examples{
+## use `GSA` from the `GSA` package.
 data("reporter_score_res")
-gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none",perm=200)
+gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none", perm = 200)
 plot(gsa_res)
 }

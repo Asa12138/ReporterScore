@@ -26,5 +26,4 @@ Load the GOinfo (from GO)
 }
 \examples{
 load_GOlist()
-
 }

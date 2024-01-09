@@ -32,7 +32,7 @@ reporter_theme <- {
 plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size = 13, str_width = 100, show_ID = FALSE,
                         Pathway_description = TRUE, facet_level = FALSE, facet_anno = NULL, facet_str_width = 15) {
     Group <- Description <- ReporterScore <- Exist_K_num <- NULL
-    reporter_res2=cols1=title=breaks=NULL
+    reporter_res2 <- cols1 <- title <- breaks <- NULL
 
     reporter_res <- pre_reporter_res(reporter_res, rs_threshold)
     flag <- attributes(reporter_res)$flag
@@ -115,7 +115,7 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
 }
 
 pre_reporter_res <- function(reporter_res, rs_threshold) {
-    reporter_res2=cols1=title=breaks=NULL
+    reporter_res2 <- cols1 <- title <- breaks <- NULL
     if (inherits(reporter_res, "reporter_score")) {
         reporter_res <- reporter_res$reporter_s
     }
@@ -278,7 +278,7 @@ get_facet_anno <- function(reporter_res, facet_anno, mode = c("bar", "circle")[1
 plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode = 2, facet_anno = NULL,
                                        show_ID = FALSE, Pathway_description = TRUE,
                                        str_width = 10, show_level_name = "all", show_tip_label = TRUE) {
-    reporter_res2=cols1=title=breaks=ID=NULL
+    reporter_res2 <- cols1 <- title <- breaks <- ID <- NULL
     reporter_res <- pre_reporter_res(reporter_res, rs_threshold)
     flag <- attributes(reporter_res)$flag
     filter_report(reporter_res, rs_threshold)
@@ -345,7 +345,7 @@ plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode =
 #' data("reporter_score_res")
 #' plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
 plot_significance <- function(reporter_res, map_id) {
-    value=ID=NULL
+    value <- ID <- Z_score <- y <- ReporterScore <- p.value <- NULL
     if (inherits(reporter_res, "reporter_score")) reporter_res <- reporter_res$reporter_s
 
     lib_ps("ggrepel", library = FALSE)
@@ -402,7 +402,7 @@ plot_significance <- function(reporter_res, map_id) {
 #' data("reporter_score_res")
 #' plot_features_distribution(reporter_score_res, map_id = c("map05230", "map03010"))
 plot_features_distribution <- function(reporter_res, map_id, text_size = 4, text_position = NULL, rug_length = 0.04) {
-    ID=value=Z_score=Significantly=NULL
+    ID <- value <- Z_score <- Significantly <- ReporterScore <- p.value <- NULL
     stopifnot(inherits(reporter_res, "reporter_score"))
 
     ko_stat <- reporter_res$ko_stat
@@ -452,7 +452,6 @@ plot_features_distribution <- function(reporter_res, map_id, text_size = 4, text
 #' @param scale scale the data by row.
 #' @param feature_type show in the title ,default: KOs
 #'
-#' @import ggplot2
 #' @return ggplot
 #' @export
 #' @aliases plot_KOs_in_pathway
@@ -503,9 +502,12 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
         kodf_A$KO_id <- rownames(kodf_A)
         line_df <- reshape2::melt(kodf_A, id.vars = "KO_id", variable.name = "Sample_id")
         line_df <- dplyr::left_join(line_df,
-                                    data.frame(Sample_id = rownames(metadata),
-                                               metadata[group], check.names = FALSE),
-                                    by = "Sample_id")
+            data.frame(
+                Sample_id = rownames(metadata),
+                metadata[group], check.names = FALSE
+            ),
+            by = "Sample_id"
+        )
         line_df <- dplyr::left_join(line_df, A[, c("KO_id", "Significantly")], by = "KO_id")
         if (show_number) {
             num <- dplyr::count(A, Significantly) %>% dplyr::mutate(label = paste0(Significantly, ": ", n))
@@ -606,7 +608,7 @@ plot_features_box <- function(kodf, group = NULL, metadata = NULL,
                               box_param = NULL,
                               modulelist = NULL,
                               KO_description = FALSE, str_width = 50) {
-    Significantly=NULL
+    Significantly <- NULL
     flag <- FALSE
     if (inherits(kodf, "reporter_score")) {
         reporter_res <- kodf
@@ -706,7 +708,7 @@ plot_features_heatmap <- function(kodf, group = NULL, metadata = NULL,
                                   modulelist = NULL,
                                   KO_description = FALSE, str_width = 50,
                                   heatmap_param = list()) {
-    Significantly=NULL
+    Significantly <- NULL
     pcutils::lib_ps("pheatmap", library = FALSE)
     flag <- FALSE
     if (inherits(kodf, "reporter_score")) {
@@ -803,7 +805,7 @@ plot_c_means <- function(rsa_cm_res, filter_membership, mode = 1, show.clust.cen
 #' @exportS3Method
 #' @method plot cm_res
 plot.cm_res <- function(x, filter_membership, mode = 1, show.clust.cent = TRUE, show_num = TRUE, ...) {
-    Group= value= Name= Cluster = Membership=NULL
+    Group <- value <- Name <- Cluster <- Membership <- NULL
     lib_ps("factoextra", library = FALSE)
 
     cm_data <- x$cm_data
@@ -820,12 +822,12 @@ plot.cm_res <- function(x, filter_membership, mode = 1, show.clust.cent = TRUE, 
     if (mode == 2) {
         # show the cluster
         p <- factoextra::fviz_cluster(list(data = data_scaled[rownames(cm_group), ], cluster = cm_group$Cluster),
-                                      geom = c("point"),
-                                      ellipse = TRUE,
-                                      ellipse.alpha = 0.3, # used to be 0.6 if only points are plotted.
-                                      ellipse.type = "norm",
-                                      ellipse.level = 0.68,
-                                      repel = TRUE, show.clust.cent = show.clust.cent
+            geom = c("point"),
+            ellipse = TRUE,
+            ellipse.alpha = 0.3, # used to be 0.6 if only points are plotted.
+            ellipse.type = "norm",
+            ellipse.level = 0.68,
+            repel = TRUE, show.clust.cent = show.clust.cent
         ) + reporter_theme
     }
     if (mode == 1) {
@@ -874,7 +876,8 @@ plot.cm_res <- function(x, filter_membership, mode = 1, show.clust.cent = TRUE, 
 #' data("KO_abundance_test")
 #' plot_htable(select = rownames(KO_abundance))
 plot_htable <- function(type = "ko", select = NULL, htable = NULL) {
-    n=level2_name=level1_name=NULL
+    KO_id <- n <- level2_name <- level1_name <- module2_name <- module3_name <- Module_id <- Pathway_id <- Class <- NULL
+    compound1_name <- compound2_name <- Compound_id <- NULL
 
     title <- ""
     if (is.null(htable)) {
@@ -961,8 +964,10 @@ plot_htable <- function(type = "ko", select = NULL, htable = NULL) {
 #' message("The following example will download some files:")
 #' \dontrun{
 #' data("reporter_score_res")
-#' plot_KEGG_map(reporter_score_res$ko_stat, map_id = "map00780",
-#'      type = "pathway", feature = "ko", color_var = "Z_score")
+#' plot_KEGG_map(reporter_score_res$ko_stat,
+#'     map_id = "map00780",
+#'     type = "pathway", feature = "ko", color_var = "Z_score"
+#' )
 #' }
 plot_KEGG_map <- function(ko_stat, map_id = "map00780", modulelist = NULL, type = "pathway", feature = "ko",
                           color_var = "Z_score", save_dir = "ReporterScore_temp_download/", color = c("blue", "grey", "red")) {

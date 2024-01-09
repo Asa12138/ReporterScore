@@ -95,13 +95,13 @@ reporter_score_res <- reporter_score(KO_abundance, "Group", metadata,
 head(reporter_score_res$reporter_s)
 message("The following example require some time to run:")
 \donttest{
- reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-     mode = "mixed",
-     method = "kruskal.test", p.adjust.method1 = "none", perm = 499
- )
- reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-     mode = "directed",
-     method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
- )
+reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "mixed",
+    method = "kruskal.test", p.adjust.method1 = "none", perm = 499
+)
+reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "directed",
+    method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
+)
 }
 }

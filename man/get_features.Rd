@@ -15,7 +15,7 @@ get_features(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
 \item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 }
 \value{
-KOids, or dataframe with these KOids.
+KOids, or data.frame with these KOids.
 }
 \description{
 get features in a modulelist

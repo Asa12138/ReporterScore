@@ -5,9 +5,9 @@ citEntry(
     title = "Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data",
     author = personList(
         as.person("Chen Peng"),
-	as.person("Qiong Chen"),
-	as.person("Shangjin Tan"),
-	as.person("Xiaotao Shen"),
+	    as.person("Qiong Chen"),
+	    as.person("Shangjin Tan"),
+	    as.person("Xiaotao Shen"),
         as.person("Chao Jiang")
     ),
     journal = "bioRxiv",

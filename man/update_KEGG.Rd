@@ -6,6 +6,7 @@
 \alias{update_htable}
 \alias{update_org_pathway}
 \alias{download_org_pathway}
+\alias{get_org_pathway}
 \title{Update files from KEGG}
 \usage{
 update_KEGG(download_dir = NULL)

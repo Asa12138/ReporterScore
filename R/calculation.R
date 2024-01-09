@@ -82,14 +82,14 @@ print.reporter_score <- function(x, ...) {
 #' head(reporter_score_res$reporter_s)
 #' message("The following example require some time to run:")
 #' \donttest{
-#'  reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-#'      mode = "mixed",
-#'      method = "kruskal.test", p.adjust.method1 = "none", perm = 499
-#'  )
-#'  reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-#'      mode = "directed",
-#'      method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
-#'  )
+#' reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+#'     mode = "mixed",
+#'     method = "kruskal.test", p.adjust.method1 = "none", perm = 499
+#' )
+#' reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+#'     mode = "directed",
+#'     method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
+#' )
 #' }
 reporter_score <- function(
     kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
@@ -180,7 +180,7 @@ reporter_score <- function(
 #' @param p.adjust.method1 p.adjust.method, see \code{\link[stats]{p.adjust}}
 #' @param verbose logical
 #'
-#' @return ko_pvalue dataframej
+#' @return ko_pvalue data.frame
 #' @export
 #'
 #' @examples
@@ -350,17 +350,24 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 
     {
         if (threads > 1) {
-            pcutils::lib_ps("foreach", "doSNOW", "snow")
-            pb <- utils::txtProgressBar(max = reps, style = 3)
-            opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+            if (verbose) {
+                pb <- utils::txtProgressBar(max = reps, style = 3)
+                opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            } else {
+                opts <- NULL
+            }
             cl <- snow::makeCluster(threads)
             doSNOW::registerDoSNOW(cl)
-            res <- foreach::foreach(i = seq_len(reps), .options.snow = opts, .export = c("group", "group2")) %dopar% {
+            res <- foreach::`%dopar%`(
+                foreach::foreach(
+                    i = seq_len(reps), .options.snow = opts,
+                    .export = c("group", "group2")
+                ),
                 suppressWarnings(loop(i))
-            }
+            )
             snow::stopCluster(cl)
             gc()
-            pcutils::del_ps("doSNOW", "snow", "foreach")
         } else {
             res <- suppressWarnings(lapply(seq_len(reps), loop))
         }
@@ -384,7 +391,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
         "\nCompared groups: ", paste(vs_group, collapse = ", "), "\n", "Total KO number: ", reps, "\n", "Compare method: ", method, "\n", "Time use: ",
         stime, attr(stime, "units"), "\n"
     )
-    message(resinfo)
+    if (verbose) message(resinfo)
 
     attributes(res.dt)$vs_group <- vs_group
     attributes(res.dt)$method <- method
@@ -399,7 +406,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' @param mode 'mixed' or 'directed' (only for two groups differential analysis or multi-groups correlation analysis.), see details
 #' @param p.adjust.method1 p.adjust.method, see \code{\link[stats]{p.adjust}}
 #'
-#' @return ko_stat dataframe
+#' @return ko_stat data.frame
 #' @export
 #' @details
 #' '\strong{mixed}' mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
@@ -473,7 +480,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
-    p.adjust <- type <- NULL
+    p.adjust <- type <- Significantly <- NULL
     res.dt <- ko_pvalue
     if (!all(c("p.value") %in% colnames(res.dt))) {
         stop("check if `p.value` in your ko_stat dataframe!")
@@ -627,7 +634,7 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
 #' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)
 #' @param max_exist_KO max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)
 #'
-#' @return reporter_res dataframe
+#' @return reporter_res data.frame
 #' @export
 #'
 #' @examples
@@ -722,17 +729,24 @@ get_reporter_score <- function(
     }
     {
         if (threads > 1) {
-            pcutils::lib_ps("foreach", "doSNOW", "snow")
-            pb <- utils::txtProgressBar(max = reps, style = 3)
-            opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+            if (verbose) {
+                pb <- utils::txtProgressBar(max = reps, style = 3)
+                opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            } else {
+                opts <- NULL
+            }
             cl <- snow::makeCluster(threads)
             doSNOW::registerDoSNOW(cl)
-            res <- foreach::foreach(i = seq_len(reps), .options.snow = opts, .export = c("random_mean_sd")) %dopar% {
+            res <- foreach::`%dopar%`(
+                foreach::foreach(
+                    i = seq_len(reps), .options.snow = opts,
+                    .export = c("random_mean_sd")
+                ),
                 loop(i)
-            }
+            )
             snow::stopCluster(cl)
             gc()
-            pcutils::del_ps("doSNOW", "snow", "foreach")
         } else {
             res <- lapply(seq_len(reps), loop)
         }
@@ -842,12 +856,12 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
 #'
 #' @aliases get_KOs
 #' @export
-#' @return KOids, or dataframe with these KOids.
+#' @return KOids, or data.frame with these KOids.
 #' @examples
 #' get_features(map_id = "map00010")
 #'
 get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL) {
-    KOlist <- NULL
+    KOlist <- GOlist <- NULL
     if (is.null(modulelist)) {
         message("modulelist is NULL, use default modulelist!")
         load_KOlist(envir = environment())
@@ -1125,10 +1139,10 @@ cm_test_k <- function(otu_group, filter_var, fast = TRUE) {
     lib_ps("factoextra", library = FALSE)
     #-------determining the number of clusters
     # 1 Elbow method
-    cp1 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "wss", verbose = TRUE) +
+    cp1 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, method = "wss", verbose = TRUE) +
         labs(subtitle = "Elbow method")
     # 2 Silhouette method
-    cp2 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "silhouette") +
+    cp2 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, method = "silhouette") +
         labs(subtitle = "Silhouette method")
     # 3 Gap statistic
     # nboot = 50 to keep the function speedy.
@@ -1136,7 +1150,7 @@ cm_test_k <- function(otu_group, filter_var, fast = TRUE) {
     # Use verbose = FALSE to hide computing progression.
     cp3 <- NULL
     if (!fast) {
-        cp3 <- factoextra::fviz_nbclust(data_scaled, kmeans, nstart = 25, method = "gap_stat", nboot = 50) +
+        cp3 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, nstart = 25, method = "gap_stat", nboot = 50) +
             labs(subtitle = "Gap statistic method")
     }
     return(list(cp1 = cp1, cp2 = cp2, cp3 = cp3))
@@ -1146,7 +1160,7 @@ filter_top_var <- function(otu_group, filter_var) {
     # trans
     pcutils::dabiao("Filter top ", (1 - filter_var) * 100, "% var and scale")
     group.var <- apply(otu_group, 1, var)
-    otu_group.sel <- otu_group[group.var >= quantile(group.var, filter_var), ] # 挑出变化较大的部分
+    otu_group.sel <- otu_group[group.var >= stats::quantile(group.var, filter_var), ] # 挑出变化较大的部分
     weight <- c(apply(otu_group.sel, 1, var))
     data_scaled <- pcutils::trans(otu_group.sel, method = "standardize", MARGIN = 1)
     data_scaled
@@ -1178,7 +1192,7 @@ c_means <- function(otu_group, k_num, filter_var) {
 
     cm_data <- cbind.data.frame(
         Name = row.names(data_scaled), data_scaled,
-        Weight = apply(otu_group[rownames(data_scaled), ], 1, var),
+        Weight = apply(otu_group[rownames(data_scaled), ], 1, stats::var),
         Cluster = cm$cluster,
         Membership = apply(cm$membership, 1, max)
     )
@@ -1209,10 +1223,12 @@ c_means <- function(otu_group, k_num, filter_var) {
 #' @examples
 #' message("The following example require some time to run:")
 #' \donttest{
-#'  data("KO_abundance_test")
-#'  rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, k_num = 3,
-#'      filter_var = 0.7, method = "pearson", perm=199)
-#'  extract_cluster(rsa_cm_res, cluster = 1)
+#' data("KO_abundance_test")
+#' rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
+#'     k_num = 3,
+#'     filter_var = 0.7, method = "pearson", perm = 199
+#' )
+#' extract_cluster(rsa_cm_res, cluster = 1)
 #' }
 RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0.7, verbose = TRUE, method = "pearson", ...) {
     if (verbose) {

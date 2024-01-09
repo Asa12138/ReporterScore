@@ -74,7 +74,7 @@ update_KO_file <- function(download_dir = NULL, RDSfile = NULL) {
         KO_files <- readRDS(RDSfile)
     }
 
-    pathway=ko=NULL
+    pathway <- ko <- NULL
     KOlist <- list()
     KOlist$pathway <- KO_files$path2ko %>%
         dplyr::mutate(pathway = gsub("path:", "", pathway), ko = gsub("ko:", "", ko)) %>%
@@ -136,7 +136,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
         }
         df_res <- brite2df(lines)
 
-        Cdf <- sub(" ", "\t", df_res[["C"]]) %>% strsplit2(., "\t", colnames = c("path_id", "path_name"))
+        Cdf <- sub(" ", "\t", df_res[["C"]]) %>% pcutils::strsplit2(., "\t", colnames = c("path_id", "path_name"))
         KO_htable <- data.frame(
             sub("\\d* ", "", df_res$A),
             sub("\\d* ", "", df_res$B),
@@ -198,7 +198,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
         save(Pathway_htable, file = paste0(pack_dir, "/new_Pathway_htable.rda"))
     }
     if (type == "compound") {
-        B=NULL
+        B <- NULL
         compounds_brites <- brite_file2df(br_id = "br08902") %>% dplyr::filter(B == "Compounds")
         if (!is.null(keg_file)) {
             if (!dir.exists(keg_file)) {
@@ -346,7 +346,7 @@ load_CPDlist <- function(envir = .GlobalEnv, verbose = TRUE) {
 #' @export
 #' @return KO description in `.GlobalEnv`
 load_KO_desc <- function(envir = .GlobalEnv, verbose = TRUE) {
-    KO_id=NULL
+    KO_id <- NULL
     load_KO_htable(envir = environment(), verbose = verbose)
     ko_desc <- dplyr::distinct_all(KO_htable[, c("KO_id", "KO_name")]) %>% dplyr::arrange(KO_id)
     assign("ko_desc", ko_desc, envir = envir)
@@ -430,7 +430,7 @@ brite2df <- function(lines) {
     for (i in levels) {
         df_res[[i]] <- gsub(paste0("^", i, "\\s*"), "", df_res[[i]])
     }
-    tipdf <- sub("  ", "\t", df_res[[tip]]) %>% strsplit2(., "\t", colnames = c("id", "name"))
+    tipdf <- sub("  ", "\t", df_res[[tip]]) %>% pcutils::strsplit2(., "\t", colnames = c("id", "name"))
     cbind(df_res[, node], tipdf)
 }
 brite2df2 <- function(lines, id_pattern = "\\s+[CG]\\d{5}  ") {
@@ -469,7 +469,7 @@ brite2df2 <- function(lines, id_pattern = "\\s+[CG]\\d{5}  ") {
         for (i in levels[seq_len(col)]) {
             tmp[[i]] <- gsub(paste0("^", i, "\\s*"), "", tmp[[i]])
         }
-        tipdf <- sub("  ", "\t", tmp[[levels[col]]]) %>% strsplit2(., "\t", colnames = c("id", "name"))
+        tipdf <- sub("  ", "\t", tmp[[levels[col]]]) %>% pcutils::strsplit2(., "\t", colnames = c("id", "name"))
         df_res[[i]] <- cbind(tmp[, seq_len(col - 1)], tipdf)
     }
 
@@ -533,6 +533,7 @@ pre_compound_in_pathway <- function(pathway) {
 #' @param download_dir where to save the .keg file?
 #'
 #' @aliases download_org_pathway
+#' @aliases get_org_pathway
 #' @export
 #' @rdname update_KEGG
 update_org_pathway <- function(org = "hsa", RDS_file = NULL, download = TRUE, download_dir = NULL) {
@@ -547,7 +548,7 @@ update_org_pathway <- function(org = "hsa", RDS_file = NULL, download = TRUE, do
         }
     }
     if (!is.null(RDS_file)) {
-        if (!grepl(org, RDS_file)) stop("keg_file should be path of ", br_id, ".RDS.")
+        if (!grepl(org, RDS_file)) stop("keg_file should be path of ", org, "_*.RDS.")
         hsa_genels <- readRDS(RDS_file)
         org_pathway <- hsa_genels$org_pathway
         hsa_gene <- hsa_genels$hsa_gene
@@ -608,7 +609,8 @@ load_org_pathway <- function(org = "hsa", envir = .GlobalEnv, verbose = TRUE) {
             update_org_pathway(org = org)
             load(path_file, envir = envir)
         } else {
-            stop("No pathway information for organism '", org, "', please use `update_org_pathway('", org, "')` to download.")
+            message("No pathway information for organism '", org, "', please use `update_org_pathway('", org, "')` to download.")
+            return(invisible())
         }
     }
 
@@ -638,7 +640,7 @@ load_org_pathway <- function(org = "hsa", envir = .GlobalEnv, verbose = TRUE) {
 #' @examples
 #' message("The following example will download some files:")
 #' \dontrun{
-#' # update_GO_file()
+#' update_GO_file()
 #' }
 update_GO_file <- function(download_dir = NULL, GO_file = NULL) {
     if (is.null(download_dir)) download_dir <- "ReporterScore_temp_download"
@@ -685,7 +687,6 @@ update_GO_file <- function(download_dir = NULL, GO_file = NULL) {
 #' @return GOlist in `.GlobalEnv`
 #' @examples
 #' load_GOlist()
-#'
 load_GOlist <- function(envir = .GlobalEnv, verbose = TRUE) {
     prefix <- "GOlist"
     GOlist_file <- file.path(tools::R_user_dir("ReporterScore"), paste0("new_", prefix, ".rda"))
@@ -694,6 +695,7 @@ load_GOlist <- function(envir = .GlobalEnv, verbose = TRUE) {
         load(GOlist_file, envir = envir)
     } else {
         message("Not find GOlist_file, please run `update_GO_file()` first!")
+        return(invisible())
     }
 
     if (verbose) {
@@ -802,7 +804,8 @@ load_GOinfo <- function(envir = .GlobalEnv, verbose = TRUE) {
     if (file.exists(GOinfo_file)) {
         load(GOinfo_file, envir = envir)
     } else {
-        stop("use `update_GOinfo()` first")
+        message("use `update_GOinfo()` first")
+        return(invisible())
     }
 
     if (verbose) {
@@ -830,7 +833,7 @@ load_GOinfo <- function(envir = .GlobalEnv, verbose = TRUE) {
 #' @examples
 #' message("The following example will download some files:")
 #' \dontrun{
-#' # update_CARDinfo()
+#' update_CARDinfo()
 #' }
 update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
     pack_dir <- tools::R_user_dir("ReporterScore")
@@ -854,9 +857,9 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
     } else {
         if (!(file.exists(card_data) & grepl("card-data.tar.bz2", card_data))) stop("Wrong file: ", card_data)
     }
-    lib_ps("R.utils",library = FALSE)
+    lib_ps("R.utils", library = FALSE)
     R.utils::bunzip2(card_data, destname = file.path(download_dir, "card-data.tar"), remove = FALSE, overwrite = TRUE)
-    untar(tarfile = file.path(download_dir, "card-data.tar"), exdir = file.path(download_dir, "card-data"))
+    utils::untar(tarfile = file.path(download_dir, "card-data.tar"), exdir = file.path(download_dir, "card-data"))
 
     {
         ARO_index <- readr::read_delim(file.path(download_dir, "card-data", "aro_index.tsv"), delim = "\t", progress = FALSE) %>% as.data.frame()
@@ -865,7 +868,7 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
         antibiotics <- readr::read_delim(file.path(download_dir, "card-data", "shortname_antibiotics.tsv"), delim = "\t") %>% as.data.frame()
     } %>% suppressMessages()
 
-    `ARO Accession`=NULL
+    `ARO Accession` <- NULL
     ARO_index <- dplyr::distinct(ARO_index, `ARO Accession`, .keep_all = TRUE)
     rownames(ARO_index) <- gsub("ARO:", "", (ARO_index$`ARO Accession`))
     CARDinfo <- list(ARO_index = ARO_index, antibiotics = antibiotics)
@@ -890,13 +893,14 @@ load_CARDinfo <- function(envir = .GlobalEnv, verbose = TRUE) {
     if (file.exists(GOinfo_file)) {
         load(GOinfo_file, envir = envir)
     } else {
-        stop("use `update_CARDinfo()` first")
+        message("use `update_CARDinfo()` first")
+        return(invisible())
     }
 
     if (verbose) {
         pcutils::dabiao("load ", prefix)
-        if (!is.null(attributes(CARDinfo)$"download_time")) {
-            pcutils::dabiao(paste0(prefix, " download time: ", attributes(CARDinfo)$"download_time"))
+        if (!is.null(attributes(get("CARDinfo", envir = envir))$"download_time")) {
+            pcutils::dabiao(paste0(prefix, " download time: ", attributes(get("CARDinfo", envir = envir))$"download_time"))
             message("If you want to update ", prefix, ", use `update_CARDinfo()`")
         }
     }

@@ -15,6 +15,7 @@
 #' @return A data frame containing the enrichment results.
 #' @export
 #' @examples
+#' ## use `enricher` from the `clusterProfiler` package.
 #' data("reporter_score_res")
 #' enrich_res <- KO_enrich(reporter_score_res)
 #' plot(enrich_res)
@@ -22,7 +23,7 @@ KO_enrich <- function(ko_stat, padj_threshold = 0.05,
                       logFC_threshold = NULL, add_mini = NULL, p.adjust.method = "BH",
                       type = c("pathway", "module")[1], feature = "ko",
                       modulelist = NULL, verbose = TRUE) {
-    res.dt=path2name=path2ko=sig_KO=KOs=NULL
+    res.dt <- path2name <- path2ko <- sig_KO <- KOs <- NULL
 
     pcutils::lib_ps("clusterProfiler", library = FALSE)
     KO_enrich_internal(ko_stat, padj_threshold,
@@ -56,7 +57,7 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
                                logFC_threshold = NULL, add_mini = NULL, p.adjust.method = "BH",
                                type = c("pathway", "module")[1], feature = "ko",
                                modulelist = NULL, verbose = TRUE, mode = 1, weight = "logFC") {
-    KO_id<- KOs <- p.adjust <- NULL
+    KO_id <- KOs <- p.adjust <- logFC <- NULL
 
     if (inherits(ko_stat, "reporter_score")) {
         reporter_res <- ko_stat
@@ -132,14 +133,13 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
 #' @export
 #'
 #' @examples
-#' data("reporter_score_res")
+#' ## use `fisher.test` from the `stats` package.
 #' fisher_res <- KO_fisher(reporter_score_res)
-#' plot(fisher_res)
 KO_fisher <- function(ko_stat, padj_threshold = 0.05,
                       logFC_threshold = NULL, add_mini = NULL, p.adjust.method = "BH",
                       type = c("pathway", "module")[1], feature = "ko",
                       modulelist = NULL, verbose = TRUE) {
-    res.dt=path2name=path2ko=sig_KO=KOs=Exist_K_num=id=p.value=NULL
+    res.dt <- path2name <- path2ko <- sig_KO <- KOs <- Exist_K_num <- id <- p.value <- KO_id <- NULL
 
     KO_enrich_internal(ko_stat, padj_threshold,
         logFC_threshold, add_mini, p.adjust.method,
@@ -228,15 +228,11 @@ as.enrich_res <- function(gsea_res) {
 #'
 #' @return ggplot
 #' @export
-#' @examples
-#' data("reporter_score_res")
-#' enrich_res <- KO_enrich(reporter_score_res)
-#' plot(enrich_res)
 plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
                             show_ID = FALSE, Pathway_description = TRUE,
                             facet_level = FALSE, facet_anno = NULL, str_width = 50,
                             facet_str_width = 15, ...) {
-    Description <- Significant_K_num <- order_value <-NULL
+    Description <- Significant_K_num <- order_value <- x <- fill <- size <- size_lab <- x_lab <- NULL
     GO <- pre_enrich_res(enrich_res, padj_threshold, show_ID, Pathway_description, facet_level, facet_anno)
     # 经典图
     if (mode == 1) {
@@ -274,7 +270,6 @@ plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
 pre_enrich_res <- function(enrich_res, padj_threshold = 0.05,
                            show_ID = FALSE, Pathway_description = TRUE,
                            facet_level = FALSE, facet_anno = NULL) {
-
     flag <- FALSE
     if (inherits(enrich_res, "enrich_res")) {
         GO <- enrich_res
@@ -368,16 +363,19 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' @export
 #'
 #' @examples
-#' data("reporter_score_res")
+#' message("The following example require some time to run:")
+#' \donttest{
+#' ## use `GSEA` from the `clusterProfiler` package.
 #' gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
-#' enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
+#' # enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
 #' gsea_res_df <- as.enrich_res(gsea_res)
 #' plot(gsea_res_df)
+#' }
 KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
                     padj_threshold = 1, p.adjust.method = "BH",
                     type = c("pathway", "module")[1], feature = "ko",
                     modulelist = NULL, verbose = TRUE) {
-    res.dt=path2name=path2ko=sig_KO=KOs=Exist_K_num=id=p.value=logFC=NULL
+    res.dt <- path2name <- path2ko <- sig_KO <- KOs <- Exist_K_num <- id <- p.value <- logFC <- NULL
 
     pcutils::lib_ps("clusterProfiler", library = FALSE)
     KO_enrich_internal(ko_stat, padj_threshold,
@@ -498,8 +496,9 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
 #' @export
 #'
 #' @examples
+#' ## use `GSA` from the `GSA` package.
 #' data("reporter_score_res")
-#' gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none",perm=200)
+#' gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none", perm = 200)
 #' plot(gsa_res)
 KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000) {
     KO_id <- p.adjust <- NULL
@@ -526,4 +525,3 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
 
     KO_gsa_internal(kodf, group, metadata, resp.type = method, modulelist = modulelist, p.adjust.method = p.adjust.method, verbose = verbose, perm = perm)
 }
-

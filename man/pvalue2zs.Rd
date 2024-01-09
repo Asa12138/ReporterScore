@@ -14,7 +14,7 @@ pvalue2zs(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH")
 \item{p.adjust.method1}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
 }
 \value{
-ko_stat dataframe
+ko_stat data.frame
 }
 \description{
 Transfer p-value of KOs to Z-score

@@ -79,15 +79,18 @@ enrich_res object
 This function performs KO enrichment analysis using the `clusterProfiler` package.
 }
 \examples{
+## use `enricher` from the `clusterProfiler` package.
 data("reporter_score_res")
 enrich_res <- KO_enrich(reporter_score_res)
 plot(enrich_res)
-data("reporter_score_res")
+## use `fisher.test` from the `stats` package.
 fisher_res <- KO_fisher(reporter_score_res)
-plot(fisher_res)
-data("reporter_score_res")
+message("The following example require some time to run:")
+\donttest{
+## use `GSEA` from the `clusterProfiler` package.
 gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
-enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
+# enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
 gsea_res_df <- as.enrich_res(gsea_res)
 plot(gsea_res_df)
+}
 }
