@@ -1,17 +1,16 @@
-citHeader("To cite ReporterScore in publications use:")
-
-citEntry(
-    entry  = "article",
-    title = "Generalized Reporter Score-based Enrichment Analysis for Diverse Omics Data",
-    author = personList(
+bibentry(
+    header = "To cite ReporterScore in publications use:",
+    bibtype = "Article",
+    title = "Generalized Reporter Score-based Enrichment Analysis for Omics Data",
+    author = c(
         as.person("Chen Peng"),
-	    as.person("Qiong Chen"),
-	    as.person("Shangjin Tan"),
-	    as.person("Xiaotao Shen"),
+        as.person("Qiong Chen"),
+        as.person("Shangjin Tan"),
+        as.person("Xiaotao Shen"),
         as.person("Chao Jiang")
     ),
-    journal = "bioRxiv",
     year = "2023",
+    journal = "bioRxiv",
     url = "https://doi.org/10.1101/2023.10.13.562235",
     textVersion = paste("C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang.",
                         "Generalized Reporter Score-based Enrichment Analysis for Omics Data.",
