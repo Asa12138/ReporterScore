@@ -69,7 +69,7 @@ print.reporter_score <- function(x, ...) {
 #' \item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
 #' \item{BG_Mean}{Background mean, \eqn{\mu _k}}
 #' \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
-#' \item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+#' \item{ReporterScore}{ReporterScore of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 #' \item{p.value}{p.value of the ReporterScore}
 #' \item{p.adjust}{adjusted p.value by p.adjust.method2}
 #'
@@ -82,19 +82,18 @@ print.reporter_score <- function(x, ...) {
 #' head(reporter_score_res$reporter_s)
 #' message("The following example require some time to run:")
 #' \donttest{
-#'  reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-#'      mode = "mixed",
-#'      method = "kruskal.test", p.adjust.method1 = "none", perm = 499
-#'  )
-#'  reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-#'      mode = "directed",
-#'      method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
-#'  )
+#' reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+#'     mode = "mixed",
+#'     method = "kruskal.test", p.adjust.method1 = "none", perm = 499
+#' )
+#' reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+#'     mode = "directed",
+#'     method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
+#' )
 #' }
 reporter_score <- function(
     kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
     feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH", modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600) {
-    KOlist <- NULL
 
     check_kodf_modulelist(kodf, type, feature, modulelist, verbose, mode = 1)
 
@@ -156,7 +155,7 @@ reporter_score <- function(
     }
 
     if (is.null(modulelist)) {
-        modulelist <- get_modulelist(type, feature, verbose = FALSE)
+        modulelist <- get_modulelist(type, feature, verbose = FALSE, chr = TRUE)
     }
 
     res <- list(kodf = kodf, ko_stat = ko_stat, reporter_s = reporter_s, modulelist = modulelist, group = group, metadata = metadata)
@@ -180,12 +179,14 @@ reporter_score <- function(
 #' @param p.adjust.method1 p.adjust.method, see \code{\link[stats]{p.adjust}}
 #' @param verbose logical
 #'
-#' @return ko_pvalue dataframej
+#' @return ko_pvalue data.frame
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+#' }
 ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", threads = 1, verbose = TRUE) {
     i <- NULL
     t1 <- Sys.time()
@@ -350,17 +351,24 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 
     {
         if (threads > 1) {
-            pcutils::lib_ps("foreach", "doSNOW", "snow")
-            pb <- utils::txtProgressBar(max = reps, style = 3)
-            opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+            if (verbose) {
+                pb <- utils::txtProgressBar(max = reps, style = 3)
+                opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            } else {
+                opts <- NULL
+            }
             cl <- snow::makeCluster(threads)
             doSNOW::registerDoSNOW(cl)
-            res <- foreach::foreach(i = seq_len(reps), .options.snow = opts, .export = c("group", "group2")) %dopar% {
+            res <- foreach::`%dopar%`(
+                foreach::foreach(
+                    i = seq_len(reps), .options.snow = opts,
+                    .export = c("group", "group2")
+                ),
                 suppressWarnings(loop(i))
-            }
+            )
             snow::stopCluster(cl)
             gc()
-            pcutils::del_ps("doSNOW", "snow", "foreach")
         } else {
             res <- suppressWarnings(lapply(seq_len(reps), loop))
         }
@@ -384,7 +392,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
         "\nCompared groups: ", paste(vs_group, collapse = ", "), "\n", "Total KO number: ", reps, "\n", "Compare method: ", method, "\n", "Time use: ",
         stime, attr(stime, "units"), "\n"
     )
-    message(resinfo)
+    if (verbose) message(resinfo)
 
     attributes(res.dt)$vs_group <- vs_group
     attributes(res.dt)$method <- method
@@ -399,7 +407,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' @param mode 'mixed' or 'directed' (only for two groups differential analysis or multi-groups correlation analysis.), see details
 #' @param p.adjust.method1 p.adjust.method, see \code{\link[stats]{p.adjust}}
 #'
-#' @return ko_stat dataframe
+#' @return ko_stat data.frame
 #' @export
 #' @details
 #' '\strong{mixed}' mode is the original reporter-score method from Patil, K. R. et al. PNAS 2005.
@@ -469,11 +477,13 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' 3. \code{https://github.com/wangpeng407/ReporterScore}
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+#' }
 pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
-    p.adjust <- type <- NULL
+    p.adjust <- type <- Significantly <- NULL
     res.dt <- ko_pvalue
     if (!all(c("p.value") %in% colnames(res.dt))) {
         stop("check if `p.value` in your ko_stat dataframe!")
@@ -578,16 +588,16 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
     list(vec = temp, mean_sd = c(mean(temp), stats::sd(temp)))
 }
 
-get_modulelist <- function(type, feature, verbose = TRUE) {
+get_modulelist <- function(type, feature, verbose = TRUE, chr=FALSE) {
     if (type %in% c("pathway", "module")) {
         # reference pathway
         type <- match.arg(type, c("pathway", "module"))
         if (feature == "ko") {
-            load_KOlist(envir = environment(), verbose = verbose)
+            KOlist=load_KOlist(verbose = verbose)
             modulelist <- KOlist[[type]]
         }
         if (feature == "compound") {
-            load_CPDlist(envir = environment(), verbose = verbose)
+            CPDlist=load_CPDlist(verbose = verbose)
             modulelist <- CPDlist[[type]]
         }
         if (feature == "gene") {
@@ -597,12 +607,14 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
         if (feature != "gene") {
             stop("\"CC\", \"MF\", \"BP\", \"ALL\" using GO database, which only support feature=\"gene\"")
         }
-        load_GOlist(envir = environment(), verbose = verbose)
+        GOlist=load_GOlist(verbose = verbose)
         if (type == "ALL") {
-            modulelist <- lapply(names(GOlist), \(i) cbind(GOlist[[i]], ONT = i)) %>%
-                do.call(rbind, .)
+            modulelist <- "lapply(names(GOlist), \\(i) cbind(GOlist[[i]], ONT = i)) %>%
+                    do.call(rbind, .)"
+            if(!chr) modulelist <- eval(parse(text = modulelist))
         } else {
-            modulelist <- GOlist[[type]]
+            modulelist <- paste0("GOlist[['",type,"']]")
+            if(!chr) modulelist <- eval(parse(text = modulelist))
         }
     } else {
         # KEGG pathway of other organisms
@@ -627,14 +639,16 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
 #' @param min_exist_KO min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)
 #' @param max_exist_KO max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)
 #'
-#' @return reporter_res dataframe
+#' @return reporter_res data.frame
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 #' reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+#' }
 get_reporter_score <- function(
     ko_stat, type = c("pathway", "module")[1], feature = "ko", threads = 1, modulelist = NULL, perm = 4999, verbose = TRUE, p.adjust.method2 = "BH",
     min_exist_KO = 3, max_exist_KO = 600) {
@@ -722,17 +736,24 @@ get_reporter_score <- function(
     }
     {
         if (threads > 1) {
-            pcutils::lib_ps("foreach", "doSNOW", "snow")
-            pb <- utils::txtProgressBar(max = reps, style = 3)
-            opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+            if (verbose) {
+                pb <- utils::txtProgressBar(max = reps, style = 3)
+                opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
+            } else {
+                opts <- NULL
+            }
             cl <- snow::makeCluster(threads)
             doSNOW::registerDoSNOW(cl)
-            res <- foreach::foreach(i = seq_len(reps), .options.snow = opts, .export = c("random_mean_sd")) %dopar% {
+            res <- foreach::`%dopar%`(
+                foreach::foreach(
+                    i = seq_len(reps), .options.snow = opts,
+                    .export = c("random_mean_sd")
+                ),
                 loop(i)
-            }
+            )
             snow::stopCluster(cl)
             gc()
-            pcutils::del_ps("doSNOW", "snow", "foreach")
         } else {
             res <- lapply(seq_len(reps), loop)
         }
@@ -810,7 +831,7 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
     if (feature == "compound") {
         rowname_check <- grepl("C\\d{5}", rownames(ko_stat))
         if (!all(rowname_check)) {
-            if (verbose) message("Some of your ko_stat are not KEGG compound id, check the format! (e.g. C00001)\n")
+            if (verbose) message("Some of your ko_stat are not 'KEGG' compound id, check the format! (e.g. C00001)\n")
         }
     }
 
@@ -842,15 +863,14 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
 #'
 #' @aliases get_KOs
 #' @export
-#' @return KOids, or dataframe with these KOids.
+#' @return KOids, or data.frame with these KOids.
 #' @examples
 #' get_features(map_id = "map00010")
-#'
 get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL) {
-    KOlist <- NULL
+    KOlist <- GOlist <- NULL
     if (is.null(modulelist)) {
         message("modulelist is NULL, use default modulelist!")
-        load_KOlist(envir = environment())
+        KOlist=load_KOlist()
         if (grepl("map", map_id[1])) {
             modulelist <- KOlist$pathway
         }
@@ -858,7 +878,7 @@ get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
             modulelist <- KOlist$module
         }
         if (grepl("GO:", map_id[1])) {
-            load_GOlist(envir = environment())
+            GOlist=load_GOlist()
             modulelist <- lapply(names(GOlist), function(i) cbind(GOlist[[i]], ONT = i)) %>%
                 do.call(rbind, .)
         }
@@ -950,8 +970,7 @@ transform_modulelist <- function(mymodulelist, mode = 1) {
 #' @examples
 #' custom_modulelist_from_org(org = "hsa", feature = "ko")
 custom_modulelist_from_org <- function(org = "hsa", feature = "ko", verbose = TRUE) {
-    load_org_pathway(org = org, envir = environment(), verbose = verbose)
-    org_path <- get(paste0(org, "_kegg_pathway"))
+    org_path <- load_org_pathway(org = org,verbose = verbose)
     if (feature == "ko") {
         pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "KO_id")])
     } else if (feature == "gene") {
@@ -1015,9 +1034,8 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
     a$KO_id <- rownames(a)
 
     if (level %in% c("pathway", "module")) {
-        KOlist <- NULL
         if (is.null(modulelist)) {
-            load_KOlist(envir = environment(), verbose = verbose)
+            KOlist=load_KOlist(verbose = verbose)
             modulelist <- KOlist[[level]]
         }
         if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) {
@@ -1027,7 +1045,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         path2name <- setNames(modulelist$Description, modulelist$id)
     } else if (level %in% c("level1", "level2", "level3")) {
         KO_htable <- NULL
-        load_KO_htable(envir = environment(), verbose = verbose)
+        KO_htable=load_KO_htable(verbose = verbose)
         if (level == "level3") {
             path2ko <- KO_htable[, c(paste0(level, "_id"), "KO_id")]
             path2name <- KO_htable[, paste0(level, c("_id", "_name"))] %>%
@@ -1041,7 +1059,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         Module_abundance <- up_level_KO(KO_abundance, level = "module")
         a <- Module_abundance
         a$KO_id <- rownames(a)
-        load_Module_htable(envir = environment(), verbose = verbose)
+        Module_htable=load_Module_htable(verbose = verbose)
         path2ko <- Module_htable[, c(paste0(level, "_name"), "Module_id")]
         show_name <- FALSE
     } else {
@@ -1075,8 +1093,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
 #' data("genedf")
 #' KOdf <- gene2ko(genedf, org = "hsa")
 gene2ko <- function(genedf, org = "hsa") {
-    load_org_pathway(org = org, envir = environment())
-    org_path <- get(paste0(org, "_kegg_pathway"), envir = environment())
+    org_path <- load_org_pathway(org = org)
 
     gene_mp_ko <- dplyr::distinct_all(org_path$all_org_gene[, c("gene_symbol", "KO_id")])
 
@@ -1125,10 +1142,10 @@ cm_test_k <- function(otu_group, filter_var, fast = TRUE) {
     lib_ps("factoextra", library = FALSE)
     #-------determining the number of clusters
     # 1 Elbow method
-    cp1 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "wss", verbose = TRUE) +
+    cp1 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, method = "wss", verbose = TRUE) +
         labs(subtitle = "Elbow method")
     # 2 Silhouette method
-    cp2 <- factoextra::fviz_nbclust(data_scaled, kmeans, method = "silhouette") +
+    cp2 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, method = "silhouette") +
         labs(subtitle = "Silhouette method")
     # 3 Gap statistic
     # nboot = 50 to keep the function speedy.
@@ -1136,7 +1153,7 @@ cm_test_k <- function(otu_group, filter_var, fast = TRUE) {
     # Use verbose = FALSE to hide computing progression.
     cp3 <- NULL
     if (!fast) {
-        cp3 <- factoextra::fviz_nbclust(data_scaled, kmeans, nstart = 25, method = "gap_stat", nboot = 50) +
+        cp3 <- factoextra::fviz_nbclust(x = data_scaled, FUNcluster = stats::kmeans, nstart = 25, method = "gap_stat", nboot = 50) +
             labs(subtitle = "Gap statistic method")
     }
     return(list(cp1 = cp1, cp2 = cp2, cp3 = cp3))
@@ -1146,7 +1163,7 @@ filter_top_var <- function(otu_group, filter_var) {
     # trans
     pcutils::dabiao("Filter top ", (1 - filter_var) * 100, "% var and scale")
     group.var <- apply(otu_group, 1, var)
-    otu_group.sel <- otu_group[group.var >= quantile(group.var, filter_var), ] # 挑出变化较大的部分
+    otu_group.sel <- otu_group[group.var >= stats::quantile(group.var, filter_var), ] # 挑出变化较大的部分
     weight <- c(apply(otu_group.sel, 1, var))
     data_scaled <- pcutils::trans(otu_group.sel, method = "standardize", MARGIN = 1)
     data_scaled
@@ -1162,11 +1179,13 @@ filter_top_var <- function(otu_group, filter_var) {
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data(otutab, package = "pcutils")
 #' pcutils::hebing(otutab, metadata$Group) -> otu_group
 #' cm_test_k(otu_group, filter_var = 0.7)
 #' cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
 #' plot(cm_res, 0.8)
+#' }
 c_means <- function(otu_group, k_num, filter_var) {
     lib_ps("e1071", library = FALSE)
 
@@ -1178,7 +1197,7 @@ c_means <- function(otu_group, k_num, filter_var) {
 
     cm_data <- cbind.data.frame(
         Name = row.names(data_scaled), data_scaled,
-        Weight = apply(otu_group[rownames(data_scaled), ], 1, var),
+        Weight = apply(otu_group[rownames(data_scaled), ], 1, stats::var),
         Cluster = cm$cluster,
         Membership = apply(cm$membership, 1, max)
     )
@@ -1209,10 +1228,12 @@ c_means <- function(otu_group, k_num, filter_var) {
 #' @examples
 #' message("The following example require some time to run:")
 #' \donttest{
-#'  data("KO_abundance_test")
-#'  rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, k_num = 3,
-#'      filter_var = 0.7, method = "pearson", perm=199)
-#'  extract_cluster(rsa_cm_res, cluster = 1)
+#' data("KO_abundance_test")
+#' rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
+#'     k_num = 3,
+#'     filter_var = 0.7, method = "pearson", perm = 199
+#' )
+#' extract_cluster(rsa_cm_res, cluster = 1)
 #' }
 RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0.7, verbose = TRUE, method = "pearson", ...) {
     if (verbose) {
@@ -1245,9 +1266,9 @@ RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0
         print(cm_test_k_res)
         while (TRUE) {
             if (!is.null(k_num)) {
-                cat("wrong format, please choose a proper k_num for clustering.")
+                message("wrong format, please choose a proper k_num for clustering.")
             } else {
-                cat("please choose a proper k_num for clustering.")
+                message("please choose a proper k_num for clustering.")
             }
             k_num <- readline("k_num: ")
             suppressWarnings({

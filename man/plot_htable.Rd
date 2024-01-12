@@ -20,6 +20,8 @@ ggplot
 Plot htable levels
 }
 \examples{
+\donttest{
 data("KO_abundance_test")
 plot_htable(select = rownames(KO_abundance))
+}
 }

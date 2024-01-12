@@ -44,7 +44,7 @@ plot_features_network(
 \item{...}{additional arguments for \code{\link[MetaNet]{c_net_plot}}}
 }
 \value{
-ggplot
+network plot
 }
 \description{
 Plot features network

@@ -3,7 +3,7 @@
 \docType{data}
 \name{Pathway_htable}
 \alias{Pathway_htable}
-\title{Pathway htable from KEGG}
+\title{Pathway htable from 'KEGG'}
 \description{
-Pathway htable from KEGG
+Pathway htable from 'KEGG'
 }

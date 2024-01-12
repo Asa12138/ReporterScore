@@ -80,7 +80,7 @@ for the `reporter_s` in result, whose columns represent:
 \item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
 \item{BG_Mean}{Background mean, \eqn{\mu _k}}
 \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
-\item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+\item{ReporterScore}{ReporterScore of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 \item{p.value}{p.value of the ReporterScore}
 \item{p.adjust}{adjusted p.value by p.adjust.method2}
 }
@@ -95,13 +95,13 @@ reporter_score_res <- reporter_score(KO_abundance, "Group", metadata,
 head(reporter_score_res$reporter_s)
 message("The following example require some time to run:")
 \donttest{
- reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-     mode = "mixed",
-     method = "kruskal.test", p.adjust.method1 = "none", perm = 499
- )
- reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-     mode = "directed",
-     method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
- )
+reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "mixed",
+    method = "kruskal.test", p.adjust.method1 = "none", perm = 499
+)
+reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "directed",
+    method = "pearson", pattern = c("G1" = 1, "G2" = 3, "G3" = 2), perm = 499
+)
 }
 }

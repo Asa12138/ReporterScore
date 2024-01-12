@@ -32,7 +32,8 @@ C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter Score-based En
 ```r
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("Asa12138/pcutils")
-devtools::install_github("Asa12138/ReporterScore", dependencies = TRUE)
+devtools::install_github("Asa12138/ReporterScore")
+
 library(ReporterScore)
 ```
 
@@ -81,18 +82,18 @@ The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, a
 
 3. `ReporterScore` has built-in pathway-ko, pathway-gene, and pathway-compound databases of human (hsa) and mouse (mmu) for ko/gene/compound abundance table. You can use `custom_modulelist_from_org()` to have a look. Use `update_org_pathway()` to update these databases and download other organism databases (by KEGG API).
 
-4. `ReporterScore` has built-in GO-gene database, You can use `load_GOlist()` to have a look and use `update_GO_file()` to update these databases (by KEGG API).
+4. `ReporterScore` has built-in GO-gene database, You can use `load_GOlist()` to have a look and use `update_GOlist()` to update these databases (by KEGG API).
 
 5. You can just customize your own pathway databases (gene set of interest) by using `custom_modulelist()`.
 
 
 ```r
 # 1. KEGG pathway-KO and module-KO databases
-load_KOlist()
+KOlist=load_KOlist()
 head(KOlist$pathway)
 
 # 2. KEGG pathway-compound and module-compound databases
-load_CPDlist()
+CPDlist=load_CPDlist()
 head(CPDlist$pathway)
 
 # 3. human (hsa) pathway-ko/gene/compound databases
@@ -103,7 +104,7 @@ hsa_pathway_gene <- custom_modulelist_from_org(
 head(hsa_pathway_gene)
 
 # 4. GO-gene database
-load_GOlist()
+GOlist=load_GOlist()
 head(GOlist$BP)
 
 # 5. customize your own pathway databases
@@ -137,12 +138,13 @@ cat("Comparison: ", levels(factor(metadata$Group)))
 ## Comparison:  WT OE
 
 # for microbiome!!!
-reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed", 
-                               method = "wilcox.test", perm = 999)
+reporter_res <- reporter_score(KO_abundance, "Group", metadata,
+    mode = "directed",
+    method = "wilcox.test", perm = 999
+)
 ## ================================Use feature: ko=================================
 ## ===============================Checking rownames================================
 ## Some of your ko_stat are not KO id, check the format! (e.g. K00001)
-## Loading required namespace: tidyr
 ## 52.7% of your kos in the modulelist!
 ## 30 samples are matched for next step.
 ## ===========================Removing all-zero rows: 0============================
@@ -160,7 +162,7 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed
 ## Compared groups: WT, OE
 ## Total KO number: 4535
 ## Compare method: wilcox.test
-## Time use: 1.156
+## Time use: 1.125
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## ==================================load KOlist===================================
@@ -170,7 +172,7 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata, mode = "directed
 ## 100 pathways done.
 ## 400 pathways done.
 ## ID number: 481
-## Time use: 1.558
+## Time use: 1.647
 ## ====================================All done====================================
 ```
 
@@ -193,28 +195,34 @@ When you use the gene abundance table of a specific species (e.g. human), rememb
 data("genedf")
 
 # Set the `feature` and `type`!
-reporter_res_gene <- reporter_score(genedf, "Group", metadata, mode = "directed", 
-                               feature = "gene", type="hsa",
-                               method = "wilcox.test", perm = 999)
-
+reporter_res_gene <- reporter_score(genedf, "Group", metadata,
+    mode = "directed",
+    feature = "gene", type = "hsa",
+    method = "wilcox.test", perm = 999
+)
 
 # Or give the database through `modulelist`
 hsa_pathway_gene <- custom_modulelist_from_org(
     org = "hsa",
     feature = "gene"
 )
-reporter_res_gene <- reporter_score(genedf, "Group", metadata, mode = "directed", 
-                               modulelist = hsa_pathway_gene,
-                               method = "wilcox.test", perm = 999)
+
+reporter_res_gene <- reporter_score(genedf, "Group", metadata,
+    mode = "directed",
+    modulelist = hsa_pathway_gene,
+    method = "wilcox.test", perm = 999
+)
 ```
 
 #### Compound-pathway
 
 
 ```r
-reporter_res_gene <- reporter_score(chem_df, "Group", metadata, mode = "directed", 
-                               feature = "compound", type="hsa",
-                               method = "wilcox.test", perm = 999)
+reporter_res_gene <- reporter_score(chem_df, "Group", metadata,
+    mode = "directed",
+    feature = "compound", type = "hsa",
+    method = "wilcox.test", perm = 999
+)
 ```
 
 ### 4. Visualization
@@ -224,9 +232,9 @@ Plot the most significantly enriched pathways:
 
 ```r
 # View(reporter_res$reporter_s)
-plot_report(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = T)
+plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
 ## ==============================load Pathway_htable===============================
-## ===============Pathway_htable download time: 2023-08-14 23:08:28================
+## ===============Pathway_htable download time: 2024-01-12 00:52:39================
 ## If you want to update Pathway_htable, use `update_htable(type='pathway')`
 ```
 
@@ -273,7 +281,8 @@ Or display as a network:
 
 
 ```r
-plot_KOs_network(reporter_res, map_id = c("map00780", "map00785", "map00900"), main = "", mark_module = TRUE)
+plot_KOs_network(reporter_res, map_id = c("map00780", "map00785", "map00900"), 
+                 main = "", mark_module = TRUE)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
@@ -293,8 +302,8 @@ Or display as a heatmap:
 
 
 ```r
-plot_KOs_heatmap(reporter_res, map_id = "map00780", only_sig = TRUE, heatmap_param = list(cutree_rows = 2))
-## Loading required namespace: pheatmap
+plot_KOs_heatmap(reporter_res, map_id = "map00780", only_sig = TRUE, 
+                 heatmap_param = list(cutree_rows = 2))
 ```
 
 ![](README_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
@@ -368,8 +377,9 @@ We use 1,5,1 to found pathways with the down-up-down pattern
 
 
 ```r
-reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata, mode = "directed", method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1))
-plot_report(reporter_res3, rs_threshold = 3, show_ID = TRUE)
+reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata, mode = "directed", perm = 999,
+                                method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1))
+plot_report_bar(reporter_res3, rs_threshold = 3, show_ID = TRUE)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
@@ -384,7 +394,8 @@ To explore potential patterns within the data, clustering methods, such as C-mea
 
 
 ```r
-rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, method = "pearson", k_num = 3, perm = 999)
+rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, method = "pearson", 
+                        k_num = 3, perm = 999)
 # show the patterns
 plot_c_means(rsa_cm_res, filter_membership = 0.7)
 ```
@@ -393,7 +404,7 @@ plot_c_means(rsa_cm_res, filter_membership = 0.7)
 
 ```r
 
-plot_report_bar(rsa_cm_res, rs_threshold = 2.5)
+plot_report_bar(rsa_cm_res, rs_threshold = 2.5,y_text_size = 10)
 ```
 
 ![](README_files/figure-html/unnamed-chunk-20-2.png)<!-- -->
@@ -453,9 +464,9 @@ We collected k00001 KEGG Orthology (KO) table so that you can summaries each lev
 
 
 ```r
-load_KO_htable()
+KO_htable=load_KO_htable()
 ## =================================load KO_htable=================================
-## ==================KO_htable download time: 2023-08-15 00:00:31==================
+## ==================KO_htable download time: 2024-01-12 00:49:03==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
 head(KO_htable)
 ##   level1_name             level2_name level3_id                  level3_name
@@ -474,7 +485,7 @@ head(KO_htable)
 ## 6 K06859 pgi1; glucose-6-phosphate isomerase, archaeal [EC:5.3.1.9]
 plot_htable(type = "ko")
 ## =================================load KO_htable=================================
-## ==================KO_htable download time: 2023-08-15 00:00:31==================
+## ==================KO_htable download time: 2024-01-12 00:49:03==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
 ```
 
@@ -484,9 +495,11 @@ plot_htable(type = "ko")
 ```r
 KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
 ## =================================load KO_htable=================================
-## ==================KO_htable download time: 2023-08-15 00:00:31==================
+## ==================KO_htable download time: 2024-01-12 00:49:03==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
-pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) + ggsci::scale_fill_d3()
+pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) + 
+    ggsci::scale_fill_d3()+
+    theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5))
 ```
 
 ![](README_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
@@ -497,10 +510,10 @@ For convenience, I also included the CARD database from https://card.mcmaster.ca
 
 
 ```r
-load_CARDinfo()
+CARDinfo=load_CARDinfo()
 ## =================================load CARDinfo==================================
-## ==================CARDinfo download time: 2023-10-10 21:11:54===================
-## If you want to update CARDinfo, use `update_CARDinfo()`
+## ==================CARDinfo download time: 2024-01-12 01:12:11===================
+## If you want to update CARDinfo, use `update_GOlist()`
 head(CARDinfo$ARO_index)
 ##         ARO Accession CVTERM ID Model Sequence ID Model ID
 ## 3005099   ARO:3005099     43314              6143     3831

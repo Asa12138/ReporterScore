@@ -9,7 +9,6 @@
 a list contain 7 elements.
 \describe{
 \item{kodf}{your input KO_abundance table}
-\item{ko_pvalue}{ko statistics result contains p.value}
 \item{ko_stat}{ko statistics result contains p.value and z_score}
 \item{reporter_s}{the reporter score in each pathway}
 \item{modulelist}{default KOlist or customized modulelist dataframe}

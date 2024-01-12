@@ -37,12 +37,14 @@ ko.test(
 \item{verbose}{logical}
 }
 \value{
-ko_pvalue dataframej
+ko_pvalue data.frame
 }
 \description{
 Differential analysis or Correlation analysis for KO-abundance table
 }
 \examples{
+\donttest{
 data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+}
 }

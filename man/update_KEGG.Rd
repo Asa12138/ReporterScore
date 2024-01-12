@@ -6,11 +6,12 @@
 \alias{update_htable}
 \alias{update_org_pathway}
 \alias{download_org_pathway}
-\title{Update files from KEGG}
+\alias{get_org_pathway}
+\title{Update files from 'KEGG'}
 \usage{
-update_KEGG(download_dir = NULL)
+update_KEGG(download_dir)
 
-update_KO_file(download_dir = NULL, RDSfile = NULL)
+update_KO_file(download_dir, RDSfile = NULL)
 
 update_htable(type, keg_file = NULL, download = FALSE, download_dir = NULL)
 
@@ -48,10 +49,4 @@ Download links:
 \code{https://rest.kegg.jp/list/module}
 \code{https://rest.kegg.jp/link/module/ko}
 \code{https://rest.kegg.jp/link/module/compound}
-}
-\examples{
-message("The following example will download some files:")
-\dontrun{
-# update_KEGG()
-}
 }

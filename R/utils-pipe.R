@@ -16,8 +16,6 @@
 #'
 NULL
 
-## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 
 deprecated <- function(old, new) {
     assign(old, new, envir = asNamespace(packageName()))
@@ -43,18 +41,5 @@ deprecated("get_KOs", get_features)
 deprecated("plot_report_bar", plot_report)
 #' @export download_org_pathway
 deprecated("download_org_pathway", update_org_pathway)
-
-#' Some functions from other packages
-#' @importFrom pcutils lib_ps
-#' @importFrom pcutils get_cols
-#' @importFrom pcutils mmscale
-#' @importFrom dplyr filter
-#' @importFrom dplyr select
-#' @importFrom dplyr left_join
-#' @importFrom dplyr arrange
-#' @importFrom dplyr count
-#' @importFrom dplyr group_by
-#' @importFrom dplyr summarise
-#' @importFrom dplyr rename
-#' @importFrom dplyr distinct
-#' @name init_ReporterScore
+#' @export get_org_pathway
+deprecated("get_org_pathway", update_org_pathway)

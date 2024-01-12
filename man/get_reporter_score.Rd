@@ -39,14 +39,16 @@ get_reporter_score(
 \item{max_exist_KO}{max exist KO number in a pathway (default, 600, when a pathway contains KOs more than 600, there will be no RS)}
 }
 \value{
-reporter_res dataframe
+reporter_res data.frame
 }
 \description{
 Calculate reporter score
 }
 \examples{
+\donttest{
 data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+}
 }

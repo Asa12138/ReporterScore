@@ -3,28 +3,25 @@
 \name{load_GOlist}
 \alias{load_GOlist}
 \alias{load_GOinfo}
-\title{Load the GOlist (from GO database)}
+\title{Load the GOlist (from 'GO' database)}
 \usage{
-load_GOlist(envir = .GlobalEnv, verbose = TRUE)
+load_GOlist(verbose = TRUE)
 
-load_GOinfo(envir = .GlobalEnv, verbose = TRUE)
+load_GOinfo(verbose = TRUE)
 }
 \arguments{
-\item{envir}{`.GlobalEnv` (default) or `environment()`}
-
 \item{verbose}{logical}
 }
 \value{
-GOlist in `.GlobalEnv`
+GOlist
 
-GOinfo in `.GlobalEnv`
+GOinfo
 }
 \description{
-Load the GOlist (from GO database)
+Load the GOlist (from 'GO' database)
 
 Load the GOinfo (from GO)
 }
 \examples{
 load_GOlist()
-
 }

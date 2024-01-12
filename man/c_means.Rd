@@ -29,9 +29,11 @@ Test the proper clusters k for c_means
 C-means cluster
 }
 \examples{
+\donttest{
 data(otutab, package = "pcutils")
 pcutils::hebing(otutab, metadata$Group) -> otu_group
 cm_test_k(otu_group, filter_var = 0.7)
 cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
 plot(cm_res, 0.8)
+}
 }

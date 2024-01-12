@@ -49,6 +49,8 @@ ggplot
 Plot features heatmap
 }
 \examples{
+\donttest{
 data("reporter_score_res")
 plot_features_heatmap(reporter_score_res, map_id = "map00780")
+}
 }

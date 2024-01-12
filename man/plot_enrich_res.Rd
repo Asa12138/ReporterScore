@@ -64,8 +64,3 @@ Plot enrich_res
 
 Plot enrich_res
 }
-\examples{
-data("reporter_score_res")
-enrich_res <- KO_enrich(reporter_score_res)
-plot(enrich_res)
-}

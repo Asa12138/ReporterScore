@@ -43,21 +43,21 @@ NULL
 #'
 NULL
 
-#' @title KO htable from KEGG
+#' @title KO htable from 'KEGG'
 #'
 #' @docType data
 #' @name KO_htable
 #'
 NULL
 
-#' @title Module htable from KEGG
+#' @title Module htable from 'KEGG'
 #'
 #' @docType data
 #' @name Module_htable
 #'
 NULL
 
-#' @title Pathway htable from KEGG
+#' @title Pathway htable from 'KEGG'
 #'
 #' @docType data
 #' @name Pathway_htable
@@ -85,7 +85,6 @@ NULL
 #' @format a list contain 7 elements.
 #' \describe{
 #' \item{kodf}{your input KO_abundance table}
-#' \item{ko_pvalue}{ko statistics result contains p.value}
 #' \item{ko_stat}{ko statistics result contains p.value and z_score}
 #' \item{reporter_s}{the reporter score in each pathway}
 #' \item{modulelist}{default KOlist or customized modulelist dataframe}

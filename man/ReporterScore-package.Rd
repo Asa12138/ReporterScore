@@ -4,9 +4,9 @@
 \name{ReporterScore-package}
 \alias{ReporterScore}
 \alias{ReporterScore-package}
-\title{ReporterScore: Generalized Reporter Score-based Enrichment Analysis for Omics Data}
+\title{ReporterScore: Generalized Reporter Score-Based Enrichment Analysis for Omics Data}
 \description{
-Inspired by the classic RSA, we developed the improved Generalized Reporter Score-based Analysis (GRSA) method, implemented in the R package ReporterScore, along with comprehensive visualization methods and pathway databases. GRSA is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, and microbial species. Importantly, the GRSA supports multi-group and longitudinal experimental designs, because of the included multi-group-compatible statistical methods.
+Inspired by the classic 'RSA', we developed the improved 'Generalized Reporter Score-based Analysis (GRSA)' method, implemented in the R package 'ReporterScore', along with comprehensive visualization methods and pathway databases. 'GRSA' is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, and microbial species. Importantly, the 'GRSA' supports multi-group and longitudinal experimental designs, because of the included multi-group-compatible statistical methods.
 }
 \seealso{
 Useful links:
@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Peng Chen \email{pengchen2001@zju.edu.cn} (\href{https://orcid.org/0000-0002-9449-7606}{ORCID})
+\strong{Maintainer}: Chen Peng \email{pengchen2001@zju.edu.cn} (\href{https://orcid.org/0000-0002-9449-7606}{ORCID})
 
 }
 \keyword{internal}
