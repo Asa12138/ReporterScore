@@ -22,5 +22,4 @@ get features in a modulelist
 }
 \examples{
 get_features(map_id = "map00010")
-
 }

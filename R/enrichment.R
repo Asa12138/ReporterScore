@@ -64,14 +64,12 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
         ko_stat <- reporter_res$ko_stat
         modulelist <- reporter_res$modulelist
         if (is.character(modulelist)) {
-            load_GOlist(envir = environment())
+            GOlist=load_GOlist()
             modulelist <- eval(parse(text = modulelist))
         }
         type <- attributes(reporter_res$reporter_s)$type
     }
     res.dt <- ko_stat
-
-    KOlist <- NULL
     if (is.null(modulelist)) {
         modulelist <- get_modulelist(type, feature, verbose)
     }
@@ -367,7 +365,7 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' \donttest{
 #' ## use `GSEA` from the `clusterProfiler` package.
 #' gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
-#' # enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
+#' enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
 #' gsea_res_df <- as.enrich_res(gsea_res)
 #' plot(gsea_res_df)
 #' }
@@ -496,10 +494,12 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' ## use `GSA` from the `GSA` package.
 #' data("reporter_score_res")
 #' gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none", perm = 200)
 #' plot(gsa_res)
+#' }
 KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000) {
     KO_id <- p.adjust <- NULL
     pcutils::lib_ps("clusterProfiler", library = FALSE)
@@ -508,7 +508,7 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
         kodf <- reporter_res$kodf
         modulelist <- reporter_res$modulelist
         if (is.character(modulelist)) {
-            load_GOlist(envir = environment())
+            GOlist=load_GOlist()
             modulelist <- eval(parse(text = modulelist))
         }
         group <- reporter_res$group
@@ -517,7 +517,6 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
         feature <- attributes(reporter_res$reporter_s)$feature
     }
 
-    KOlist <- NULL
     if (is.null(modulelist)) {
         modulelist <- get_modulelist(type, feature, verbose)
     }

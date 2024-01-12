@@ -42,6 +42,8 @@ ggplot
 Plot the reporter_res as circle_packing
 }
 \examples{
+\donttest{
 data("reporter_score_res")
 plot_report_circle_packing(reporter_score_res, rs_threshold = c(2, -2), str_width = 40)
+}
 }

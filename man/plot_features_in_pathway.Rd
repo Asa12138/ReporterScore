@@ -44,6 +44,8 @@ ggplot
 Plot features trend in one pathway or module
 }
 \examples{
+\donttest{
 data("reporter_score_res")
 plot_features_in_pathway(ko_stat = reporter_score_res, map_id = "map00860")
+}
 }

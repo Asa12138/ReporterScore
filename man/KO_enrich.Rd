@@ -89,7 +89,7 @@ message("The following example require some time to run:")
 \donttest{
 ## use `GSEA` from the `clusterProfiler` package.
 gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
-# enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
+enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
 gsea_res_df <- as.enrich_res(gsea_res)
 plot(gsea_res_df)
 }

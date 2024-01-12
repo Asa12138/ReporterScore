@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_files.R
 \name{update_CARDinfo}
 \alias{update_CARDinfo}
-\title{update CARDinfo from (from CARD database)}
+\title{update CARDinfo from (from 'CARD' database)}
 \usage{
 update_CARDinfo(download_dir = NULL, card_data = NULL)
 }
@@ -15,11 +15,5 @@ update_CARDinfo(download_dir = NULL, card_data = NULL)
 No value
 }
 \description{
-update CARDinfo from (from CARD database)
-}
-\examples{
-message("The following example will download some files:")
-\dontrun{
-update_CARDinfo()
-}
+update CARDinfo from (from 'CARD' database)
 }

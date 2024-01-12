@@ -12,8 +12,3 @@ NULL
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
 if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
-utils::globalVariables(c(
-    "CARDinfo", "CPDlist", "Compound_htable",
-    "GOlist", "KO_htable", "KOlist", "Module_htable",
-    "Pathway_htable", "GOinfo"
-))

@@ -19,13 +19,13 @@ library(ReporterScore)
 ```
 
 
-# ReporterScore
+# 'ReporterScore'
 
 Generalized Reporter Score-based Enrichment Analysis for Omics Data
 
 ## Citation
 
-To cite ReporterScore in publications use:
+To cite 'ReporterScore' in publications use:
 
 C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter Score-based Enrichment Analysis for Omics Data. bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.
 

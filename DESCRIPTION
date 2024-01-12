@@ -1,14 +1,14 @@
 Package: ReporterScore
 Type: Package
 Title: Generalized Reporter Score-Based Enrichment Analysis for Omics Data
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     person("Chen", "Peng", email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9449-7606"))
-Description: Inspired by the classic RSA, we developed the improved Generalized Reporter 
-    Score-based Analysis (GRSA) method, implemented in the R package ReporterScore, along 
-    with comprehensive visualization methods and pathway databases. GRSA is a threshold-free 
+Description: Inspired by the classic 'RSA', we developed the improved 'Generalized Reporter 
+    Score-based Analysis (GRSA)' method, implemented in the R package 'ReporterScore', along 
+    with comprehensive visualization methods and pathway databases. 'GRSA' is a threshold-free 
     method that works well with all types of biomedical features, such as genes, chemical compounds, 
-    and microbial species. Importantly, the GRSA supports multi-group and longitudinal experimental 
+    and microbial species. Importantly, the 'GRSA' supports multi-group and longitudinal experimental 
     designs, because of the included multi-group-compatible statistical methods. 
 License: GPL-3
 Encoding: UTF-8
@@ -42,7 +42,9 @@ Suggests:
     enrichplot,
     pathview,
     GSA,
-    vegan
+    vegan,
+    MetaNet,
+    igraph
 Depends: 
     R (>= 4.2.0)
 VignetteBuilder: knitr

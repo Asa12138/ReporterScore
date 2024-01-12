@@ -81,9 +81,11 @@ In this mode, the Reporter score is directed, and a larger positive value repres
 However, the disadvantage of this mode is that when a pathway contains about the same number of significantly up-regulates KOs and significantly down-regulates KOs, the final absolute value of Reporter score may approach 0, becoming a pathway that has not been significantly enriched.
 }
 \examples{
+\donttest{
 data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+}
 }
 \references{
 1. Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology. Proc Natl Acad Sci U S A 102, 2685–2689 (2005).

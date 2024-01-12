@@ -69,7 +69,7 @@ print.reporter_score <- function(x, ...) {
 #' \item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
 #' \item{BG_Mean}{Background mean, \eqn{\mu _k}}
 #' \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
-#' \item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+#' \item{ReporterScore}{ReporterScore of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 #' \item{p.value}{p.value of the ReporterScore}
 #' \item{p.adjust}{adjusted p.value by p.adjust.method2}
 #'
@@ -94,7 +94,6 @@ print.reporter_score <- function(x, ...) {
 reporter_score <- function(
     kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
     feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH", modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600) {
-    KOlist <- NULL
 
     check_kodf_modulelist(kodf, type, feature, modulelist, verbose, mode = 1)
 
@@ -156,7 +155,7 @@ reporter_score <- function(
     }
 
     if (is.null(modulelist)) {
-        modulelist <- get_modulelist(type, feature, verbose = FALSE)
+        modulelist <- get_modulelist(type, feature, verbose = FALSE, chr = TRUE)
     }
 
     res <- list(kodf = kodf, ko_stat = ko_stat, reporter_s = reporter_s, modulelist = modulelist, group = group, metadata = metadata)
@@ -184,8 +183,10 @@ reporter_score <- function(
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+#' }
 ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", threads = 1, verbose = TRUE) {
     i <- NULL
     t1 <- Sys.time()
@@ -476,9 +477,11 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' 3. \code{https://github.com/wangpeng407/ReporterScore}
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+#' }
 pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
     p.adjust <- type <- Significantly <- NULL
     res.dt <- ko_pvalue
@@ -585,16 +588,16 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
     list(vec = temp, mean_sd = c(mean(temp), stats::sd(temp)))
 }
 
-get_modulelist <- function(type, feature, verbose = TRUE) {
+get_modulelist <- function(type, feature, verbose = TRUE, chr=FALSE) {
     if (type %in% c("pathway", "module")) {
         # reference pathway
         type <- match.arg(type, c("pathway", "module"))
         if (feature == "ko") {
-            load_KOlist(envir = environment(), verbose = verbose)
+            KOlist=load_KOlist(verbose = verbose)
             modulelist <- KOlist[[type]]
         }
         if (feature == "compound") {
-            load_CPDlist(envir = environment(), verbose = verbose)
+            CPDlist=load_CPDlist(verbose = verbose)
             modulelist <- CPDlist[[type]]
         }
         if (feature == "gene") {
@@ -604,12 +607,14 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
         if (feature != "gene") {
             stop("\"CC\", \"MF\", \"BP\", \"ALL\" using GO database, which only support feature=\"gene\"")
         }
-        load_GOlist(envir = environment(), verbose = verbose)
+        GOlist=load_GOlist(verbose = verbose)
         if (type == "ALL") {
-            modulelist <- lapply(names(GOlist), \(i) cbind(GOlist[[i]], ONT = i)) %>%
-                do.call(rbind, .)
+            modulelist <- "lapply(names(GOlist), \\(i) cbind(GOlist[[i]], ONT = i)) %>%
+                    do.call(rbind, .)"
+            if(!chr) modulelist <- eval(parse(text = modulelist))
         } else {
-            modulelist <- GOlist[[type]]
+            modulelist <- paste0("GOlist[['",type,"']]")
+            if(!chr) modulelist <- eval(parse(text = modulelist))
         }
     } else {
         # KEGG pathway of other organisms
@@ -638,10 +643,12 @@ get_modulelist <- function(type, feature, verbose = TRUE) {
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data("KO_abundance_test")
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 #' reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+#' }
 get_reporter_score <- function(
     ko_stat, type = c("pathway", "module")[1], feature = "ko", threads = 1, modulelist = NULL, perm = 4999, verbose = TRUE, p.adjust.method2 = "BH",
     min_exist_KO = 3, max_exist_KO = 600) {
@@ -824,7 +831,7 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
     if (feature == "compound") {
         rowname_check <- grepl("C\\d{5}", rownames(ko_stat))
         if (!all(rowname_check)) {
-            if (verbose) message("Some of your ko_stat are not KEGG compound id, check the format! (e.g. C00001)\n")
+            if (verbose) message("Some of your ko_stat are not 'KEGG' compound id, check the format! (e.g. C00001)\n")
         }
     }
 
@@ -859,12 +866,11 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
 #' @return KOids, or data.frame with these KOids.
 #' @examples
 #' get_features(map_id = "map00010")
-#'
 get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL) {
     KOlist <- GOlist <- NULL
     if (is.null(modulelist)) {
         message("modulelist is NULL, use default modulelist!")
-        load_KOlist(envir = environment())
+        KOlist=load_KOlist()
         if (grepl("map", map_id[1])) {
             modulelist <- KOlist$pathway
         }
@@ -872,7 +878,7 @@ get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
             modulelist <- KOlist$module
         }
         if (grepl("GO:", map_id[1])) {
-            load_GOlist(envir = environment())
+            GOlist=load_GOlist()
             modulelist <- lapply(names(GOlist), function(i) cbind(GOlist[[i]], ONT = i)) %>%
                 do.call(rbind, .)
         }
@@ -964,8 +970,7 @@ transform_modulelist <- function(mymodulelist, mode = 1) {
 #' @examples
 #' custom_modulelist_from_org(org = "hsa", feature = "ko")
 custom_modulelist_from_org <- function(org = "hsa", feature = "ko", verbose = TRUE) {
-    load_org_pathway(org = org, envir = environment(), verbose = verbose)
-    org_path <- get(paste0(org, "_kegg_pathway"))
+    org_path <- load_org_pathway(org = org,verbose = verbose)
     if (feature == "ko") {
         pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "KO_id")])
     } else if (feature == "gene") {
@@ -1029,9 +1034,8 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
     a$KO_id <- rownames(a)
 
     if (level %in% c("pathway", "module")) {
-        KOlist <- NULL
         if (is.null(modulelist)) {
-            load_KOlist(envir = environment(), verbose = verbose)
+            KOlist=load_KOlist(verbose = verbose)
             modulelist <- KOlist[[level]]
         }
         if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) {
@@ -1041,7 +1045,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         path2name <- setNames(modulelist$Description, modulelist$id)
     } else if (level %in% c("level1", "level2", "level3")) {
         KO_htable <- NULL
-        load_KO_htable(envir = environment(), verbose = verbose)
+        KO_htable=load_KO_htable(verbose = verbose)
         if (level == "level3") {
             path2ko <- KO_htable[, c(paste0(level, "_id"), "KO_id")]
             path2name <- KO_htable[, paste0(level, c("_id", "_name"))] %>%
@@ -1055,7 +1059,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         Module_abundance <- up_level_KO(KO_abundance, level = "module")
         a <- Module_abundance
         a$KO_id <- rownames(a)
-        load_Module_htable(envir = environment(), verbose = verbose)
+        Module_htable=load_Module_htable(verbose = verbose)
         path2ko <- Module_htable[, c(paste0(level, "_name"), "Module_id")]
         show_name <- FALSE
     } else {
@@ -1089,8 +1093,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
 #' data("genedf")
 #' KOdf <- gene2ko(genedf, org = "hsa")
 gene2ko <- function(genedf, org = "hsa") {
-    load_org_pathway(org = org, envir = environment())
-    org_path <- get(paste0(org, "_kegg_pathway"), envir = environment())
+    org_path <- load_org_pathway(org = org)
 
     gene_mp_ko <- dplyr::distinct_all(org_path$all_org_gene[, c("gene_symbol", "KO_id")])
 
@@ -1176,11 +1179,13 @@ filter_top_var <- function(otu_group, filter_var) {
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' data(otutab, package = "pcutils")
 #' pcutils::hebing(otutab, metadata$Group) -> otu_group
 #' cm_test_k(otu_group, filter_var = 0.7)
 #' cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
 #' plot(cm_res, 0.8)
+#' }
 c_means <- function(otu_group, k_num, filter_var) {
     lib_ps("e1071", library = FALSE)
 
@@ -1261,9 +1266,9 @@ RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0
         print(cm_test_k_res)
         while (TRUE) {
             if (!is.null(k_num)) {
-                cat("wrong format, please choose a proper k_num for clustering.")
+                message("wrong format, please choose a proper k_num for clustering.")
             } else {
-                cat("please choose a proper k_num for clustering.")
+                message("please choose a proper k_num for clustering.")
             }
             k_num <- readline("k_num: ")
             suppressWarnings({

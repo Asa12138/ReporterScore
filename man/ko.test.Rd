@@ -43,6 +43,8 @@ ko_pvalue data.frame
 Differential analysis or Correlation analysis for KO-abundance table
 }
 \examples{
+\donttest{
 data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+}
 }

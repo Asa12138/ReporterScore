@@ -31,6 +31,8 @@ ggplot
 plot the Z-score of features distribution
 }
 \examples{
+\donttest{
 data("reporter_score_res")
 plot_features_distribution(reporter_score_res, map_id = c("map05230", "map03010"))
+}
 }

@@ -4,15 +4,13 @@
 \alias{load_CARDinfo}
 \title{Load the CARDinfo (from CARD database)}
 \usage{
-load_CARDinfo(envir = .GlobalEnv, verbose = TRUE)
+load_CARDinfo(verbose = TRUE)
 }
 \arguments{
-\item{envir}{`.GlobalEnv` (default) or `environment()`}
-
 \item{verbose}{logical}
 }
 \value{
-CARDinfo in `.GlobalEnv`
+CARDinfo
 }
 \description{
 Load the CARDinfo (from CARD database)

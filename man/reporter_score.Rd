@@ -80,7 +80,7 @@ for the `reporter_s` in result, whose columns represent:
 \item{Z_score}{\eqn{Z_{pathway}=\frac{1}{\sqrt{k}}\sum Z_{koi}}}
 \item{BG_Mean}{Background mean, \eqn{\mu _k}}
 \item{BG_Sd}{Background standard deviation, \eqn{\sigma _k}}
-\item{ReporterScore}{reporter score of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
+\item{ReporterScore}{ReporterScore of the pathway, \eqn{ReporterScore=(Z_{pathway}-\mu _k)/\sigma _k}}
 \item{p.value}{p.value of the ReporterScore}
 \item{p.adjust}{adjusted p.value by p.adjust.method2}
 }

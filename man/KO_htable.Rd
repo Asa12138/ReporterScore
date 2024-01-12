@@ -3,7 +3,7 @@
 \docType{data}
 \name{KO_htable}
 \alias{KO_htable}
-\title{KO htable from KEGG}
+\title{KO htable from 'KEGG'}
 \description{
-KO htable from KEGG
+KO htable from 'KEGG'
 }

@@ -3,7 +3,7 @@
 \docType{data}
 \name{Module_htable}
 \alias{Module_htable}
-\title{Module htable from KEGG}
+\title{Module htable from 'KEGG'}
 \description{
-Module htable from KEGG
+Module htable from 'KEGG'
 }
