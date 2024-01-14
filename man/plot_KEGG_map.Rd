@@ -44,8 +44,8 @@ message("The following example will download some files, run yourself:")
 output_dir <- tempdir()
 data("reporter_score_res")
 plot_KEGG_map(reporter_score_res$ko_stat,
-    map_id = "map00780",type = "pathway",
-    feature = "ko", color_var = "Z_score", save_dir=output_dir
+    map_id = "map00780", type = "pathway",
+    feature = "ko", color_var = "Z_score", save_dir = output_dir
 )
 }
 }

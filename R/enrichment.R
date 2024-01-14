@@ -64,7 +64,7 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
         ko_stat <- reporter_res$ko_stat
         modulelist <- reporter_res$modulelist
         if (is.character(modulelist)) {
-            GOlist=load_GOlist()
+            GOlist <- load_GOlist()
             modulelist <- eval(parse(text = modulelist))
         }
         type <- attributes(reporter_res$reporter_s)$type
@@ -412,7 +412,7 @@ KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
 }
 
 
-KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class unpaired", modulelist = NULL, p.adjust.method = "BH", verbose = TRUE, perm = 1000) {
+KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class unpaired", modulelist = NULL, p.adjust.method = "BH", verbose = TRUE, perm = 1000,...) {
     if (verbose) pcutils::dabiao("Checking group")
     if (!is.null(metadata)) {
         if (length(group) != 1) stop("'group' should be one column name of metadata when metadata exsit!")
@@ -459,7 +459,7 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
     lib_ps("GSA", library = FALSE)
     GSA.obj <- GSA::GSA(as.matrix(kodf), sampFile$group,
         genenames = rownames(kodf), genesets = genesets,
-        resp.type = resp.type, nperms = perm
+        resp.type = resp.type, nperms = perm,...
     )
 
     res.dt <- cbind(res.dt, gene.scores = GSA.obj$gene.scores)
@@ -489,6 +489,7 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
 #' @param p.adjust.method "BH"
 #' @param verbose TRUE
 #' @param perm 1000
+#' @param ... add
 #'
 #' @return enrich_res object
 #' @export
@@ -500,7 +501,7 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
 #' gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none", perm = 200)
 #' plot(gsa_res)
 #' }
-KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000) {
+KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000,...) {
     KO_id <- p.adjust <- NULL
     pcutils::lib_ps("clusterProfiler", library = FALSE)
     stopifnot(inherits(reporter_res, "reporter_score"))
@@ -508,7 +509,7 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
         kodf <- reporter_res$kodf
         modulelist <- reporter_res$modulelist
         if (is.character(modulelist)) {
-            GOlist=load_GOlist()
+            GOlist <- load_GOlist()
             modulelist <- eval(parse(text = modulelist))
         }
         group <- reporter_res$group
@@ -522,5 +523,5 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
     }
     if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) stop("check your modulelist format!")
 
-    KO_gsa_internal(kodf, group, metadata, resp.type = method, modulelist = modulelist, p.adjust.method = p.adjust.method, verbose = verbose, perm = perm)
+    KO_gsa_internal(kodf, group, metadata, resp.type = method, modulelist = modulelist, p.adjust.method = p.adjust.method, verbose = verbose, perm = perm,...)
 }

@@ -76,6 +76,6 @@ Load the Compound_htable (from 'KEGG')
 Load the pathway information for an organism (from 'KEGG')
 }
 \examples{
-Pathway_htable=load_htable("pathway")
+Pathway_htable <- load_htable("pathway")
 head(Pathway_htable)
 }

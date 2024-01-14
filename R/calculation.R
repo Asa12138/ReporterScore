@@ -94,7 +94,6 @@ print.reporter_score <- function(x, ...) {
 reporter_score <- function(
     kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL, p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
     feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH", modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600) {
-
     check_kodf_modulelist(kodf, type, feature, modulelist, verbose, mode = 1)
 
     stopifnot(mode %in% c("mixed", "directed"))
@@ -588,16 +587,16 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
     list(vec = temp, mean_sd = c(mean(temp), stats::sd(temp)))
 }
 
-get_modulelist <- function(type, feature, verbose = TRUE, chr=FALSE) {
+get_modulelist <- function(type, feature, verbose = TRUE, chr = FALSE) {
     if (type %in% c("pathway", "module")) {
         # reference pathway
         type <- match.arg(type, c("pathway", "module"))
         if (feature == "ko") {
-            KOlist=load_KOlist(verbose = verbose)
+            KOlist <- load_KOlist(verbose = verbose)
             modulelist <- KOlist[[type]]
         }
         if (feature == "compound") {
-            CPDlist=load_CPDlist(verbose = verbose)
+            CPDlist <- load_CPDlist(verbose = verbose)
             modulelist <- CPDlist[[type]]
         }
         if (feature == "gene") {
@@ -607,14 +606,14 @@ get_modulelist <- function(type, feature, verbose = TRUE, chr=FALSE) {
         if (feature != "gene") {
             stop("\"CC\", \"MF\", \"BP\", \"ALL\" using GO database, which only support feature=\"gene\"")
         }
-        GOlist=load_GOlist(verbose = verbose)
+        GOlist <- load_GOlist(verbose = verbose)
         if (type == "ALL") {
             modulelist <- "lapply(names(GOlist), \\(i) cbind(GOlist[[i]], ONT = i)) %>%
                     do.call(rbind, .)"
-            if(!chr) modulelist <- eval(parse(text = modulelist))
+            if (!chr) modulelist <- eval(parse(text = modulelist))
         } else {
-            modulelist <- paste0("GOlist[['",type,"']]")
-            if(!chr) modulelist <- eval(parse(text = modulelist))
+            modulelist <- paste0("GOlist[['", type, "']]")
+            if (!chr) modulelist <- eval(parse(text = modulelist))
         }
     } else {
         # KEGG pathway of other organisms
@@ -870,7 +869,7 @@ get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
     KOlist <- GOlist <- NULL
     if (is.null(modulelist)) {
         message("modulelist is NULL, use default modulelist!")
-        KOlist=load_KOlist()
+        KOlist <- load_KOlist()
         if (grepl("map", map_id[1])) {
             modulelist <- KOlist$pathway
         }
@@ -878,7 +877,7 @@ get_features <- function(map_id = "map00010", ko_stat = NULL, modulelist = NULL)
             modulelist <- KOlist$module
         }
         if (grepl("GO:", map_id[1])) {
-            GOlist=load_GOlist()
+            GOlist <- load_GOlist()
             modulelist <- lapply(names(GOlist), function(i) cbind(GOlist[[i]], ONT = i)) %>%
                 do.call(rbind, .)
         }
@@ -970,7 +969,7 @@ transform_modulelist <- function(mymodulelist, mode = 1) {
 #' @examples
 #' custom_modulelist_from_org(org = "hsa", feature = "ko")
 custom_modulelist_from_org <- function(org = "hsa", feature = "ko", verbose = TRUE) {
-    org_path <- load_org_pathway(org = org,verbose = verbose)
+    org_path <- load_org_pathway(org = org, verbose = verbose)
     if (feature == "ko") {
         pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "KO_id")])
     } else if (feature == "gene") {
@@ -1035,7 +1034,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
 
     if (level %in% c("pathway", "module")) {
         if (is.null(modulelist)) {
-            KOlist=load_KOlist(verbose = verbose)
+            KOlist <- load_KOlist(verbose = verbose)
             modulelist <- KOlist[[level]]
         }
         if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) {
@@ -1045,7 +1044,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         path2name <- setNames(modulelist$Description, modulelist$id)
     } else if (level %in% c("level1", "level2", "level3")) {
         KO_htable <- NULL
-        KO_htable=load_KO_htable(verbose = verbose)
+        KO_htable <- load_KO_htable(verbose = verbose)
         if (level == "level3") {
             path2ko <- KO_htable[, c(paste0(level, "_id"), "KO_id")]
             path2name <- KO_htable[, paste0(level, c("_id", "_name"))] %>%
@@ -1059,7 +1058,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
         Module_abundance <- up_level_KO(KO_abundance, level = "module")
         a <- Module_abundance
         a$KO_id <- rownames(a)
-        Module_htable=load_Module_htable(verbose = verbose)
+        Module_htable <- load_Module_htable(verbose = verbose)
         path2ko <- Module_htable[, c(paste0(level, "_name"), "Module_id")]
         show_name <- FALSE
     } else {

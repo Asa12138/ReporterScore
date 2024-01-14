@@ -35,7 +35,7 @@ update_KO_file <- function(download_dir, RDSfile = NULL) {
     pack_dir <- tools::R_user_dir("ReporterScore")
     if (!dir.exists(pack_dir)) dir.create(pack_dir, recursive = TRUE)
 
-    dd=download_dir
+    dd <- download_dir
     if (!dir.exists(dd)) dir.create(dd, recursive = TRUE)
 
     if (is.null(RDSfile)) {
@@ -110,7 +110,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
         if (is.null(download_dir)) {
             stop("Please set the download_dir when `download=TRUE`.")
         }
-        dd=download_dir
+        dd <- download_dir
         if (!dir.exists(dd)) dir.create(dd, recursive = TRUE)
     }
 
@@ -199,7 +199,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
     if (type == "compound") {
         B <- NULL
         compounds_brites <- brite_file2df(br_id = "br08902") %>% dplyr::filter(B == "Compounds")
-        keg_files=""
+        keg_files <- ""
         if (!is.null(keg_file)) {
             if (!dir.exists(keg_file)) {
                 stop(
@@ -225,11 +225,11 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
                 KEGGREST::keggGet(paste0("br:", i)) -> a
                 if (download) {
                     writeLines(a, con = file.path(dd, paste0(i, "_", Sys.time(), ".keg")), sep = "")
-                    pcutils::dabiao(i,": download done")
+                    pcutils::dabiao(i, ": download done")
                 }
                 lines <- strsplit(a, "\n")[[1]]
             }
-            compounds_list[[i]]=brite2df2(lines)
+            compounds_list[[i]] <- brite2df2(lines)
         }
         df_res <- lapply(seq_along(compounds_list), \(i)compounds_list[[i]] <- cbind("Class" = compounds_brites$name[i], compounds_list[[i]]))
         df_res <- do.call(plyr::rbind.fill, df_res)
@@ -256,10 +256,10 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
 #' @export
 #' @return KO_htable
 #' @examples
-#' Pathway_htable=load_htable("pathway")
+#' Pathway_htable <- load_htable("pathway")
 #' head(Pathway_htable)
 load_htable <- function(type, verbose = TRUE) {
-    envir=environment()
+    envir <- environment()
     type <- match.arg(type, c("ko", "module", "pathway", "compound"))
     switch(type,
         "ko" = {
@@ -284,7 +284,7 @@ load_htable <- function(type, verbose = TRUE) {
         data(list = prefix, package = "ReporterScore", envir = envir)
     }
 
-    res=get(prefix, envir = envir)
+    res <- get(prefix, envir = envir)
 
     if (verbose) {
         pcutils::dabiao("load ", prefix)
@@ -296,17 +296,17 @@ load_htable <- function(type, verbose = TRUE) {
     return(res)
 }
 
-load_something=function(prefix,verbose=TRUE){
+load_something <- function(prefix, verbose = TRUE) {
     new_file <- file.path(tools::R_user_dir("ReporterScore"), paste0("new_", prefix, ".rda"))
-    envir=environment()
+    envir <- environment()
 
     if (file.exists(new_file)) {
         load(new_file, envir = envir)
     } else {
-        message("Not find ",prefix,", please run `update_",prefix,"()` first!")
+        message("Not find ", prefix, ", please run `update_", prefix, "()` first!")
         return(invisible())
     }
-    res=get(prefix, envir = envir)
+    res <- get(prefix, envir = envir)
     if (verbose) {
         pcutils::dabiao("load ", prefix)
         if (!is.null(attributes(res)$"download_time")) {
@@ -324,15 +324,14 @@ load_something=function(prefix,verbose=TRUE){
 #' @export
 #' @return KOlist
 load_KOlist <- function(verbose = TRUE) {
-
-    envir=environment()
+    envir <- environment()
     KOlist_file <- file.path(tools::R_user_dir("ReporterScore"), "new_KOlist.rda")
     if (file.exists(KOlist_file)) {
         load(KOlist_file, envir = envir)
     } else {
         data("KOlist", package = "ReporterScore", envir = envir)
     }
-    KOlist=get("KOlist", envir = envir)
+    KOlist <- get("KOlist", envir = envir)
 
     if (verbose) {
         pcutils::dabiao("load KOlist")
@@ -351,14 +350,14 @@ load_KOlist <- function(verbose = TRUE) {
 #' @export
 #' @return CPDlist
 load_CPDlist <- function(verbose = TRUE) {
-    envir=environment()
+    envir <- environment()
     CPDlist_file <- file.path(tools::R_user_dir("ReporterScore"), "new_CPDlist.rda")
     if (file.exists(CPDlist_file)) {
         load(CPDlist_file, envir = envir)
     } else {
         data("CPDlist", package = "ReporterScore", envir = envir)
     }
-    CPDlist=get("CPDlist", envir = envir)
+    CPDlist <- get("CPDlist", envir = envir)
     if (verbose) {
         pcutils::dabiao("load CPDlist")
         if (!is.null(attributes(CPDlist)$"download_time")) {
@@ -377,7 +376,7 @@ load_CPDlist <- function(verbose = TRUE) {
 #' @return KO description
 load_KO_desc <- function(verbose = TRUE) {
     KO_id <- NULL
-    KO_htable=load_KO_htable(verbose = verbose)
+    KO_htable <- load_KO_htable(verbose = verbose)
     ko_desc <- dplyr::distinct_all(KO_htable[, c("KO_id", "KO_name")]) %>% dplyr::arrange(KO_id)
     return(ko_desc)
 }
@@ -518,8 +517,9 @@ brite_file2df <- function(keg_file = NULL, br_id = NULL, id_pattern = NULL) {
         pcutils::lib_ps("KEGGREST", library = FALSE)
         KEGGREST::keggGet(paste0("br:", br_id)) -> a
         lines <- strsplit(a, "\n")[[1]]
+    } else {
+        stop("Please set one of keg_file and br_id.")
     }
-    else stop("Please set one of keg_file and br_id.")
     if (is.null(id_pattern)) {
         return(brite2df(lines))
     } else {
@@ -575,7 +575,7 @@ update_org_pathway <- function(org = "hsa", RDS_file = NULL, download = TRUE, do
         if (is.null(download_dir)) {
             stop("Please set the download_dir when `download=TRUE`.")
         }
-        dd=download_dir
+        dd <- download_dir
         if (!dir.exists(dd)) dir.create(dd, recursive = TRUE)
     }
     if (!is.null(RDS_file)) {
@@ -629,7 +629,7 @@ update_org_pathway <- function(org = "hsa", RDS_file = NULL, download = TRUE, do
 load_org_pathway <- function(org = "hsa", verbose = TRUE) {
     pack_dir <- tools::R_user_dir("ReporterScore")
     path_file <- file.path(pack_dir, paste0(org, "_kegg_pathway.rda"))
-    envir=environment()
+    envir <- environment()
     if (file.exists(path_file)) {
         load(path_file, envir = envir)
     } else if (org %in% c("hsa", "mmu")) {
@@ -669,7 +669,7 @@ load_org_pathway <- function(org = "hsa", verbose = TRUE) {
 #' \code{http://geneontology.org/docs/download-ontology/}
 #' \code{https://asa12138.github.io/FileList/GOlist.rda}
 update_GOlist <- function(download_dir = NULL, GO_file = NULL) {
-    GOlist=NULL
+    GOlist <- NULL
     pack_dir <- tools::R_user_dir("ReporterScore")
     if (!dir.exists(pack_dir)) dir.create(pack_dir, recursive = TRUE)
 
@@ -715,7 +715,7 @@ update_GOlist <- function(download_dir = NULL, GO_file = NULL) {
 #' @examples
 #' load_GOlist()
 load_GOlist <- function(verbose = TRUE) {
-    return(load_something("GOlist",verbose=verbose))
+    return(load_something("GOlist", verbose = verbose))
 }
 
 #' update_GOinfo
@@ -809,7 +809,7 @@ update_GOinfo <- function(download_dir = NULL, obo_file = NULL) {
 #' @export
 #' @return GOinfo
 load_GOinfo <- function(verbose = TRUE) {
-    return(load_something("GOinfo",verbose=verbose))
+    return(load_something("GOinfo", verbose = verbose))
 }
 
 # metacyc数据库
@@ -873,5 +873,5 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
 #' @examples
 #' load_CARDinfo()
 load_CARDinfo <- function(verbose = TRUE) {
-    return(load_something("CARDinfo",verbose=verbose))
+    return(load_something("CARDinfo", verbose = verbose))
 }
