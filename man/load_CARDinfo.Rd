@@ -15,6 +15,3 @@ CARDinfo
 \description{
 Load the CARDinfo (from CARD database)
 }
-\examples{
-load_CARDinfo()
-}

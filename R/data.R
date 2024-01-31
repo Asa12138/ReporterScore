@@ -36,9 +36,9 @@ NULL
 #' @format four columns in each data.frame.
 #' \describe{
 #' \item{id}{"map0010" or "M00001"}
-#' \item{K_num}{contians how many Compounds in this pathway or module}
-#' \item{KOs}{Compounds name}
-#' \item{Description}{the description of this pathway or module}
+#' \item{K_num}{contians how many Genes in this GO term}
+#' \item{KOs}{Genes name}
+#' \item{Description}{the description of this GO term}
 #' }
 #'
 NULL
@@ -61,6 +61,13 @@ NULL
 #'
 #' @docType data
 #' @name Pathway_htable
+#'
+NULL
+
+#' @title Compound htable from 'KEGG'
+#'
+#' @docType data
+#' @name Compound_htable
 #'
 NULL
 

@@ -1,16 +1,14 @@
----
-title: 'ReporterScore'
-author: "pengchen"
-date: "2023-12-18"
-output: 
-    html_document:
-        keep_md: true
-        toc: true
-        toc_depth: 3
-        toc_float: true
----
 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- badges: start -->
 
+[![](https://img.shields.io/badge/doi-10.1101/2023.10.13.562235-yellow.svg)](https://doi.org/10.1101/2023.10.13.562235)
+[![](https://img.shields.io/badge/blog-@asa-blue.svg)](https://asa-blog.netlify.app/)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/plot4fun)](https://cran.r-project.org/package=plot4fun)
+[![](http://cranlogs.r-pkg.org/badges/last-month/plot4fun)](https://cran.r-project.org/package=plot4fun)
+[![](https://www.r-pkg.org/badges/version/plot4fun?color=green)](https://cran.r-project.org/package=plot4fun)
+[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/plot4fun)
+<!-- badges: end -->
 
 # ReporterScore
 
@@ -18,18 +16,17 @@ Generalized Reporter Score-based Enrichment Analysis for Omics Data
 
 <img src="README_files/1-workflow.png" width="1985" />
 
-
 ## Citation
 
 To cite ReporterScore in publications use:
 
-C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter Score-based Enrichment Analysis for Omics Data. bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.
-
+C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter
+Score-based Enrichment Analysis for Omics Data. bioRxiv \[Preprint\]
+(2023). <https://doi.org/10.1101/2023.10.13.562235>.
 
 ## Install
 
-
-```r
+``` r
 if (!require("devtools")) install.packages("devtools")
 devtools::install_github("Asa12138/pcutils")
 devtools::install_github("Asa12138/ReporterScore")
@@ -41,12 +38,19 @@ library(ReporterScore)
 
 ### 1. Inputdata (KO abundance table and metadata)
 
-For transcriptomic, scRNA-seq, and related gene-based omics data of a specific species, a complete gene abundance table can be used. For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.
+For transcriptomic, scRNA-seq, and related gene-based omics data of a
+specific species, a complete gene abundance table can be used. For
+metagenomic and metatranscriptomic data, which involve many different
+species, a KO abundance table can be used, generated using Blast,
+Diamond, or KEGG official mapper software to align the reads or contigs
+to the KEGG or the EggNOG database For metabolomic data, an annotated
+compound abundance table can be used, but the standardization of
+compound IDs (e.g., convert compound IDs to C numbers in the KEGG
+database) is required.
 
 An example code tailored for a KO abundance table is as follows:
 
-
-```r
+``` r
 data("KO_abundance_test")
 head(KO_abundance[, 1:6])
 ##                WT1         WT2         WT3         WT4         WT5         WT6
@@ -58,10 +62,10 @@ head(KO_abundance[, 1:6])
 ## K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214
 ```
 
-And you should also offer a experimental metadata (rows are samples, columns are groups).
+And you should also offer a experimental metadata (rows are samples,
+columns are groups).
 
-
-```r
+``` r
 head(metadata)
 ##     Group Group2
 ## WT1    WT     G3
@@ -74,26 +78,42 @@ head(metadata)
 
 ### 2. Pathway database
 
-The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, and GO databases and also allows customized databases, making it compatible with feature abundance tables from diverse omics data.
+The `ReporterScore` package has built-in KEGG pathway, module, gene,
+compound, and GO databases and also allows customized databases, making
+it compatible with feature abundance tables from diverse omics data.
 
-1. `ReporterScore` has built-in KEGG pathway-KO and module-KO databases (2023-08 version) for KO abundance table. You can use `load_KOlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API) as using latest database is very important.
+1.  `ReporterScore` has built-in KEGG pathway-KO and module-KO databases
+    (2023-08 version) for KO abundance table. You can use
+    `load_KOlist()` to have a look and use `update_KO_file()` to update
+    these databases (by KEGG API) as using latest database is very
+    important.
 
-2. `ReporterScore` has built-in KEGG pathway-compound and module-compound databases (2023-08 version) for compound abundance table. You can use `load_CPDlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API).
+2.  `ReporterScore` has built-in KEGG pathway-compound and
+    module-compound databases (2023-08 version) for compound abundance
+    table. You can use `load_CPDlist()` to have a look and use
+    `update_KO_file()` to update these databases (by KEGG API).
 
-3. `ReporterScore` has built-in pathway-ko, pathway-gene, and pathway-compound databases of human (hsa) and mouse (mmu) for ko/gene/compound abundance table. You can use `custom_modulelist_from_org()` to have a look. Use `update_org_pathway()` to update these databases and download other organism databases (by KEGG API).
+3.  `ReporterScore` has built-in pathway-ko, pathway-gene, and
+    pathway-compound databases of human (hsa) and mouse (mmu) for
+    ko/gene/compound abundance table. You can use
+    `custom_modulelist_from_org()` to have a look. Use
+    `update_org_pathway()` to update these databases and download other
+    organism databases (by KEGG API).
 
-4. `ReporterScore` has built-in GO-gene database, You can use `load_GOlist()` to have a look and use `update_GOlist()` to update these databases (by KEGG API).
+4.  `ReporterScore` has built-in GO-gene database, You can use
+    `load_GOlist()` to have a look and use `update_GOlist()` to update
+    these databases (by KEGG API).
 
-5. You can just customize your own pathway databases (gene set of interest) by using `custom_modulelist()`.
+5.  You can just customize your own pathway databases (gene set of
+    interest) by using `custom_modulelist()`.
 
-
-```r
+``` r
 # 1. KEGG pathway-KO and module-KO databases
-KOlist=load_KOlist()
+KOlist <- load_KOlist()
 head(KOlist$pathway)
 
 # 2. KEGG pathway-compound and module-compound databases
-CPDlist=load_CPDlist()
+CPDlist <- load_CPDlist()
 head(CPDlist$pathway)
 
 # 3. human (hsa) pathway-ko/gene/compound databases
@@ -104,7 +124,7 @@ hsa_pathway_gene <- custom_modulelist_from_org(
 head(hsa_pathway_gene)
 
 # 4. GO-gene database
-GOlist=load_GOlist()
+GOlist <- load_GOlist()
 head(GOlist$BP)
 
 # 5. customize your own pathway databases
@@ -113,27 +133,36 @@ head(GOlist$BP)
 
 ### 3. One step enrichment
 
-Use function `reporter_score` can get the reporter score result by one step.
+Use function `reporter_score` can get the reporter score result by one
+step.
 
 there are some important arguments for analysis:
 
--   **mode**: "mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in `pvalue2zs`.
--   **method**: the type of test. Default is `wilcox.test`:
-    -   `t.test` (parametric) and `wilcox.test` (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
-    -   `anova` (parametric) and `kruskal.test` (non-parametric). Perform one-way ANOVA test comparing multiple groups.
-    -   "pearson", "kendall", or "spearman" (correlation), see `cor`.
--   **type**/**modulelist**: choose the pathway database, "pathway", "module", for default database, or use a customized modulelist.
--   **feature**: one of "ko", "gene", "compound".
+- **mode**: “mixed” or “directed” (only for two groups differential
+  analysis or multi-groups correlation analysis.), see details in
+  `pvalue2zs`.
+- **method**: the type of test. Default is `wilcox.test`:
+  - `t.test` (parametric) and `wilcox.test` (non-parametric). Perform
+    comparison between two groups of samples. If the grouping variable
+    contains more than two levels, then a pairwise comparison is
+    performed.
+  - `anova` (parametric) and `kruskal.test` (non-parametric). Perform
+    one-way ANOVA test comparing multiple groups.
+  - “pearson”, “kendall”, or “spearman” (correlation), see `cor`.
+- **type**/**modulelist**: choose the pathway database, “pathway”,
+  “module”, for default database, or use a customized modulelist.
+- **feature**: one of “ko”, “gene”, “compound”.
 
+The first level will be set as the **control group**, you can change the
+factor level to change your comparison.
 
-The first level will be set as the **control group**, you can change the factor level to change your comparison.
-
-For example, we want to compare two groups 'WT-OE', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
+For example, we want to compare two groups ‘WT-OE’, and use the
+“directed” mode as we just want know which pathways are enriched or
+depleted in **OE group**:
 
 #### KO-pathway
 
-
-```r
+``` r
 cat("Comparison: ", levels(factor(metadata$Group)))
 ## Comparison:  WT OE
 
@@ -162,7 +191,7 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata,
 ## Compared groups: WT, OE
 ## Total KO number: 4535
 ## Compare method: wilcox.test
-## Time use: 1.125
+## Time use: 1.177
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## ==================================load KOlist===================================
@@ -172,13 +201,13 @@ reporter_res <- reporter_score(KO_abundance, "Group", metadata,
 ## 100 pathways done.
 ## 400 pathways done.
 ## ID number: 481
-## Time use: 1.647
+## Time use: 1.604
 ## ====================================All done====================================
 ```
 
-The result is a "reporter_score" object:
+The result is a “reporter_score” object:
 
-|  elements    |  description                                      |
+| elements     | description                                       |
 |--------------|---------------------------------------------------|
 | `kodf`       | your input KO_abundance table                     |
 | `ko_stat`    | ko statistics result contains p.value and z_score |
@@ -189,9 +218,11 @@ The result is a "reporter_score" object:
 
 #### Gene-pathway
 
-When you use the gene abundance table of a specific species (e.g. human), remember to set the `feature` and `type`!!! Or give the database through `modulelist`.
+When you use the gene abundance table of a specific species
+(e.g. human), remember to set the `feature` and `type`!!! Or give the
+database through `modulelist`.
 
-```r
+``` r
 data("genedf")
 
 # Set the `feature` and `type`!
@@ -216,8 +247,7 @@ reporter_res_gene <- reporter_score(genedf, "Group", metadata,
 
 #### Compound-pathway
 
-
-```r
+``` r
 reporter_res_gene <- reporter_score(chem_df, "Group", metadata,
     mode = "directed",
     feature = "compound", type = "hsa",
@@ -229,8 +259,7 @@ reporter_res_gene <- reporter_score(chem_df, "Group", metadata,
 
 Plot the most significantly enriched pathways:
 
-
-```r
+``` r
 # View(reporter_res$reporter_s)
 plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
 ## ==============================load Pathway_htable===============================
@@ -238,80 +267,72 @@ plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
 ## If you want to update Pathway_htable, use `update_htable(type='pathway')`
 ```
 
-![](README_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
-
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Plot the most significantly enriched pathways (circle packing):
 
-
-```r
+``` r
 plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
 ## ==============================load Pathway_htable===============================
-## ===============Pathway_htable download time: 2023-08-14 23:08:28================
+## ===============Pathway_htable download time: 2024-01-12 00:52:39================
 ## If you want to update Pathway_htable, use `update_htable(type='pathway')`
-## Loading required namespace: MetaNet
-## Loading required namespace: ggraph
 ## Non-leaf weights ignored
 ## Scale for fill is already present.
 ## Adding another scale for fill, which will replace the existing scale.
 ```
 
-![](README_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
+When we focus on one pathway, e.g. “map00780”:
 
-When we focus on one pathway, e.g. "map00780":
-
-
-```r
+``` r
 plot_KOs_in_pathway(reporter_res, map_id = "map00780")
 ```
 
-![](README_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Or show the distribution of Z-scores
 
-
-```r
+``` r
 plot_KOs_distribution(reporter_res, map_id = "map00780")
 ```
 
-![](README_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Or display as a network:
 
-
-```r
-plot_KOs_network(reporter_res, map_id = c("map00780", "map00785", "map00900"), 
-                 main = "", mark_module = TRUE)
+``` r
+plot_KOs_network(reporter_res,
+    map_id = c("map00780", "map00785", "map00900"),
+    main = "", mark_module = TRUE
+)
 ```
 
-![](README_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 And we also look at the KOs abundance in a pathway:
 
-
-```r
+``` r
 plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
-## Loading required namespace: ggpubr
 ## `geom_smooth()` using formula = 'y ~ x'
 ```
 
-![](README_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 Or display as a heatmap:
 
-
-```r
-plot_KOs_heatmap(reporter_res, map_id = "map00780", only_sig = TRUE, 
-                 heatmap_param = list(cutree_rows = 2))
+``` r
+plot_KOs_heatmap(reporter_res,
+    map_id = "map00780", only_sig = TRUE,
+    heatmap_param = list(cutree_rows = 2)
+)
 ```
 
-![](README_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 Or plot the KEGG pathway:
 
-
-```r
+``` r
 plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 ```
 
@@ -319,10 +340,10 @@ plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 
 ### Example for multi-group or longitudinal
 
-If our experimental design is more than two groups or longitudinal, we can choose multi-groups comparison (or correlation):
+If our experimental design is more than two groups or longitudinal, we
+can choose multi-groups comparison (or correlation):
 
-
-```r
+``` r
 cat("Comparison: ", levels(factor(metadata$Group2)))
 ## Comparison:  G1 G2 G3
 
@@ -351,7 +372,7 @@ reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
 ## Compared groups: G1, G2, G3
 ## Total KO number: 4535
 ## Compare method: spearman
-## Time use: 0.524
+## Time use: 0.510
 ## =========================2.Transfer p.value to z-score==========================
 ## ==========================3.Calculating reporter score==========================
 ## ==================================load KOlist===================================
@@ -361,53 +382,57 @@ reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
 ## 100 pathways done.
 ## 400 pathways done.
 ## ID number: 481
-## Time use: 1.638
+## Time use: 1.578
 ## ====================================All done====================================
 
 plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
 ```
 
-![](README_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ### Example for specified pattern
 
-For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 100 if an exponentially increasing trend is expected.
+For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 100 if
+an exponentially increasing trend is expected.
 
 We use 1,5,1 to found pathways with the down-up-down pattern
 
-
-```r
-reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata, mode = "directed", perm = 999,
-                                method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1))
+``` r
+reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+    mode = "directed", perm = 999,
+    method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1)
+)
 plot_report_bar(reporter_res3, rs_threshold = 3, show_ID = TRUE)
 ```
 
-![](README_files/figure-html/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
-```r
+``` r
 plot_KOs_in_pathway(reporter_res3, map_id = "map00860")
 ```
 
-![](README_files/figure-html/unnamed-chunk-19-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->
 
-To explore potential patterns within the data, clustering methods, such as C-means clustering, can be used.
+To explore potential patterns within the data, clustering methods, such
+as C-means clustering, can be used.
 
-
-```r
-rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata, method = "pearson", 
-                        k_num = 3, perm = 999)
+``` r
+rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
+    method = "pearson",
+    k_num = 3, perm = 999
+)
 # show the patterns
 plot_c_means(rsa_cm_res, filter_membership = 0.7)
 ```
 
-![](README_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
-```r
+``` r
 
-plot_report_bar(rsa_cm_res, rs_threshold = 2.5,y_text_size = 10)
+plot_report_bar(rsa_cm_res, rs_threshold = 2.5, y_text_size = 10)
 ```
 
-![](README_files/figure-html/unnamed-chunk-20-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-2.png)<!-- -->
 
 ## Details
 
@@ -415,18 +440,30 @@ plot_report_bar(rsa_cm_res, rs_threshold = 2.5,y_text_size = 10)
 
 The one step function `reporter_score` consists of three parts：
 
-1.  `ko.test`: this function help to calculate *p-value* for KO_abundance by various built-in methods such as differential analysis (t.test, wilcox.test, kruskal.test, anova) or correlation analysis (pearson, spearman, kendall). **You can also calculate this *p-value* for KO_abundance by other methods** like "DESeq2", "Edger", "Limma", "ALDEX", "ANCOM" and do a p.adjust yourself, then skip `ko.test` step go to step2...
-2.  `pvalue2zs`: this function transfers p-value of KOs to Z-score (select mode: "mixed" or "directed").
-3.  `get_reporter_score` this function calculate reporter score of each pathways in a specific database. You can use a custom database here.
+1.  `ko.test`: this function help to calculate *p-value* for
+    KO_abundance by various built-in methods such as differential
+    analysis (t.test, wilcox.test, kruskal.test, anova) or correlation
+    analysis (pearson, spearman, kendall). **You can also calculate this
+    *p-value* for KO_abundance by other methods** like “DESeq2”,
+    “Edger”, “Limma”, “ALDEX”, “ANCOM” and do a p.adjust yourself, then
+    skip `ko.test` step go to step2…
+2.  `pvalue2zs`: this function transfers p-value of KOs to Z-score
+    (select mode: “mixed” or “directed”).
+3.  `get_reporter_score` this function calculate reporter score of each
+    pathways in a specific database. You can use a custom database here.
 
 So that you can get reporter score step by step.
 
 ### Other commonly used enrichment methods
 
-`ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), The input data is from `reporter_score`, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:
+`ReporterScore` also provides other enrichment methods like
+`KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from
+`clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), The input
+data is from `reporter_score`, and also supports custom databases, so
+you can easily compare the results of various enrichment methods and
+conduct a comprehensive analysis:
 
-
-```r
+``` r
 # View(reporter_res2$reporter_s)
 # reporter_score
 filter(reporter_res$reporter_s, abs(ReporterScore) > 1.64, p.adjust < 0.05) %>% pull(ID) -> RS
@@ -446,25 +483,31 @@ library(pcutils)
 venn(venn_res)
 ```
 
-![](README_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
-```r
+``` r
 venn(venn_res, "network")
 ```
 
-![](README_files/figure-html/unnamed-chunk-21-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-2.png)<!-- -->
 
 ## Other features
 
 ### uplevel the KOs
 
-[KEGG BRITE](https://www.genome.jp/kegg/brite.html) is a collection of hierarchical classification systems capturing functional hierarchies of various biological objects, especially those represented as KEGG objects.
+[KEGG BRITE](https://www.genome.jp/kegg/brite.html) is a collection of
+hierarchical classification systems capturing functional hierarchies of
+various biological objects, especially those represented as KEGG
+objects.
 
-We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use `load_KO_htable` to get KO_htable and use `update_KO_htable` to update. Use `up_level_KO` can upgrade to specific level in one of "pathway", "module", "level1", "level2", "level3", "module1", "module2", "module3".
+We collected k00001 KEGG Orthology (KO) table so that you can summaries
+each levels abundance. Use `load_KO_htable` to get KO_htable and use
+`update_KO_htable` to update. Use `up_level_KO` can upgrade to specific
+level in one of “pathway”, “module”, “level1”, “level2”, “level3”,
+“module1”, “module2”, “module3”.
 
-
-```r
-KO_htable=load_KO_htable()
+``` r
+KO_htable <- load_KO_htable()
 ## =================================load KO_htable=================================
 ## ==================KO_htable download time: 2024-01-12 00:49:03==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
@@ -489,28 +532,27 @@ plot_htable(type = "ko")
 ## If you want to update KO_htable, use `update_htable(type='ko')`
 ```
 
-![](README_files/figure-html/unnamed-chunk-22-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
-
-```r
+``` r
 KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
 ## =================================load KO_htable=================================
 ## ==================KO_htable download time: 2024-01-12 00:49:03==================
 ## If you want to update KO_htable, use `update_htable(type='ko')`
-pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) + 
-    ggsci::scale_fill_d3()+
-    theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5))
+pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) +
+    ggsci::scale_fill_d3() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 ```
 
-![](README_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 ### CARD for ARGs
 
-For convenience, I also included the CARD database from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2.
+For convenience, I also included the CARD database from
+<https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2>.
 
-
-```r
-CARDinfo=load_CARDinfo()
+``` r
+CARDinfo <- load_CARDinfo()
 ## =================================load CARDinfo==================================
 ## ==================CARDinfo download time: 2024-01-12 01:12:11===================
 ## If you want to update CARDinfo, use `update_GOlist()`
@@ -559,13 +601,13 @@ head(CARDinfo$ARO_index)
 ## 3002527      antibiotic inactivation      AAC(2')-Ie
 ```
 
-
 # Reference
 
-1.  Patil, K. R.
-    & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology.
-    Proc Natl Acad Sci U S A 102, 2685--2689 (2005).
+1.  Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of
+    metabolism by using metabolic network topology. Proc Natl Acad Sci U
+    S A 102, 2685–2689 (2005).
 
-2.  L. Liu, R. Zhu, D. Wu, Misuse of reporter score in microbial enrichment analysis. iMeta. 2, e95 (2023).
+2.  L. Liu, R. Zhu, D. Wu, Misuse of reporter score in microbial
+    enrichment analysis. iMeta. 2, e95 (2023).
 
 3.  <https://github.com/wangpeng407/ReporterScore>

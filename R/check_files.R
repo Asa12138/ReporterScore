@@ -712,8 +712,6 @@ update_GOlist <- function(download_dir = NULL, GO_file = NULL) {
 #'
 #' @export
 #' @return GOlist
-#' @examples
-#' load_GOlist()
 load_GOlist <- function(verbose = TRUE) {
     return(load_something("GOlist", verbose = verbose))
 }
@@ -870,8 +868,6 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
 #'
 #' @export
 #' @return CARDinfo
-#' @examples
-#' load_CARDinfo()
 load_CARDinfo <- function(verbose = TRUE) {
     return(load_something("CARDinfo", verbose = verbose))
 }

@@ -1,31 +1,3 @@
-#' Print reporter_score
-#'
-#' @param x reporter_score
-#' @param ... add
-#'
-#' @return No value
-#' @exportS3Method
-#' @method print reporter_score
-#'
-print.reporter_score <- function(x, ...) {
-    reporter_score_res <- x
-    pcutils::dabiao("KO abundance table", print = TRUE)
-    cat("With ", nrow(reporter_score_res$kodf), " KOs and ", ncol(reporter_score_res$kodf), " samples.\n")
-    pcutils::dabiao("group", print = TRUE)
-    vs_group <- attributes(reporter_score_res$reporter_s)$vs_group
-
-    if (attributes(reporter_score_res$reporter_s)$mode == "directed") {
-        title <- paste0(vs_group, collapse = "/ ")
-    } else {
-        title <- paste0(vs_group, collapse = "/ ")
-    }
-    cat("vs group: ", title, "\n", sep = "")
-    pcutils::dabiao("parameter", print = TRUE)
-    cat("use mode: ", attributes(reporter_score_res$reporter_s)$mode, "; use method: ", attributes(reporter_score_res$reporter_s)$method, "; the feature: ", attributes(reporter_score_res$reporter_s)$feature,
-        sep = ""
-    )
-}
-
 #' One step to get the reporter score of your KO abundance table.
 #'
 #' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
@@ -484,6 +456,11 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
     p.adjust <- type <- Significantly <- NULL
     res.dt <- ko_pvalue
+
+    if ("origin_p.value" %in% colnames(res.dt)) {
+        message("detect the origin_p.value, use the origin_p.value")
+        res.dt$p.value <- res.dt$origin_p.value
+    }
     if (!all(c("p.value") %in% colnames(res.dt))) {
         stop("check if `p.value` in your ko_stat dataframe!")
     }
@@ -587,7 +564,7 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
     list(vec = temp, mean_sd = c(mean(temp), stats::sd(temp)))
 }
 
-get_modulelist <- function(type, feature, verbose = TRUE, chr = FALSE) {
+get_modulelist <- function(type, feature, gene = "symbol", verbose = TRUE, chr = FALSE) {
     if (type %in% c("pathway", "module")) {
         # reference pathway
         type <- match.arg(type, c("pathway", "module"))
@@ -617,7 +594,7 @@ get_modulelist <- function(type, feature, verbose = TRUE, chr = FALSE) {
         }
     } else {
         # KEGG pathway of other organisms
-        modulelist <- custom_modulelist_from_org(type, feature = feature, verbose = verbose)
+        modulelist <- custom_modulelist_from_org(type, feature = feature, gene = gene, verbose = verbose)
         if (verbose) {
             message("You choose the feature: '", feature, "', make sure the rownames of your input table are right.")
         }
@@ -952,7 +929,14 @@ transform_modulelist <- function(mymodulelist, mode = 1) {
     if (mode == 1) {
         setNames(strsplit(mymodulelist$KOs, ","), mymodulelist$id) %>% return()
     } else {
-        pcutils::explode(mymodulelist[, c("id", "KOs")], column = 2, split = ",") %>% return()
+        path2ko <- pcutils::explode(mymodulelist[, c("id", "KOs")], column = 2, split = ",")
+        if (mode == 2) {
+            return(path2ko)
+        } else {
+            path2ko_mat <- reshape2::acast(data.frame(path2ko, value = 1), KOs ~ id)
+            path2ko_mat[is.na(path2ko_mat)] <- 0
+            return(path2ko_mat)
+        }
     }
 }
 
@@ -962,18 +946,22 @@ transform_modulelist <- function(mymodulelist, mode = 1) {
 #' @param org kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"
 #' @param feature one of "ko", "gene", "compound"
 #' @param verbose logical
+#' @param gene one of "symbol","id"
 #'
 #' @return modulelist
 #' @export
 #'
 #' @examples
-#' custom_modulelist_from_org(org = "hsa", feature = "ko")
-custom_modulelist_from_org <- function(org = "hsa", feature = "ko", verbose = TRUE) {
+#' hsa_pathway <- custom_modulelist_from_org(org = "hsa", feature = "gene")
+custom_modulelist_from_org <- function(org = "hsa", feature = "ko", gene = "symbol", verbose = TRUE) {
     org_path <- load_org_pathway(org = org, verbose = verbose)
     if (feature == "ko") {
         pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "KO_id")])
     } else if (feature == "gene") {
-        pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "gene_symbol")])
+        gene <- match.arg(gene, c("symbol", "id"))
+        if (gene == "symbol") {
+            pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "gene_symbol")])
+        } else if (gene == "id") pathway2ko <- dplyr::distinct_all(org_path$all_org_gene[, c("pathway_id", "kegg_gene_id")])
     } else if (feature == "compound") {
         pathway2ko <- dplyr::distinct_all(org_path$all_org_compound[, c("pathway_id", "kegg_compound_id")])
     } else {
@@ -1299,36 +1287,6 @@ RSA_by_cm <- function(kodf, group, metadata = NULL, k_num = NULL, filter_var = 0
     all_res <- append(all_res, append(tmp_res[c(1, 4:6)], list(cm_res = cm_res)))
     class(all_res) <- "rs_by_cm"
     all_res
-}
-
-
-#' Print rs_by_cm
-#'
-#' @param x rs_by_cm
-#' @param ... add
-#'
-#' @return No value
-#' @exportS3Method
-#' @method print rs_by_cm
-#'
-print.rs_by_cm <- function(x, ...) {
-    rsa_cm_res <- x
-    ncluster <- sum(grepl("Cluster", names(rsa_cm_res)))
-    pcutils::dabiao("RSA result with ", ncluster, " clusters", print = TRUE)
-
-    pcutils::dabiao("KO abundance table", print = TRUE)
-    cat("With ", nrow(rsa_cm_res$kodf), " KOs and ", ncol(rsa_cm_res$kodf), " samples.\n")
-    pcutils::dabiao("group", print = TRUE)
-    vs_group <- attributes(rsa_cm_res$Cluster1$reporter_s)$vs_group
-
-    title <- paste0(vs_group, collapse = "/ ")
-    cat("vs group: ", title, "\n", sep = "")
-
-    cat("Patterns: \n")
-    print(rsa_cm_res$cm_res$centers)
-
-    pcutils::dabiao("parameter", print = TRUE)
-    cat("use method: ", attributes(rsa_cm_res$Cluster1$reporter_s)$method, "; the feature: ", attributes(rsa_cm_res$Cluster1$reporter_s)$feature, sep = "")
 }
 
 #' Extract one cluster from rs_by_cm object

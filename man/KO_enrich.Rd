@@ -37,7 +37,6 @@ KO_gsea(
   ko_stat,
   weight = "logFC",
   add_mini = NULL,
-  padj_threshold = 1,
   p.adjust.method = "BH",
   type = c("pathway", "module")[1],
   feature = "ko",

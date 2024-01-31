@@ -22,6 +22,3 @@ Load the GOlist (from 'GO' database)
 
 Load the GOinfo (from GO)
 }
-\examples{
-load_GOlist()
-}

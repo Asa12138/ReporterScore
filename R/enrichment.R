@@ -83,7 +83,7 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
         res.dt$p.adjust <- res.dt$origin_p.adjust
     }
 
-    # modulist内的KO才考虑
+    # modulelist内的KO才考虑
     path2ko <- pcutils::explode(modulelist[, c("id", "KOs")], 2, split = ",")
     res.dt <- dplyr::filter(res.dt, KO_id %in% path2ko$KOs)
 
@@ -125,6 +125,7 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
     assign("res.dt", res.dt, parent.frame())
 }
 
+#' Perform fisher's exact enrichment analysis
 #' @rdname KO_enrich
 #'
 #' @return data.frame
@@ -232,13 +233,15 @@ plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
                             facet_str_width = 15, ...) {
     Description <- Significant_K_num <- order_value <- x <- fill <- size <- size_lab <- x_lab <- NULL
     GO <- pre_enrich_res(enrich_res, padj_threshold, show_ID, Pathway_description, facet_level, facet_anno)
+
+    GO$Description <- factor(GO$Description, levels = dplyr::arrange(GO, -order_value) %>% dplyr::pull(Description))
     # 经典图
     if (mode == 1) {
-        p <- ggplot(data = GO, aes(y = reorder(Description, -order_value), x = x, fill = fill)) +
+        p <- ggplot(data = GO, aes(y = Description, x = x, fill = fill)) +
             geom_bar(stat = "identity", width = 0.7, position = "dodge")
     }
     if (mode == 2) {
-        p <- ggplot(data = GO, aes(y = reorder(Description, -order_value), x = x, fill = fill, size = size)) +
+        p <- ggplot(data = GO, aes(y = Description, x = x, fill = fill, size = size)) +
             geom_point(shape = 21, position = position_dodge(width = 0.7)) +
             scale_size(name = size_lab, range = c(3, 8))
     }
@@ -353,7 +356,7 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
     )
 }
 
-#' Perform KO gene set enrichment analysis
+#' Perform gene set enrichment analysis
 #'
 #' @param weight the metric used for ranking, default: logFC
 #' @rdname KO_enrich
@@ -370,13 +373,14 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' plot(gsea_res_df)
 #' }
 KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
-                    padj_threshold = 1, p.adjust.method = "BH",
+                    p.adjust.method = "BH",
                     type = c("pathway", "module")[1], feature = "ko",
                     modulelist = NULL, verbose = TRUE) {
     res.dt <- path2name <- path2ko <- sig_KO <- KOs <- Exist_K_num <- id <- p.value <- logFC <- NULL
 
     pcutils::lib_ps("clusterProfiler", library = FALSE)
-    KO_enrich_internal(ko_stat, padj_threshold,
+    KO_enrich_internal(ko_stat,
+        padj_threshold = 1,
         logFC_threshold = NULL, add_mini, p.adjust.method,
         type, feature,
         modulelist, verbose, mode = 3, weight
@@ -402,6 +406,7 @@ KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
         names(kos) <- res.dt$KO_id
         kos <- sort(kos, decreasing = TRUE)
     }
+    kos <- na.omit(kos)
     e <- clusterProfiler::GSEA(kos,
         TERM2GENE = path2ko, TERM2NAME = path2name, verbose = FALSE,
         pvalueCutoff = 1, pAdjustMethod = p.adjust.method
@@ -411,8 +416,20 @@ KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
     return(e)
 }
 
+pre_rs <- function(reporter_res, mode = 1, verbose = TRUE) {
+    stopifnot(inherits(reporter_res, "reporter_score"))
 
-KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class unpaired", modulelist = NULL, p.adjust.method = "BH", verbose = TRUE, perm = 1000,...) {
+    modulelist <- reporter_res$modulelist
+    if (is.null(modulelist)) stop("no modulelist")
+    if (is.character(modulelist)) {
+        GOlist <- load_GOlist()
+        modulelist <- eval(parse(text = modulelist))
+    }
+    if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) stop("check your modulelist format!")
+
+    group <- reporter_res$group
+    metadata <- reporter_res$metadata
+    kodf <- reporter_res$kodf
     if (verbose) pcutils::dabiao("Checking group")
     if (!is.null(metadata)) {
         if (length(group) != 1) stop("'group' should be one column name of metadata when metadata exsit!")
@@ -426,70 +443,41 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
         if (length(group) != ncol(kodf)) stop("'group' length should equal to columns number of kodf when metadata is NULL!")
         sampFile <- data.frame(row.names = colnames(kodf), group = group)
     }
-    if (verbose) pcutils::dabiao("Removing all-zero rows: ", sum(rowSums(abs(kodf)) == 0))
-    kodf <- kodf[rowSums(abs(kodf)) > 0, ]
-    tkodf <- t(kodf) %>% as.data.frame()
+    modulelist$Exist_K_num <- vapply(transform_modulelist(modulelist), \(i){
+        sum(rownames(kodf) %in% i)
+    }, numeric(1))
 
-    res.dt <- data.frame("KO_id" = rownames(kodf), row.names = rownames(kodf))
-    if (is.numeric(sampFile$group)) {
-        # stop("group should be a category variable.")
-        vs_group <- "Numeric variable"
-    } else {
-        vs_group <- levels(factor(sampFile$group))
-        if (length(vs_group) == 1) stop("'group' should be at least two elements factor")
-        for (i in vs_group) {
-            tmpdf <- data.frame(average = apply(kodf[, which(sampFile$group == i)], 1, mean), sd = apply(kodf[, which(sampFile$group == i)], 1, sd))
-            colnames(tmpdf) <- paste0(colnames(tmpdf), "_", i)
-            res.dt <- cbind(res.dt, tmpdf)
+    modulelist <- dplyr::filter(modulelist, Exist_K_num > 0)
+
+    envir <- parent.frame()
+
+    assign("sampFile", sampFile, envir)
+    assign("modulelist", modulelist, envir)
+    if (mode == 1) {
+        if (verbose) pcutils::dabiao("Removing all-zero rows: ", sum(rowSums(abs(kodf)) == 0))
+        kodf <- kodf[rowSums(abs(kodf)) > 0, ]
+        assign("kodf", kodf, envir)
+    } else if (mode == 2) {
+        ko_stat <- reporter_res$ko_stat
+        if (!all(c("KO_id", "p.adjust") %in% colnames(ko_stat))) {
+            stop("check if p.adjust in your ko_stat dataframe!")
         }
-        if (length(vs_group) == 2) {
-            # update, make sure the control group is first one.
-            res.dt$diff_mean <- res.dt[, paste0("average_", vs_group[2])] - res.dt[, paste0("average_", vs_group[1])]
+        if ("origin_p.adjust" %in% colnames(ko_stat)) {
+            message("detect the origin_p.adjust, use the origin_p.adjust.")
+            ko_stat$p.adjust <- ko_stat$origin_p.adjust
         }
-        high_group <- apply(res.dt[, paste0("average_", vs_group)], 1, function(a) which(a == max(a))[[1]])
-        res.dt$Highest <- vs_group[high_group]
+        assign("ko_stat", ko_stat, envir)
     }
-
-    sampFile$group <- as.numeric(as.factor(sampFile$group))
-    # if(length(unique(sampFile$group))!=2)
-
-    if (is.null(modulelist)) stop("no modulelist")
-    genesets <- transform_modulelist(modulelist)
-
-    lib_ps("GSA", library = FALSE)
-    GSA.obj <- GSA::GSA(as.matrix(kodf), sampFile$group,
-        genenames = rownames(kodf), genesets = genesets,
-        resp.type = resp.type, nperms = perm,...
-    )
-
-    res.dt <- cbind(res.dt, gene.scores = GSA.obj$gene.scores)
-
-    gsa_res <- as.data.frame(GSA.obj[c("GSA.scores", "pvalues.lo", "pvalues.hi")])
-    gsa_res$p.value <- apply(gsa_res, 1, \(i)ifelse(i[1] > 0, i[3], i[2]))
-    gsa_res$p.adjust <- p.adjust(gsa_res$p.value, method = p.adjust.method)
-
-    path_res <- data.frame(
-        row.names = modulelist$id, ID = modulelist$id,
-        Description = modulelist$Description,
-        K_num = modulelist$K_num,
-        Exist_K_num = vapply(genesets, \(i){
-            sum(rownames(kodf) %in% i)
-        }, numeric(1)),
-        gsa_res
-    )
-    class(path_res) <- c("enrich_res", class(path_res))
-    path_res
 }
 
-
-#' Perform KO gene set analysis
+#' Perform gene set analysis
 #'
 #' @param reporter_res reporter_res
 #' @param method Problem type: "quantitative" for a continuous parameter; "Two class unpaired" ; "Survival" for censored survival outcome; "Multiclass" : more than 2 groups, coded 1,2,3...; "Two class paired" for paired outcomes, coded -1,1 (first pair), -2,2 (second pair), etc
 #' @param p.adjust.method "BH"
 #' @param verbose TRUE
 #' @param perm 1000
-#' @param ... add
+#' @param ... additional parameters to \code{\link[GSA]{GSA}}
 #'
 #' @return enrich_res object
 #' @export
@@ -501,27 +489,192 @@ KO_gsa_internal <- function(kodf, group, metadata = NULL, resp.type = "Two class
 #' gsa_res <- KO_gsa(reporter_score_res, p.adjust.method = "none", perm = 200)
 #' plot(gsa_res)
 #' }
-KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000,...) {
-    KO_id <- p.adjust <- NULL
-    pcutils::lib_ps("clusterProfiler", library = FALSE)
-    stopifnot(inherits(reporter_res, "reporter_score"))
-    if (inherits(reporter_res, "reporter_score")) {
-        kodf <- reporter_res$kodf
-        modulelist <- reporter_res$modulelist
-        if (is.character(modulelist)) {
-            GOlist <- load_GOlist()
-            modulelist <- eval(parse(text = modulelist))
-        }
-        group <- reporter_res$group
-        metadata <- reporter_res$metadata
-        type <- attributes(reporter_res$reporter_s)$type
-        feature <- attributes(reporter_res$reporter_s)$feature
-    }
+KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000, ...) {
+    pre_rs(reporter_res, mode = 1, verbose = verbose)
 
-    if (is.null(modulelist)) {
-        modulelist <- get_modulelist(type, feature, verbose)
-    }
-    if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) stop("check your modulelist format!")
+    tkodf <- pcutils::t2(kodf)
+    sampFile$group <- as.numeric(as.factor(sampFile$group))
 
-    KO_gsa_internal(kodf, group, metadata, resp.type = method, modulelist = modulelist, p.adjust.method = p.adjust.method, verbose = verbose, perm = perm,...)
+    genesets <- transform_modulelist(modulelist)
+    lib_ps("GSA", library = FALSE)
+    GSA.obj <- GSA::GSA(as.matrix(kodf), sampFile$group,
+        genenames = rownames(kodf), genesets = genesets,
+        resp.type = method, nperms = perm, ...
+    )
+
+    gsa_res <- as.data.frame(GSA.obj[c("GSA.scores", "pvalues.lo", "pvalues.hi")])
+    gsa_res$p.value <- apply(gsa_res, 1, \(i)ifelse(i[1] > 0, i[3], i[2]))
+    gsa_res$p.adjust <- p.adjust(gsa_res$p.value, method = p.adjust.method)
+
+    path_res <- data.frame(
+        row.names = modulelist$id, ID = modulelist$id,
+        Description = modulelist$Description,
+        K_num = modulelist$K_num,
+        Exist_K_num = modulelist$Exist_K_num,
+        gsa_res
+    )
+    path_res <- dplyr::arrange(path_res, p.value)
+    class(path_res) <- c("enrich_res", class(path_res))
+    path_res
+}
+
+
+#' Perform Gene Set Variation Analysis
+#'
+#' @param reporter_res reporter_res
+#' @param verbose verbose
+#' @param method see \code{\link{ko.test}}
+#' @param p.adjust.method p.adjust.method
+#' @param ... additional parameters to \code{\link[GSVA]{gsva}}
+#'
+#' @return enrich_res
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' ## use `gsva` from the `GSVA` package.
+#' data("reporter_score_res")
+#' gsva_res <- KO_gsva(reporter_score_res, p.adjust.method = "none")
+#' }
+KO_gsva <- function(reporter_res, verbose = TRUE, method = "wilcox.test", p.adjust.method = "BH", ...) {
+    pre_rs(reporter_res, mode = 1, verbose = verbose)
+
+    geneSets <- transform_modulelist(modulelist)
+    lib_ps("GSVA", library = FALSE)
+    gsva_es <- GSVA::gsva(as.matrix(kodf), geneSets, mx.diff = 1, verbose = verbose, ...)
+
+    gsva_res <- ko.test(gsva_es,
+        group = sampFile$group, method = method,
+        p.adjust.method1 = p.adjust.method, verbose = verbose
+    )
+
+    gsva_res <- data.frame(
+        modulelist[
+            match(rownames(gsva_res), modulelist$id),
+            c("id", "Description", "K_num", "Exist_K_num")
+        ],
+        gsva_res[, c("p.value", "p.adjust")]
+    )
+    colnames(gsva_res)[1] <- "ID"
+    gsva_res <- dplyr::arrange(gsva_res, p.value)
+    gsva_res
+}
+
+
+#' Perform Simultaneous Enrichment Analysis
+#'
+#'
+#' @param reporter_res The input reporter result.
+#' @param verbose If TRUE, print verbose messages. Default is TRUE.
+#' @param ... Additional parameters to be passed to \code{\link[rSEA]{SEA}} function.
+#'
+#' @return enrich_res
+#'
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' ## use `SEA` from the `rSEA` package.
+#' data("reporter_score_res")
+#' sea_res <- KO_sea(reporter_score_res, verbose = TRUE)
+#' }
+KO_sea <- function(reporter_res, verbose = TRUE, ...) {
+    pre_rs(reporter_res, mode = 2, verbose = verbose)
+
+    pathlist <- transform_modulelist(modulelist)
+    lib_ps("rSEA", library = FALSE)
+    sea_res <- rSEA::SEA(ko_stat$p.adjust, ko_stat$KO_id, pathlist = pathlist, ...)
+    sea_res <- data.frame(modulelist[, c("id", "Description", "K_num", "Exist_K_num")], sea_res[, -seq_len(3)])
+    colnames(sea_res)[1] <- "ID"
+    sea_res$p.adjust <- apply(sea_res, 1, \(i)min(i[8:9])) %>% as.numeric()
+    sea_res <- dplyr::arrange(sea_res, p.adjust)
+    sea_res
+}
+
+#' Perform Significance Analysis of Function and Expression
+#'
+#'
+#' @param reporter_res The input reporter result.
+#' @param verbose If TRUE, print verbose messages. Default is TRUE.
+#' @param perm The number of permutations. Default is 1000.
+#' @param C.matrix The contrast matrix. Default is NULL, and it will be generated from the module list.
+#' @param p.adjust.method Method for p-value adjustment. Default is "BH".
+#' @param ... Additional parameters to be passed to \code{\link[safe]{safe}} function.
+#'
+#' @return A data frame containing SAFE results for KO enrichment.
+#'
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' ## use `safe` from the `safe` package.
+#' data("reporter_score_res")
+#' safe_res <- KO_safe(reporter_score_res,
+#'     verbose = TRUE,
+#'     perm = 200, p.adjust.method = "none"
+#' )
+#' }
+KO_safe <- function(reporter_res, verbose = TRUE, perm = 1000,
+                    C.matrix = NULL, p.adjust.method = "BH", ...) {
+    pre_rs(reporter_res, mode = 1, verbose = verbose)
+
+    if (is.null(C.matrix)) C.matrix <- transform_modulelist(modulelist, mode = 3) %>% as.matrix()
+    C.matrix <- C.matrix[intersect(rownames(kodf), rownames(C.matrix)), ]
+    kodf <- kodf[intersect(rownames(kodf), rownames(C.matrix)), ]
+    lib_ps("safe", library = FALSE)
+    safe_res <- safe::safe(X.mat = kodf, y.vec = sampFile$group, C.mat = C.matrix, Pi.mat = perm, ...)
+    safe_res <- data.frame(modulelist[, c("id", "Description", "K_num", "Exist_K_num")],
+        stat = safe_res@global.stat,
+        p.value = safe_res@global.pval,
+        error = safe_res@global.error
+    )
+    colnames(safe_res)[1] <- "ID"
+    safe_res$p.adjust <- p.adjust(safe_res$p.value, method = p.adjust.method)
+    safe_res <- dplyr::arrange(safe_res, p.value)
+    safe_res
+}
+
+#' Perform Pathway Analysis with Down-weighting of Overlapping Genes (PADOG)
+#'
+#' @param reporter_res The input reporter result.
+#' @param verbose If TRUE, print verbose messages. Default is TRUE.
+#' @param p.adjust.method Method for p-value adjustment. Default is "BH".
+#' @param ... Additional parameters to be passed to \code{\link[PADOG]{padog}} function.
+#' @param perm The number of permutations. Default is 1000.
+#'
+#' @return A data frame containing PADOG results for KO enrichment.
+#' @return A data frame with columns "ID," "Description," "K_num," "Exist_K_num," "p.value," and "p.adjust."
+#'
+#' @export
+#'
+#' @examples
+#' \donttest{
+#' ## use `PADOG` from the `PADOG` package.
+#' data("reporter_score_res")
+#' padog_res <- KO_padog(reporter_score_res,
+#'     verbose = TRUE,
+#'     perm = 200, p.adjust.method = "none"
+#' )
+#' }
+KO_padog <- function(reporter_res, verbose = TRUE, perm = 1000, p.adjust.method = "BH", ...) {
+    pre_rs(reporter_res, mode = 1, verbose = verbose)
+
+    geneSets <- transform_modulelist(modulelist)
+    padog_res <- PADOG::padog(as.matrix(kodf),
+        group = factor(sampFile$group, labels = c("c", "d")),
+        gslist = geneSets, NI = perm, ...
+    )
+
+    padog_res <- data.frame(
+        modulelist[
+            match(rownames(padog_res), modulelist$id),
+            c("id", "Description", "K_num", "Exist_K_num")
+        ],
+        padog_res[, -seq_len(2)],
+        row.names = NULL
+    )
+    colnames(padog_res)[c(1, 9)] <- c("ID", "p.value")
+    padog_res$p.adjust <- p.adjust(padog_res$p.value, method = p.adjust.method)
+    padog_res <- dplyr::arrange(padog_res, p.value)
+    padog_res
 }

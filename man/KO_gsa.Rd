@@ -2,14 +2,15 @@
 % Please edit documentation in R/enrichment.R
 \name{KO_gsa}
 \alias{KO_gsa}
-\title{Perform KO gene set analysis}
+\title{Perform gene set analysis}
 \usage{
 KO_gsa(
   reporter_res,
   method = "Two class unpaired",
   p.adjust.method = "BH",
   verbose = TRUE,
-  perm = 1000
+  perm = 1000,
+  ...
 )
 }
 \arguments{
@@ -22,12 +23,14 @@ KO_gsa(
 \item{verbose}{TRUE}
 
 \item{perm}{1000}
+
+\item{...}{additional parameters to \code{\link[GSA]{GSA}}}
 }
 \value{
 enrich_res object
 }
 \description{
-Perform KO gene set analysis
+Perform gene set analysis
 }
 \examples{
 \donttest{

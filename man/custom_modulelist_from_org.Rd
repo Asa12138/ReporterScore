@@ -4,12 +4,19 @@
 \alias{custom_modulelist_from_org}
 \title{Custom modulelist from a specific organism}
 \usage{
-custom_modulelist_from_org(org = "hsa", feature = "ko", verbose = TRUE)
+custom_modulelist_from_org(
+  org = "hsa",
+  feature = "ko",
+  gene = "symbol",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{org}{kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html, default, "hsa"}
 
 \item{feature}{one of "ko", "gene", "compound"}
+
+\item{gene}{one of "symbol","id"}
 
 \item{verbose}{logical}
 }
@@ -20,5 +27,5 @@ modulelist
 Custom modulelist from a specific organism
 }
 \examples{
-custom_modulelist_from_org(org = "hsa", feature = "ko")
+hsa_pathway <- custom_modulelist_from_org(org = "hsa", feature = "gene")
 }
