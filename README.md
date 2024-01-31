@@ -4,10 +4,10 @@
 
 [![](https://img.shields.io/badge/doi-10.1101/2023.10.13.562235-yellow.svg)](https://doi.org/10.1101/2023.10.13.562235)
 [![](https://img.shields.io/badge/blog-@asa-blue.svg)](https://asa-blog.netlify.app/)
-[![](http://cranlogs.r-pkg.org/badges/grand-total/plot4fun)](https://cran.r-project.org/package=plot4fun)
-[![](http://cranlogs.r-pkg.org/badges/last-month/plot4fun)](https://cran.r-project.org/package=plot4fun)
-[![](https://www.r-pkg.org/badges/version/plot4fun?color=green)](https://cran.r-project.org/package=plot4fun)
-[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/plot4fun)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
+[![](http://cranlogs.r-pkg.org/badges/last-month/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
+[![](https://www.r-pkg.org/badges/version/ReporterScore?color=green)](https://cran.r-project.org/package=ReporterScore)
+[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/ReporterScore)
 <!-- badges: end -->
 
 # ReporterScore
