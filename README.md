@@ -7,7 +7,7 @@
 [![](http://cranlogs.r-pkg.org/badges/grand-total/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](http://cranlogs.r-pkg.org/badges/last-month/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](https://www.r-pkg.org/badges/version/ReporterScore?color=green)](https://cran.r-project.org/package=ReporterScore)
-[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/ReporterScore)
+[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/Asa12138/ReporterScore)
 <!-- badges: end -->
 
 # ReporterScore
