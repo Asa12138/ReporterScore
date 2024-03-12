@@ -49,7 +49,7 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
     if (facet_level) {
         tmpdf <- get_facet_anno(reporter_res, facet_anno)
         if (!is.null(tmpdf)) {
-            reporter_res2 <- dplyr::left_join(reporter_res2, tmpdf, by = c("ID"))
+            reporter_res2 <- dplyr::left_join(reporter_res2, tmpdf, by = c("ID"), suffix = c(".x",""))
         }
     }
 

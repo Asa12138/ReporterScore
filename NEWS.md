@@ -10,7 +10,6 @@
 
 - add the `plot_KOs_network()` as `MetaNet` is available on CRAN <2024-01-15>
 
-
 # ReporterScore v0.1.1 Notes
 
 ## Fixed

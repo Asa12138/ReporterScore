@@ -453,7 +453,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 #' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 #' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 #' }
-pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH") {
+pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "none") {
     p.adjust <- type <- Significantly <- NULL
     res.dt <- ko_pvalue
 
@@ -516,7 +516,7 @@ pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.meth
         res.dt$p.value <- res.dt$p.value / pn_sign
         res.dt$p.adjust <- stats::p.adjust(res.dt$p.value, method = p.adjust.method1)
         if (quantile(res.dt$p.adjust, 0.1, na.rm = TRUE) == 0.5) {
-            warning("most of p.adjust are 1! try use the p.adjust.method='none'\n")
+            warning("most of p.adjust are 1! try use the p.adjust.method1='none'\n")
         }
 
         # 这种做法可能要基于一个前提，就是上下调ko数量基本一致,才能保证正负都是显著差异的，或者分开正负分析？

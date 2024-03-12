@@ -322,9 +322,16 @@ pre_enrich_res <- function(enrich_res, padj_threshold = 0.05,
         x_lab <- "GSA.scores"
     } else {
         GO$order_value <- -GO$p.adjust
-        GO$x <- GO$Significant_K_num / GO$Exist_K_num
+        if ("Significant_K_num" %in% colnames(GO)) {
+            GO$x <- GO$Significant_K_num / GO$Exist_K_num
+            x_lab <- "Significant_K_Ratio"
+        }
+        else {
+            GO$x <- GO$Exist_K_num
+            x_lab <- "Exist_K_num"
+        }
         GO$fill <- GO$p.adjust
-        x_lab <- "Significant_K_Ratio"
+
     }
 
     if ("Significant_K_num" %in% colnames(GO)) {
