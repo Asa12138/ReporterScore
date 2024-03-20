@@ -75,11 +75,18 @@ Plot c_means result
 \examples{
 message("The following example require some time to run:")
 \donttest{
-data("KO_abundance_test")
-rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
+if (requireNamespace("e1071") && requireNamespace("factoextra")) {
+  data("KO_abundance_test")
+  rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
     k_num = 3,
     filter_var = 0.7, method = "pearson", perm = 199
-)
-extract_cluster(rsa_cm_res, cluster = 1)
+  )
+  extract_cluster(rsa_cm_res, cluster = 1)
 }
 }
+}
+\seealso{
+Other C_means: 
+\code{\link{cm_test_k}()}
+}
+\concept{C_means}

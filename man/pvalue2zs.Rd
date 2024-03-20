@@ -4,14 +4,18 @@
 \alias{pvalue2zs}
 \title{Transfer p-value of KOs to Z-score}
 \usage{
-pvalue2zs(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.method1 = "BH")
+pvalue2zs(
+  ko_pvalue,
+  mode = c("directed", "mixed")[1],
+  p.adjust.method1 = "none"
+)
 }
 \arguments{
-\item{ko_pvalue}{ko_pvalue dataframe from \code{\link{ko.test}} or your statistics test data.frame contains column: `p.value`}
+\item{ko_pvalue}{data.frame from \code{\link{ko.test}}}
 
-\item{mode}{'mixed' or 'directed' (only for two groups differential analysis or multi-groups correlation analysis.), see details}
+\item{mode}{'mixed' or 'directed' (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
 
-\item{p.adjust.method1}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 }
 \value{
 ko_stat data.frame
@@ -92,3 +96,10 @@ ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 2. Liu, L., Zhu, R. & Wu, D. Misuse of reporter score in microbial enrichment analysis. iMeta n/a, e95.
 3. \code{https://github.com/wangpeng407/ReporterScore}
 }
+\seealso{
+Other GRSA: 
+\code{\link{get_reporter_score}()},
+\code{\link{ko.test}()},
+\code{\link{reporter_score}()}
+}
+\concept{GRSA}

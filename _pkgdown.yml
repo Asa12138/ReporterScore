@@ -1,0 +1,4 @@
+url: ~
+template:
+  params:
+    bootswatch: cosmo

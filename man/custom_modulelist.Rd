@@ -36,3 +36,13 @@ mymodulelist <- custom_modulelist(mydat)
 print(mymodulelist)
 transform_modulelist(mymodulelist)
 }
+\seealso{
+Other modulelist: 
+\code{\link{custom_modulelist_from_org}()},
+\code{\link{get_features}()}
+
+Other modulelist: 
+\code{\link{custom_modulelist_from_org}()},
+\code{\link{get_features}()}
+}
+\concept{modulelist}

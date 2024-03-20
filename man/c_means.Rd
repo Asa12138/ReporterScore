@@ -30,10 +30,17 @@ C-means cluster
 }
 \examples{
 \donttest{
-data(otutab, package = "pcutils")
-pcutils::hebing(otutab, metadata$Group) -> otu_group
-cm_test_k(otu_group, filter_var = 0.7)
-cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
-plot(cm_res, 0.8)
+if (requireNamespace("e1071") && requireNamespace("factoextra")) {
+  data(otutab, package = "pcutils")
+  pcutils::hebing(otutab, metadata$Group) -> otu_group
+  cm_test_k(otu_group, filter_var = 0.7)
+  cm_res <- c_means(otu_group, k_num = 3, filter_var = 0.7)
+  plot(cm_res, 0.8)
 }
 }
+}
+\seealso{
+Other C_means: 
+\code{\link{RSA_by_cm}()}
+}
+\concept{C_means}

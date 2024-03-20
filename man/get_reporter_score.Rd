@@ -24,15 +24,15 @@ get_reporter_score(
 
 \item{feature}{one of 'ko', 'gene', 'compound'}
 
-\item{threads}{threads}
+\item{threads}{default 1}
 
 \item{modulelist}{NULL or customized modulelist dataframe, must contain 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.}
 
-\item{perm}{permutation number, default: 4999}
+\item{perm}{permutation number, default: 4999.}
 
 \item{verbose}{logical}
 
-\item{p.adjust.method2}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method2}{p.adjust.method for the correction of ReporterScore, see \code{\link[stats]{p.adjust}}}
 
 \item{min_exist_KO}{min exist KO number in a pathway (default, 3, when a pathway contains KOs less than 3, there will be no RS)}
 
@@ -52,3 +52,10 @@ ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 }
 }
+\seealso{
+Other GRSA: 
+\code{\link{ko.test}()},
+\code{\link{pvalue2zs}()},
+\code{\link{reporter_score}()}
+}
+\concept{GRSA}

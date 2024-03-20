@@ -29,3 +29,9 @@ Custom modulelist from a specific organism
 \examples{
 hsa_pathway <- custom_modulelist_from_org(org = "hsa", feature = "gene")
 }
+\seealso{
+Other modulelist: 
+\code{\link{custom_modulelist}()},
+\code{\link{get_features}()}
+}
+\concept{modulelist}

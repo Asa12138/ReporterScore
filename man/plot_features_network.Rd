@@ -50,7 +50,9 @@ network plot
 Plot features network
 }
 \examples{
-data("reporter_score_res")
-plot_features_network(reporter_score_res, map_id = "map05230")
-plot_features_network(reporter_score_res, map_id = "map00780", near_pathway = TRUE)
+if (requireNamespace("MetaNet")) {
+  data("reporter_score_res")
+  plot_features_network(reporter_score_res, map_id = "map05230")
+  plot_features_network(reporter_score_res, map_id = "map00780", near_pathway = TRUE)
+}
 }

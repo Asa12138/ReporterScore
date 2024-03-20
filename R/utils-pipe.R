@@ -18,7 +18,7 @@ NULL
 
 
 deprecated <- function(old, new) {
-    assign(old, new, envir = asNamespace(packageName()))
+  assign(old, new, envir = asNamespace(packageName()))
 }
 
 #' @export GRSA

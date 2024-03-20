@@ -16,13 +16,13 @@ ko.test(
 )
 }
 \arguments{
-\item{kodf}{KO_abundance table, rowname is ko id (e.g. K00001), colnames is samples}
+\item{kodf}{KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.}
 
 \item{group}{The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.}
 
 \item{metadata}{sample information data.frame contains group}
 
-\item{method}{the method of test. Default is `wilcox.test`. Allowed values include:
+\item{method}{the type of test. Default is `wilcox.test`. Allowed values include:
 \itemize{
 \item \code{\link[stats]{t.test}} (parametric) and \code{\link[stats]{wilcox.test}} (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
 \item \code{\link[stats]{anova}} (parametric) and \code{\link[stats]{kruskal.test}} (non-parametric). Perform one-way ANOVA test comparing multiple groups.
@@ -30,7 +30,7 @@ ko.test(
 
 \item{pattern}{a named vector matching the group, e.g. c('G1'=1,'G2'=3,'G3'=2), use the correlation analysis with specific pattern to calculate p-value.}
 
-\item{p.adjust.method1}{p.adjust.method, see \code{\link[stats]{p.adjust}}}
+\item{p.adjust.method1}{p.adjust.method for `ko.test`, see \code{\link[stats]{p.adjust}}}
 
 \item{threads}{default 1}
 
@@ -48,3 +48,10 @@ data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 }
 }
+\seealso{
+Other GRSA: 
+\code{\link{get_reporter_score}()},
+\code{\link{pvalue2zs}()},
+\code{\link{reporter_score}()}
+}
+\concept{GRSA}

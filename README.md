@@ -1,37 +1,57 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# ReporterScore <img src="man/figures/ReporterScore.png" align="right" width="120" />
+
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/doi-10.1101/2023.10.13.562235-yellow.svg)](https://doi.org/10.1101/2023.10.13.562235)
+[![R-CMD-check](https://github.com/Asa12138/ReporterScore/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Asa12138/ReporterScore/actions/workflows/R-CMD-check.yaml)
+[![](https://img.shields.io/badge/doi-10.1093/bib/bbae116-yellow.svg)](https://doi.org/10.1093/bib/bbae116)
 [![](https://img.shields.io/badge/blog-@asa-blue.svg)](https://asa-blog.netlify.app/)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](http://cranlogs.r-pkg.org/badges/last-month/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](https://www.r-pkg.org/badges/version/ReporterScore?color=green)](https://cran.r-project.org/package=ReporterScore)
-[![](https://img.shields.io/badge/devel%20version-0.1.3-green.svg)](https://github.com/Asa12138/ReporterScore)
+[![](https://img.shields.io/badge/devel%20version-0.1.4-green.svg)](https://github.com/Asa12138/ReporterScore)
 <!-- badges: end -->
 
-# ReporterScore
+Inspired by the classic ‘RSA’, we developed the improved ‘Generalized
+Reporter Score-based Analysis (GRSA)’ method, implemented in the R
+package ‘ReporterScore’, along with comprehensive visualization methods
+and pathway databases. ‘GRSA’ is a threshold-free method that works well
+with all types of biomedical features, such as genes, chemical
+compounds, and microbial species. Importantly, the ‘GRSA’ supports
+multi-group and longitudinal experimental designs, because of the
+included multi-group-compatible statistical methods.
 
-Generalized Reporter Score-based Enrichment Analysis for Omics Data
+<img src="man/figures/1-workflow.png" width="100%" />
 
-<img src="README_files/1-workflow.png" width="1985" />
+The HTML documentation of the latest version is available at [Github
+page](https://asa12138.github.io/ReporterScore/).
 
 ## Citation
 
 To cite ReporterScore in publications use:
 
 C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter
-Score-based Enrichment Analysis for Omics Data. bioRxiv \[Preprint\]
-(2023). <https://doi.org/10.1101/2023.10.13.562235>.
+Score-based Enrichment Analysis for Omics Data. *Briefings in
+Bioinformatics* (2024). <https://doi.org/10.1093/bib/bbae116>.
 
-## Install
+## Installation
+
+You can install the released version of `ReporterScore` from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-if (!require("devtools")) install.packages("devtools")
+install.packages("ReporterScore")
+```
+
+You can install the development version of `ReporterScore` from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
 devtools::install_github("Asa12138/pcutils")
 devtools::install_github("Asa12138/ReporterScore")
-
-library(ReporterScore)
 ```
 
 ## Usage
@@ -53,13 +73,13 @@ An example code tailored for a KO abundance table is as follows:
 ``` r
 data("KO_abundance_test")
 head(KO_abundance[, 1:6])
-##                WT1         WT2         WT3         WT4         WT5         WT6
-## K03169 0.002653545 0.005096380 0.002033923 0.000722349 0.003468322 0.001483028
-## K07133 0.000308237 0.000280458 0.000596527 0.000859854 0.000308719 0.000878098
-## K03088 0.002147068 0.002030742 0.003797459 0.004161979 0.002076596 0.003091182
-## K03530 0.003788366 0.000239298 0.000445817 0.000557271 0.000222969 0.000529624
-## K06147 0.000785654 0.001213630 0.001312569 0.001662740 0.002387006 0.001725797
-## K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214
+#>                WT1         WT2         WT3         WT4         WT5         WT6
+#> K03169 0.002653545 0.005096380 0.002033923 0.000722349 0.003468322 0.001483028
+#> K07133 0.000308237 0.000280458 0.000596527 0.000859854 0.000308719 0.000878098
+#> K03088 0.002147068 0.002030742 0.003797459 0.004161979 0.002076596 0.003091182
+#> K03530 0.003788366 0.000239298 0.000445817 0.000557271 0.000222969 0.000529624
+#> K06147 0.000785654 0.001213630 0.001312569 0.001662740 0.002387006 0.001725797
+#> K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214
 ```
 
 And you should also offer a experimental metadata (rows are samples,
@@ -67,13 +87,13 @@ columns are groups).
 
 ``` r
 head(metadata)
-##     Group Group2
-## WT1    WT     G3
-## WT2    WT     G3
-## WT3    WT     G3
-## WT4    WT     G3
-## WT5    WT     G3
-## WT6    WT     G1
+#>     Group Group2
+#> WT1    WT     G3
+#> WT2    WT     G3
+#> WT3    WT     G3
+#> WT4    WT     G3
+#> WT5    WT     G3
+#> WT6    WT     G1
 ```
 
 ### 2. Pathway database
@@ -118,8 +138,8 @@ head(CPDlist$pathway)
 
 # 3. human (hsa) pathway-ko/gene/compound databases
 hsa_pathway_gene <- custom_modulelist_from_org(
-    org = "hsa",
-    feature = c("ko", "gene", "compound")[2]
+  org = "hsa",
+  feature = c("ko", "gene", "compound")[2]
 )
 head(hsa_pathway_gene)
 
@@ -164,45 +184,45 @@ depleted in **OE group**:
 
 ``` r
 cat("Comparison: ", levels(factor(metadata$Group)))
-## Comparison:  WT OE
+#> Comparison:  WT OE
 
 # for microbiome!!!
 reporter_res <- reporter_score(KO_abundance, "Group", metadata,
-    mode = "directed",
-    method = "wilcox.test", perm = 999
+  mode = "directed",
+  method = "wilcox.test", perm = 999
 )
-## ================================Use feature: ko=================================
-## ===============================Checking rownames================================
-## Some of your ko_stat are not KO id, check the format! (e.g. K00001)
-## 52.7% of your kos in the modulelist!
-## 30 samples are matched for next step.
-## ===========================Removing all-zero rows: 0============================
-## ===================================1.KO test====================================
-## =================================Checking group=================================
-## 30 samples are matched for next step.
-## ===========================Removing all-zero rows: 0============================
-## ==============================Calculating each KO===============================
-## ===========================Using method: wilcox.test============================
-## 1000 features done.
-## 2000 features done.
-## 3000 features done.
-## 4000 features done.
-## 
-## Compared groups: WT, OE
-## Total KO number: 4535
-## Compare method: wilcox.test
-## Time use: 1.177
-## =========================2.Transfer p.value to z-score==========================
-## ==========================3.Calculating reporter score==========================
-## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-08-14 16:00:52====================
-## If you want to update KOlist, use `update_KO_file()`
-## ============================Calculating each pathway============================
-## 100 pathways done.
-## 400 pathways done.
-## ID number: 481
-## Time use: 1.604
-## ====================================All done====================================
+#> ================================Use feature: ko=================================
+#> ===============================Checking rownames================================
+#> Some of your ko_stat are not KO id, check the format! (e.g. K00001)
+#> 52.7% of your kos in the modulelist!
+#> 30 samples are matched for next step.
+#> ===========================Removing all-zero rows: 0============================
+#> ===================================1.KO test====================================
+#> =================================Checking group=================================
+#> 30 samples are matched for next step.
+#> ===========================Removing all-zero rows: 0============================
+#> ==============================Calculating each KO===============================
+#> ===========================Using method: wilcox.test============================
+#> 1000 features done.
+#> 2000 features done.
+#> 3000 features done.
+#> 4000 features done.
+#> 
+#> Compared groups: WT, OE
+#> Total KO number: 4535
+#> Compare method: wilcox.test
+#> Time use: 1.186
+#> =========================2.Transfer p.value to z-score==========================
+#> ==========================3.Calculating reporter score==========================
+#> ==================================load KOlist===================================
+#> ===================KOlist download time: 2023-08-14 16:00:52====================
+#> If you want to update KOlist, use `update_KO_file()`
+#> ============================Calculating each pathway============================
+#> 100 pathways done.
+#> 400 pathways done.
+#> ID number: 481
+#> Time use: 1.693
+#> ====================================All done====================================
 ```
 
 The result is a “reporter_score” object:
@@ -227,21 +247,21 @@ data("genedf")
 
 # Set the `feature` and `type`!
 reporter_res_gene <- reporter_score(genedf, "Group", metadata,
-    mode = "directed",
-    feature = "gene", type = "hsa",
-    method = "wilcox.test", perm = 999
+  mode = "directed",
+  feature = "gene", type = "hsa",
+  method = "wilcox.test", perm = 999
 )
 
 # Or give the database through `modulelist`
 hsa_pathway_gene <- custom_modulelist_from_org(
-    org = "hsa",
-    feature = "gene"
+  org = "hsa",
+  feature = "gene"
 )
 
 reporter_res_gene <- reporter_score(genedf, "Group", metadata,
-    mode = "directed",
-    modulelist = hsa_pathway_gene,
-    method = "wilcox.test", perm = 999
+  mode = "directed",
+  modulelist = hsa_pathway_gene,
+  method = "wilcox.test", perm = 999
 )
 ```
 
@@ -249,9 +269,9 @@ reporter_res_gene <- reporter_score(genedf, "Group", metadata,
 
 ``` r
 reporter_res_gene <- reporter_score(chem_df, "Group", metadata,
-    mode = "directed",
-    feature = "compound", type = "hsa",
-    method = "wilcox.test", perm = 999
+  mode = "directed",
+  feature = "compound", type = "hsa",
+  method = "wilcox.test", perm = 999
 )
 ```
 
@@ -262,26 +282,26 @@ Plot the most significantly enriched pathways:
 ``` r
 # View(reporter_res$reporter_s)
 plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
-## ==============================load Pathway_htable===============================
-## ===============Pathway_htable download time: 2024-01-12 00:52:39================
-## If you want to update Pathway_htable, use `update_htable(type='pathway')`
+#> ==============================load Pathway_htable===============================
+#> ===============Pathway_htable download time: 2024-01-12 00:52:39================
+#> If you want to update Pathway_htable, use `update_htable(type='pathway')`
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
 Plot the most significantly enriched pathways (circle packing):
 
 ``` r
 plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
-## ==============================load Pathway_htable===============================
-## ===============Pathway_htable download time: 2024-01-12 00:52:39================
-## If you want to update Pathway_htable, use `update_htable(type='pathway')`
-## Non-leaf weights ignored
-## Scale for fill is already present.
-## Adding another scale for fill, which will replace the existing scale.
+#> ==============================load Pathway_htable===============================
+#> ===============Pathway_htable download time: 2024-01-12 00:52:39================
+#> If you want to update Pathway_htable, use `update_htable(type='pathway')`
+#> Non-leaf weights ignored
+#> Scale for fill is already present.
+#> Adding another scale for fill, which will replace the existing scale.
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 When we focus on one pathway, e.g. “map00780”:
 
@@ -289,7 +309,7 @@ When we focus on one pathway, e.g. “map00780”:
 plot_KOs_in_pathway(reporter_res, map_id = "map00780")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 Or show the distribution of Z-scores
 
@@ -297,38 +317,38 @@ Or show the distribution of Z-scores
 plot_KOs_distribution(reporter_res, map_id = "map00780")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 Or display as a network:
 
 ``` r
 plot_KOs_network(reporter_res,
-    map_id = c("map00780", "map00785", "map00900"),
-    main = "", mark_module = TRUE
+  map_id = c("map00780", "map00785", "map00900"),
+  main = "", mark_module = TRUE
 )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
 
 And we also look at the KOs abundance in a pathway:
 
 ``` r
 plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
-## `geom_smooth()` using formula = 'y ~ x'
+#> `geom_smooth()` using formula = 'y ~ x'
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
 
 Or display as a heatmap:
 
 ``` r
 plot_KOs_heatmap(reporter_res,
-    map_id = "map00780", only_sig = TRUE,
-    heatmap_param = list(cutree_rows = 2)
+  map_id = "map00780", only_sig = TRUE,
+  heatmap_param = list(cutree_rows = 2)
 )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
 
 Or plot the KEGG pathway:
 
@@ -336,7 +356,7 @@ Or plot the KEGG pathway:
 plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 ```
 
-<img src="README_files/ko00780.Z_score.png" width="586" />
+<img src="man/figures/ko00780.Z_score.png" width="100%" />
 
 ### Example for multi-group or longitudinal
 
@@ -345,50 +365,50 @@ can choose multi-groups comparison (or correlation):
 
 ``` r
 cat("Comparison: ", levels(factor(metadata$Group2)))
-## Comparison:  G1 G2 G3
+#> Comparison:  G1 G2 G3
 
 reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
-    mode = "directed",
-    method = "spearman", p.adjust.method1 = "none", perm = 999
+  mode = "directed",
+  method = "spearman", p.adjust.method1 = "none", perm = 999
 )
-## ================================Use feature: ko=================================
-## ===============================Checking rownames================================
-## Some of your ko_stat are not KO id, check the format! (e.g. K00001)
-## 52.7% of your kos in the modulelist!
-## 30 samples are matched for next step.
-## ===========================Removing all-zero rows: 0============================
-## ===================================1.KO test====================================
-## =================================Checking group=================================
-## 30 samples are matched for next step.
-## ===========================Removing all-zero rows: 0============================
-## ==============================Calculating each KO===============================
-## =============================Using method: spearman=============================
-## Using correlation analysis: spearman, the groups will be transform to numeric, note the factor feature of group.
-## 1000 features done.
-## 2000 features done.
-## 3000 features done.
-## 4000 features done.
-## 
-## Compared groups: G1, G2, G3
-## Total KO number: 4535
-## Compare method: spearman
-## Time use: 0.510
-## =========================2.Transfer p.value to z-score==========================
-## ==========================3.Calculating reporter score==========================
-## ==================================load KOlist===================================
-## ===================KOlist download time: 2023-08-14 16:00:52====================
-## If you want to update KOlist, use `update_KO_file()`
-## ============================Calculating each pathway============================
-## 100 pathways done.
-## 400 pathways done.
-## ID number: 481
-## Time use: 1.578
-## ====================================All done====================================
+#> ================================Use feature: ko=================================
+#> ===============================Checking rownames================================
+#> Some of your ko_stat are not KO id, check the format! (e.g. K00001)
+#> 52.7% of your kos in the modulelist!
+#> 30 samples are matched for next step.
+#> ===========================Removing all-zero rows: 0============================
+#> ===================================1.KO test====================================
+#> =================================Checking group=================================
+#> 30 samples are matched for next step.
+#> ===========================Removing all-zero rows: 0============================
+#> ==============================Calculating each KO===============================
+#> =============================Using method: spearman=============================
+#> Using correlation analysis: spearman, the groups will be transform to numeric, note the factor feature of group.
+#> 1000 features done.
+#> 2000 features done.
+#> 3000 features done.
+#> 4000 features done.
+#> 
+#> Compared groups: G1, G2, G3
+#> Total KO number: 4535
+#> Compare method: spearman
+#> Time use: 0.530
+#> =========================2.Transfer p.value to z-score==========================
+#> ==========================3.Calculating reporter score==========================
+#> ==================================load KOlist===================================
+#> ===================KOlist download time: 2023-08-14 16:00:52====================
+#> If you want to update KOlist, use `update_KO_file()`
+#> ============================Calculating each pathway============================
+#> 100 pathways done.
+#> 400 pathways done.
+#> ID number: 481
+#> Time use: 1.638
+#> ====================================All done====================================
 
 plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" />
 
 ### Example for specified pattern
 
@@ -399,40 +419,40 @@ We use 1,5,1 to found pathways with the down-up-down pattern
 
 ``` r
 reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata,
-    mode = "directed", perm = 999,
-    method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1)
+  mode = "directed", perm = 999,
+  method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1)
 )
 plot_report_bar(reporter_res3, rs_threshold = 3, show_ID = TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-20-1.png" width="100%" />
 
 ``` r
 plot_KOs_in_pathway(reporter_res3, map_id = "map00860")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-20-2.png" width="100%" />
 
 To explore potential patterns within the data, clustering methods, such
 as C-means clustering, can be used.
 
 ``` r
 rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
-    method = "pearson",
-    k_num = 3, perm = 999
+  method = "pearson",
+  k_num = 3, perm = 999
 )
 # show the patterns
 plot_c_means(rsa_cm_res, filter_membership = 0.7)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-21-1.png" width="100%" />
 
 ``` r
 
 plot_report_bar(rsa_cm_res, rs_threshold = 2.5, y_text_size = 10)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-2.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-21-2.png" width="100%" />
 
 ## Details
 
@@ -456,6 +476,19 @@ So that you can get reporter score step by step.
 
 ### Other commonly used enrichment methods
 
+| Category | Method                                                            | Tools                                             | Notes                                                                                                                                                        |
+|:---------|:------------------------------------------------------------------|:--------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ORA      | Hypergeometric test / Fisher’s exact test                         | DAVID (website) , clusterProfiler (R package)     | The most common methods used in enrichment analysis. Selecting a list of genes is required.                                                                  |
+| FCS      | Gene set enrichment analysis (GSEA)                               | GSEA (website)                                    | GSEA creatively uses gene ranking, rather than selecting a list of genes, to identify statistically significant and concordant differences across gene sets. |
+| FCS      | Generalized reporter score-based analysis (GRSA/RSA)              | ReporterScore (R package developed in this study) | Find significant metabolites (first report), pathways, and taxonomy based on the p-values for multi-omics data.                                              |
+| FCS      | Significance Analysis of Function and Expression (SAFE)           | safe (R package)                                  | SAFE assesses the significance of gene categories by calculating both local and global statistics from gene expression data.                                 |
+| FCS      | Gene Set Analysis (GSA)                                           | GSA (R Package)                                   | GSA was proposed as an improvement of GSEA, using the “maxmean” statistic instead of the weighted sign KS statistic.                                         |
+| FCS      | Pathway Analysis with Down-weighting of Overlapping Genes (PADOG) | PADOG (R package)                                 | PADOGA assumes that genes associated with fewer pathways have more significant effects than genes associated with more pathways.                             |
+| FCS      | Gene Set Variation Analysis (GSVA)                                | GSVA (R package)                                  | A nonparametric, unsupervised method that transforms gene expression data into gene set scores for downstream differential pathway activity analysis.        |
+| PT       | Topology-based pathway enrichment analysis (TPEA)                 | TPEA (R package)                                  | Integrate topological properties and global upstream/downstream positions of genes in pathways.                                                              |
+
+Commonly used enrichment methods for omics data.
+
 `ReporterScore` also provides other enrichment methods like
 `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from
 `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), The input
@@ -476,20 +509,19 @@ filter(enrich_res, p.adjust < 0.05) %>% pull(ID) -> clusterProfiler
 # GESA
 set.seed(1234)
 gsea_res <- KO_gsea(reporter_res, weight = "Z_score")
+#> Warning in preparePathwaysAndStats(pathways, stats, minSize, maxSize, gseaParam, : There are ties in the preranked stats (57.15% of the list).
+#> The order of those tied genes will be arbitrary, which may produce unexpected results.
+#> Warning in fgseaMultilevel(pathways = pathways, stats = stats, minSize =
+#> minSize, : For some pathways, in reality P-values are less than 1e-10. You can
+#> set the `eps` argument to zero for better estimation.
 filter(data.frame(gsea_res), p.adjust < 0.05) %>% pull(ID) -> GSEA
 
 venn_res <- list(GRSA = RS, Fisher = Fisher, CP = clusterProfiler, GSEA = GSEA)
 library(pcutils)
-venn(venn_res)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
-
-``` r
 venn(venn_res, "network")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-2.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-23-1.png" width="100%" />
 
 ## Other features
 
@@ -508,43 +540,45 @@ level in one of “pathway”, “module”, “level1”, “level2”, “leve
 
 ``` r
 KO_htable <- load_KO_htable()
-## =================================load KO_htable=================================
-## ==================KO_htable download time: 2024-01-12 00:49:03==================
-## If you want to update KO_htable, use `update_htable(type='ko')`
+#> =================================load KO_htable=================================
+#> ==================KO_htable download time: 2024-01-12 00:49:03==================
+#> If you want to update KO_htable, use `update_htable(type='ko')`
 head(KO_htable)
-##   level1_name             level2_name level3_id                  level3_name
-## 1  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-## 2  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-## 3  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-## 4  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-## 5  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-## 6  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
-##    KO_id                                                    KO_name
-## 1 K00844                                HK; hexokinase [EC:2.7.1.1]
-## 2 K12407                              GCK; glucokinase [EC:2.7.1.2]
-## 3 K00845                              glk; glucokinase [EC:2.7.1.2]
-## 4 K25026                              glk; glucokinase [EC:2.7.1.2]
-## 5 K01810       GPI, pgi; glucose-6-phosphate isomerase [EC:5.3.1.9]
-## 6 K06859 pgi1; glucose-6-phosphate isomerase, archaeal [EC:5.3.1.9]
+#>   level1_name             level2_name level3_id                  level3_name
+#> 1  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#> 2  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#> 3  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#> 4  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#> 5  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#> 6  Metabolism Carbohydrate metabolism  map00010 Glycolysis / Gluconeogenesis
+#>    KO_id                                                    KO_name
+#> 1 K00844                                HK; hexokinase [EC:2.7.1.1]
+#> 2 K12407                              GCK; glucokinase [EC:2.7.1.2]
+#> 3 K00845                              glk; glucokinase [EC:2.7.1.2]
+#> 4 K25026                              glk; glucokinase [EC:2.7.1.2]
+#> 5 K01810       GPI, pgi; glucose-6-phosphate isomerase [EC:5.3.1.9]
+#> 6 K06859 pgi1; glucose-6-phosphate isomerase, archaeal [EC:5.3.1.9]
 plot_htable(type = "ko")
-## =================================load KO_htable=================================
-## ==================KO_htable download time: 2024-01-12 00:49:03==================
-## If you want to update KO_htable, use `update_htable(type='ko')`
+#> =================================load KO_htable=================================
+#> ==================KO_htable download time: 2024-01-12 00:49:03==================
+#> If you want to update KO_htable, use `update_htable(type='ko')`
+#> Warning: Vectorized input to `element_text()` is not officially supported.
+#> ℹ Results may be unexpected or may change in future versions of ggplot2.
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-24-1.png" width="100%" />
 
 ``` r
 KO_level1 <- up_level_KO(KO_abundance, level = "level1", show_name = TRUE)
-## =================================load KO_htable=================================
-## ==================KO_htable download time: 2024-01-12 00:49:03==================
-## If you want to update KO_htable, use `update_htable(type='ko')`
+#> =================================load KO_htable=================================
+#> ==================KO_htable download time: 2024-01-12 00:49:03==================
+#> If you want to update KO_htable, use `update_htable(type='ko')`
 pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) +
-    ggsci::scale_fill_d3() +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+  ggsci::scale_fill_d3() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+<img src="man/figures/README-unnamed-chunk-25-1.png" width="100%" />
 
 ### CARD for ARGs
 
@@ -553,52 +587,52 @@ For convenience, I also included the CARD database from
 
 ``` r
 CARDinfo <- load_CARDinfo()
-## =================================load CARDinfo==================================
-## ==================CARDinfo download time: 2024-01-12 01:12:11===================
-## If you want to update CARDinfo, use `update_GOlist()`
+#> =================================load CARDinfo==================================
+#> ==================CARDinfo download time: 2024-01-12 01:12:11===================
+#> If you want to update CARDinfo, use `update_GOlist()`
 head(CARDinfo$ARO_index)
-##         ARO Accession CVTERM ID Model Sequence ID Model ID
-## 3005099   ARO:3005099     43314              6143     3831
-## 3002523   ARO:3002523     38923              8144     1781
-## 3002524   ARO:3002524     38924                85      746
-## 3002525   ARO:3002525     38925              4719     1246
-## 3002526   ARO:3002526     38926               228     1415
-## 3002527   ARO:3002527     38927              5510     2832
-##                                                     Model Name
-## 3005099 23S rRNA (adenine(2058)-N(6))-methyltransferase Erm(A)
-## 3002523                                             AAC(2')-Ia
-## 3002524                                             AAC(2')-Ib
-## 3002525                                             AAC(2')-Ic
-## 3002526                                             AAC(2')-Id
-## 3002527                                             AAC(2')-Ie
-##                                                       ARO Name
-## 3005099 23S rRNA (adenine(2058)-N(6))-methyltransferase Erm(A)
-## 3002523                                             AAC(2')-Ia
-## 3002524                                             AAC(2')-Ib
-## 3002525                                             AAC(2')-Ic
-## 3002526                                             AAC(2')-Id
-## 3002527                                             AAC(2')-Ie
-##         Protein Accession DNA Accession                         AMR Gene Family
-## 3005099        AAB60941.1    AF002716.1 Erm 23S ribosomal RNA methyltransferase
-## 3002523        AAA03550.1      L06156.2                                 AAC(2')
-## 3002524        AAC44793.1      U41471.1                                 AAC(2')
-## 3002525        CCP42991.1    AL123456.3                                 AAC(2')
-## 3002526        AAB41701.1      U72743.1                                 AAC(2')
-## 3002527        CAC32082.1    AL583926.1                                 AAC(2')
-##                                                                   Drug Class
-## 3005099 lincosamide antibiotic;macrolide antibiotic;streptogramin antibiotic
-## 3002523                                            aminoglycoside antibiotic
-## 3002524                                            aminoglycoside antibiotic
-## 3002525                                            aminoglycoside antibiotic
-## 3002526                                            aminoglycoside antibiotic
-## 3002527                                            aminoglycoside antibiotic
-##                 Resistance Mechanism CARD Short Name
-## 3005099 antibiotic target alteration  Spyo_ErmA_MLSb
-## 3002523      antibiotic inactivation      AAC(2')-Ia
-## 3002524      antibiotic inactivation      AAC(2')-Ib
-## 3002525      antibiotic inactivation      AAC(2')-Ic
-## 3002526      antibiotic inactivation      AAC(2')-Id
-## 3002527      antibiotic inactivation      AAC(2')-Ie
+#>         ARO Accession CVTERM ID Model Sequence ID Model ID
+#> 3005099   ARO:3005099     43314              6143     3831
+#> 3002523   ARO:3002523     38923              8144     1781
+#> 3002524   ARO:3002524     38924                85      746
+#> 3002525   ARO:3002525     38925              4719     1246
+#> 3002526   ARO:3002526     38926               228     1415
+#> 3002527   ARO:3002527     38927              5510     2832
+#>                                                     Model Name
+#> 3005099 23S rRNA (adenine(2058)-N(6))-methyltransferase Erm(A)
+#> 3002523                                             AAC(2')-Ia
+#> 3002524                                             AAC(2')-Ib
+#> 3002525                                             AAC(2')-Ic
+#> 3002526                                             AAC(2')-Id
+#> 3002527                                             AAC(2')-Ie
+#>                                                       ARO Name
+#> 3005099 23S rRNA (adenine(2058)-N(6))-methyltransferase Erm(A)
+#> 3002523                                             AAC(2')-Ia
+#> 3002524                                             AAC(2')-Ib
+#> 3002525                                             AAC(2')-Ic
+#> 3002526                                             AAC(2')-Id
+#> 3002527                                             AAC(2')-Ie
+#>         Protein Accession DNA Accession                         AMR Gene Family
+#> 3005099        AAB60941.1    AF002716.1 Erm 23S ribosomal RNA methyltransferase
+#> 3002523        AAA03550.1      L06156.2                                 AAC(2')
+#> 3002524        AAC44793.1      U41471.1                                 AAC(2')
+#> 3002525        CCP42991.1    AL123456.3                                 AAC(2')
+#> 3002526        AAB41701.1      U72743.1                                 AAC(2')
+#> 3002527        CAC32082.1    AL583926.1                                 AAC(2')
+#>                                                                   Drug Class
+#> 3005099 lincosamide antibiotic;macrolide antibiotic;streptogramin antibiotic
+#> 3002523                                            aminoglycoside antibiotic
+#> 3002524                                            aminoglycoside antibiotic
+#> 3002525                                            aminoglycoside antibiotic
+#> 3002526                                            aminoglycoside antibiotic
+#> 3002527                                            aminoglycoside antibiotic
+#>                 Resistance Mechanism CARD Short Name
+#> 3005099 antibiotic target alteration  Spyo_ErmA_MLSb
+#> 3002523      antibiotic inactivation      AAC(2')-Ia
+#> 3002524      antibiotic inactivation      AAC(2')-Ib
+#> 3002525      antibiotic inactivation      AAC(2')-Ic
+#> 3002526      antibiotic inactivation      AAC(2')-Id
+#> 3002527      antibiotic inactivation      AAC(2')-Ie
 ```
 
 # Reference

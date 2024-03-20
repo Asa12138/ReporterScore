@@ -32,7 +32,9 @@ Perform Gene Set Variation Analysis
 \examples{
 \donttest{
 ## use `gsva` from the `GSVA` package.
-data("reporter_score_res")
-gsva_res <- KO_gsva(reporter_score_res, p.adjust.method = "none")
+if (requireNamespace("GSVA")) {
+  data("reporter_score_res")
+  gsva_res <- KO_gsva(reporter_score_res, p.adjust.method = "none")
+}
 }
 }

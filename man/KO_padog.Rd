@@ -36,8 +36,8 @@ Perform Pathway Analysis with Down-weighting of Overlapping Genes (PADOG)
 ## use `PADOG` from the `PADOG` package.
 data("reporter_score_res")
 padog_res <- KO_padog(reporter_score_res,
-    verbose = TRUE,
-    perm = 200, p.adjust.method = "none"
+  verbose = TRUE,
+  perm = 200, p.adjust.method = "none"
 )
 }
 }

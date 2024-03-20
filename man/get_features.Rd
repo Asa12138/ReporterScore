@@ -23,3 +23,9 @@ get features in a modulelist
 \examples{
 get_features(map_id = "map00010")
 }
+\seealso{
+Other modulelist: 
+\code{\link{custom_modulelist_from_org}()},
+\code{\link{custom_modulelist}()}
+}
+\concept{modulelist}

@@ -22,7 +22,9 @@ Perform Simultaneous Enrichment Analysis
 \examples{
 \donttest{
 ## use `SEA` from the `rSEA` package.
-data("reporter_score_res")
-sea_res <- KO_sea(reporter_score_res, verbose = TRUE)
+if (requireNamespace("rSEA")) {
+  data("reporter_score_res")
+  sea_res <- KO_sea(reporter_score_res, verbose = TRUE)
+}
 }
 }
