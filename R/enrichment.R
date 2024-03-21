@@ -430,6 +430,7 @@ KO_gsea <- function(ko_stat, weight = "logFC", add_mini = NULL,
 }
 
 pre_rs <- function(reporter_res, mode = 1, verbose = TRUE) {
+  Exist_K_num <- NULL
   stopifnot(inherits(reporter_res, "reporter_score"))
 
   modulelist <- reporter_res$modulelist
@@ -506,6 +507,7 @@ pre_rs <- function(reporter_res, mode = 1, verbose = TRUE) {
 #' }
 #' }
 KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method = "BH", verbose = TRUE, perm = 1000, ...) {
+  kodf <- modulelist <- kodf <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 1, verbose = verbose)
 
   tkodf <- pcutils::t2(kodf)
@@ -555,6 +557,7 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
 #' }
 #' }
 KO_gsva <- function(reporter_res, verbose = TRUE, method = "wilcox.test", p.adjust.method = "BH", ...) {
+  kodf <- sampFile <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 1, verbose = verbose)
 
   geneSets <- transform_modulelist(modulelist)
@@ -599,6 +602,7 @@ KO_gsva <- function(reporter_res, verbose = TRUE, method = "wilcox.test", p.adju
 #' }
 #' }
 KO_sea <- function(reporter_res, verbose = TRUE, ...) {
+  kodf <- sampFile <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 2, verbose = verbose)
 
   pathlist <- transform_modulelist(modulelist)
@@ -638,6 +642,7 @@ KO_sea <- function(reporter_res, verbose = TRUE, ...) {
 #' }
 KO_safe <- function(reporter_res, verbose = TRUE, perm = 1000,
                     C.matrix = NULL, p.adjust.method = "BH", ...) {
+  kodf <- sampFile <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 1, verbose = verbose)
 
   if (is.null(C.matrix)) C.matrix <- transform_modulelist(modulelist, mode = 3) %>% as.matrix()
@@ -672,15 +677,19 @@ KO_safe <- function(reporter_res, verbose = TRUE, perm = 1000,
 #' @examples
 #' \donttest{
 #' ## use `PADOG` from the `PADOG` package.
+#' if (requireNamespace("PADOG")) {
 #' data("reporter_score_res")
 #' padog_res <- KO_padog(reporter_score_res,
 #'   verbose = TRUE,
 #'   perm = 200, p.adjust.method = "none"
 #' )
 #' }
+#' }
 KO_padog <- function(reporter_res, verbose = TRUE, perm = 1000, p.adjust.method = "BH", ...) {
+  kodf <- sampFile <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 1, verbose = verbose)
 
+  lib_ps("PADOG", library = FALSE)
   geneSets <- transform_modulelist(modulelist)
   padog_res <- PADOG::padog(as.matrix(kodf),
     group = factor(sampFile$group, labels = c("c", "d")),

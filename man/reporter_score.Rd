@@ -88,13 +88,13 @@ for the `reporter_s` in result, whose columns represent:
 One step to get the reporter score of your KO abundance table.
 }
 \examples{
+message("The following example require some time to run:")
+\donttest{
 data("KO_abundance_test")
 reporter_score_res <- reporter_score(KO_abundance, "Group", metadata,
   mode = "directed", perm = 499
 )
 head(reporter_score_res$reporter_s)
-message("The following example require some time to run:")
-\donttest{
 reporter_score_res2 <- reporter_score(KO_abundance, "Group2", metadata,
   mode = "mixed",
   method = "kruskal.test", p.adjust.method1 = "none", perm = 499
