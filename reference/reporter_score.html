@@ -56,6 +56,9 @@
       <a href="https://asa12138.github.io/MetaNet" class="external-link">MetaNet</a>
     </li>
     <li>
+      <a href="https://iphylo.net" class="external-link">iPhylo</a>
+    </li>
+    <li>
       <a href="https://asa12138.github.io/plot4fun" class="external-link">plot4fun</a>
     </li>
   </ul></li>
@@ -277,7 +280,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compared groups: WT, OE</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Total KO number: 4535</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compare method: wilcox.test</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 2.846</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 2.822</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> =========================2.Transfer p.value to z-score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==========================3.Calculating reporter score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==================================load KOlist===================================</span>
@@ -287,30 +290,30 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 100 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 400 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ID number: 481</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.384</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.489</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ====================================All done====================================</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">reporter_score_res</span><span class="op">$</span><span class="va">reporter_s</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                ID                                         Description K_num</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map03010 map03010                                            Ribosome   143</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00785 map00785                              Lipoic acid metabolism    31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00860 map00860                                Porphyrin metabolism   139</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map05230 map05230                 Central carbon metabolism in cancer    49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00780 map00780                                   Biotin metabolism    24</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00130 map00130 Ubiquinone and other terpenoid-quinone biosynthesis    59</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          Exist_K_num Significant_K_num Significant_up_num Significant_down_num</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map03010          56                27                 25                    2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00785          16                12                  0                   12</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00860          44                25                  3                   22</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map05230          10                 9                  0                    9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00780          15                10                  1                    9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00130          24                 5                  5                    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             Z_score   BG_Mean    BG_Sd ReporterScore p.value   p.adjust</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map03010  10.905774 -5.408558 1.724588      9.459842   0.002 0.05907692</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00785 -10.657642 -2.891726 1.780659     -4.361259   0.002 0.05907692</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00860 -12.386131 -4.946441 1.714554     -4.339141   0.002 0.05907692</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map05230  -9.718236 -2.211730 1.759169     -4.267074   0.002 0.05907692</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00780  -9.104172 -2.804435 1.673349     -3.764749   0.002 0.05907692</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> map00130   1.661509 -3.471227 1.632031      3.144998   0.004 0.05907692</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                ID                         Description K_num Exist_K_num</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map03010 map03010                            Ribosome   143          56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00785 map00785              Lipoic acid metabolism    31          16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00860 map00860                Porphyrin metabolism   139          44</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map05230 map05230 Central carbon metabolism in cancer    49          10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00780 map00780                   Biotin metabolism    24          15</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00900 map00900     Terpenoid backbone biosynthesis    63          20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          Significant_K_num Significant_up_num Significant_down_num    Z_score</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map03010                27                 25                    2  10.905774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00785                12                  0                   12 -10.657642</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00860                25                  3                   22 -12.386131</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map05230                 9                  0                    9  -9.718236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00780                10                  1                    9  -9.104172</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00900                 9                  7                    2   2.081004</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            BG_Mean    BG_Sd ReporterScore p.value   p.adjust</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map03010 -5.312271 1.850322      8.764984   0.002 0.04800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00785 -2.869617 1.740612     -4.474302   0.002 0.04800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00860 -4.857917 1.756298     -4.286410   0.002 0.04800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map05230 -2.364543 1.774288     -4.144587   0.002 0.04800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00780 -2.827174 1.739745     -3.607999   0.002 0.04800000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> map00900 -3.178289 1.679641      3.131202   0.004 0.05485714</span>
 <span class="r-in"><span><span class="va">reporter_score_res2</span> <span class="op">&lt;-</span> <span class="fu">reporter_score</span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span></span>
 <span class="r-in"><span>  mode <span class="op">=</span> <span class="st">"mixed"</span>,</span></span>
 <span class="r-in"><span>  method <span class="op">=</span> <span class="st">"kruskal.test"</span>, p.adjust.method1 <span class="op">=</span> <span class="st">"none"</span>, perm <span class="op">=</span> <span class="fl">499</span></span></span>
@@ -335,7 +338,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compared groups: G1, G2, G3</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Total KO number: 4535</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compare method: kruskal.test</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 2.976</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 2.843</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> =========================2.Transfer p.value to z-score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==========================3.Calculating reporter score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==================================load KOlist===================================</span>
@@ -345,7 +348,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 100 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 400 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ID number: 481</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.431</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.492</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ====================================All done====================================</span>
 <span class="r-in"><span><span class="va">reporter_score_res3</span> <span class="op">&lt;-</span> <span class="fu">reporter_score</span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span></span>
 <span class="r-in"><span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span></span>
@@ -372,7 +375,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compared groups: G1, G2, G3</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Total KO number: 4535</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Compare method: pearson</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 0.727</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 0.694</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> =========================2.Transfer p.value to z-score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==========================3.Calculating reporter score==========================</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ==================================load KOlist===================================</span>
@@ -382,7 +385,7 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 100 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 400 pathways done.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ID number: 481</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.482</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Time use: 1.374</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ====================================All done====================================</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
