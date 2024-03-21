@@ -19,9 +19,7 @@ Plot the significance of pathway
 }
 \examples{
 \donttest{
-if (requireNamespace("ggrepel")) {
-  data("reporter_score_res")
-  plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
-}
+data("reporter_score_res")
+plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
 }
 }

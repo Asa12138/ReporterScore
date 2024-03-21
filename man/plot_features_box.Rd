@@ -49,8 +49,12 @@ Plot features boxplot
 \donttest{
 data("reporter_score_res")
 plot_features_box(reporter_score_res,
-  select_ko = c("K00059", "K00208", "K00647", "K00652", "K00833", "K01012")
+  select_ko = c("K00059", "K00208", "K00647", "K00652", "K00833", "K01012"),
+  box_param = list(p_value1 = FALSE, trend_line = TRUE)
 )
-plot_features_box(reporter_score_res, select_ko = "K00059", KO_description = TRUE)
+plot_features_box(reporter_score_res,
+  select_ko = "K00059", KO_description = TRUE,
+  box_param = list(p_value1 = FALSE, trend_line = TRUE)
+)
 }
 }

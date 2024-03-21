@@ -27,6 +27,8 @@ navbar:
           href: https://asa12138.github.io/ReporterScore
         - text: "MetaNet"
           href: https://asa12138.github.io/MetaNet
+        - text: "iPhylo"
+          href: https://iphylo.net
         - text: "plot4fun"
           href: https://asa12138.github.io/plot4fun
     - text: "Asa_web"

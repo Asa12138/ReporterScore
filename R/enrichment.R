@@ -602,7 +602,7 @@ KO_gsva <- function(reporter_res, verbose = TRUE, method = "wilcox.test", p.adju
 #' }
 #' }
 KO_sea <- function(reporter_res, verbose = TRUE, ...) {
-  kodf <- sampFile <- modulelist <- p.value <- NULL
+  ko_stat <- kodf <- sampFile <- modulelist <- p.value <- NULL
   pre_rs(reporter_res, mode = 2, verbose = verbose)
 
   pathlist <- transform_modulelist(modulelist)

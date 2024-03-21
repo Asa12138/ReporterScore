@@ -283,7 +283,9 @@ get_facet_anno <- function(reporter_res, facet_anno, mode = c("bar", "circle")[1
 #' @examples
 #' \donttest{
 #' data("reporter_score_res")
-#' plot_report_circle_packing(reporter_score_res, rs_threshold = c(2, -2), str_width = 40)
+#' if (requireNamespace("igraph") && requireNamespace("ggraph")) {
+#'   plot_report_circle_packing(reporter_score_res, rs_threshold = c(2, -2), str_width = 40)
+#' }
 #' }
 plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode = 2, facet_anno = NULL,
                                        show_ID = FALSE, Pathway_description = TRUE,
@@ -353,16 +355,13 @@ plot_report_circle_packing <- function(reporter_res, rs_threshold = 1.64, mode =
 #'
 #' @examples
 #' \donttest{
-#' if (requireNamespace("ggrepel")) {
-#'   data("reporter_score_res")
-#'   plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
-#' }
+#' data("reporter_score_res")
+#' plot_significance(reporter_score_res, map_id = c("map05230", "map03010"))
 #' }
 plot_significance <- function(reporter_res, map_id) {
   value <- ID <- Z_score <- y <- ReporterScore <- p.value <- NULL
   if (inherits(reporter_res, "reporter_score")) reporter_res <- reporter_res$reporter_s
 
-  lib_ps("ggrepel", library = FALSE)
   if (!is.null(attributes(reporter_res)$perm)) {
     perm <- attributes(reporter_res)$perm
   } else {
@@ -618,9 +617,13 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
 #' \donttest{
 #' data("reporter_score_res")
 #' plot_features_box(reporter_score_res,
-#'   select_ko = c("K00059", "K00208", "K00647", "K00652", "K00833", "K01012")
+#'   select_ko = c("K00059", "K00208", "K00647", "K00652", "K00833", "K01012"),
+#'   box_param = list(p_value1 = FALSE, trend_line = TRUE)
 #' )
-#' plot_features_box(reporter_score_res, select_ko = "K00059", KO_description = TRUE)
+#' plot_features_box(reporter_score_res,
+#'   select_ko = "K00059", KO_description = TRUE,
+#'   box_param = list(p_value1 = FALSE, trend_line = TRUE)
+#' )
 #' }
 plot_features_box <- function(kodf, group = NULL, metadata = NULL,
                               map_id = "map00780", select_ko = NULL, only_sig = FALSE,
@@ -1159,5 +1162,3 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
     plot(ko_net, vertex.color = kos_color, vertex.label = tmp_v$label, ...)
   }
 }
-#' @export plot_KOs_network
-assign("plot_KOs_network", plot_features_network, envir = asNamespace(packageName()))

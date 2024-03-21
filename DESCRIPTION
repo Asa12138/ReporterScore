@@ -22,6 +22,7 @@ Imports:
     utils,
     scales,
     ggnewscale,
+    ggrepel,
     reshape2,
     stringr,
     foreach
@@ -35,7 +36,6 @@ Suggests:
     doSNOW,
     pheatmap,
     readr,
-    ggrepel,
     R.utils,
     KEGGREST,
     clusterProfiler,
@@ -45,6 +45,7 @@ Suggests:
     vegan,
     MetaNet,
     igraph,
+    ggraph,
     PADOG,
     safe,
     rSEA,
