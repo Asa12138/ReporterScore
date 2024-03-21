@@ -3,6 +3,7 @@
 
 # ReporterScore <img src="man/figures/ReporterScore.png" align="right" width="120" />
 
+
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/Asa12138/ReporterScore/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Asa12138/ReporterScore/actions/workflows/R-CMD-check.yaml)

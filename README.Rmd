@@ -22,12 +22,14 @@ library(badger)
 ```{r include=FALSE,eval=FALSE}
 library(hexSticker)
 showtext::showtext_auto()
-sticker("~/Documents/R/test/icons/enrichment.png", package="ReporterScore", 
-        p_size=17,p_color = "#0C359E", p_y = 1.4,
-        p_fontface = "bold.italic", p_family = "Comic Sans MS",
-        s_x=1, s_y=.75, s_width=0.6, s_height=0.6,
-        h_fill="#F6F5F5",h_color = "#2D9596",
-        filename="man/figures/ReporterScore.png",dpi = 300)
+sticker("~/Documents/R/test/icons/enrichment.png",
+  package = "ReporterScore",
+  p_size = 17, p_color = "#0C359E", p_y = 1.4,
+  p_fontface = "bold.italic", p_family = "Comic Sans MS",
+  s_x = 1, s_y = .75, s_width = 0.6, s_height = 0.6,
+  h_fill = "#F6F5F5", h_color = "#2D9596",
+  filename = "man/figures/ReporterScore.png", dpi = 300
+)
 ```
 
 # ReporterScore <img src="man/figures/ReporterScore.png" align="right" width="120" />

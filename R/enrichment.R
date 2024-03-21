@@ -678,11 +678,11 @@ KO_safe <- function(reporter_res, verbose = TRUE, perm = 1000,
 #' \donttest{
 #' ## use `PADOG` from the `PADOG` package.
 #' if (requireNamespace("PADOG")) {
-#' data("reporter_score_res")
-#' padog_res <- KO_padog(reporter_score_res,
-#'   verbose = TRUE,
-#'   perm = 200, p.adjust.method = "none"
-#' )
+#'   data("reporter_score_res")
+#'   padog_res <- KO_padog(reporter_score_res,
+#'     verbose = TRUE,
+#'     perm = 200, p.adjust.method = "none"
+#'   )
 #' }
 #' }
 KO_padog <- function(reporter_res, verbose = TRUE, perm = 1000, p.adjust.method = "BH", ...) {

@@ -9,10 +9,10 @@ bibentry(
         as.person("Xiaotao Shen"),
         as.person("Chao Jiang")
     ),
-    year = "2023",
-    journal = "bioRxiv",
-    url = "https://doi.org/10.1101/2023.10.13.562235",
+    year = "2024",
+    journal = "Briefings in Bioinformatics",
+    url = "https://doi.org/10.1093/bib/bbae116",
     textVersion = paste("C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang.",
                         "Generalized Reporter Score-based Enrichment Analysis for Omics Data.",
-                        "bioRxiv [Preprint] (2023). https://doi.org/10.1101/2023.10.13.562235.")
+                        "Briefings in Bioinformatics (2024). https://doi.org/10.1093/bib/bbae116.")
 )
