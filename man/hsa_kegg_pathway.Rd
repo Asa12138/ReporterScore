@@ -7,3 +7,15 @@
 \description{
 pathway information for "hsa"
 }
+\seealso{
+Other data: 
+\code{\link{CPDlist}},
+\code{\link{Compound_htable}},
+\code{\link{GOlist}},
+\code{\link{KO_htable}},
+\code{\link{KOlist}},
+\code{\link{Module_htable}},
+\code{\link{Pathway_htable}},
+\code{\link{mmu_kegg_pathway}}
+}
+\concept{data}

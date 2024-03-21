@@ -64,3 +64,15 @@ Plot enrich_res
 
 Plot enrich_res
 }
+\seealso{
+Other common_enrich: 
+\code{\link{KO_enrich}()},
+\code{\link{KO_fisher}()},
+\code{\link{KO_gsa}()},
+\code{\link{KO_gsea}()},
+\code{\link{KO_gsva}()},
+\code{\link{KO_padog}()},
+\code{\link{KO_safe}()},
+\code{\link{KO_sea}()}
+}
+\concept{common_enrich}

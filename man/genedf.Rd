@@ -7,3 +7,9 @@
 \description{
 human gene table
 }
+\seealso{
+Other test_data: 
+\code{\link{KO_abundance}},
+\code{\link{reporter_score_res}}
+}
+\concept{test_data}

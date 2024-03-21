@@ -21,3 +21,9 @@ a list contain 7 elements.
 
 `reporter_score()` result from KO_abundance_test
 }
+\seealso{
+Other test_data: 
+\code{\link{KO_abundance}},
+\code{\link{genedf}}
+}
+\concept{test_data}

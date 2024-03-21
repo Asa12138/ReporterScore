@@ -7,3 +7,15 @@
 \description{
 Module htable from 'KEGG'
 }
+\seealso{
+Other data: 
+\code{\link{CPDlist}},
+\code{\link{Compound_htable}},
+\code{\link{GOlist}},
+\code{\link{KO_htable}},
+\code{\link{KOlist}},
+\code{\link{Pathway_htable}},
+\code{\link{hsa_kegg_pathway}},
+\code{\link{mmu_kegg_pathway}}
+}
+\concept{data}

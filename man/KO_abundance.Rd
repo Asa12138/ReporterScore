@@ -10,3 +10,9 @@ The KOs abundance table and group table.
 
 The KOs abundance table and group table.
 }
+\seealso{
+Other test_data: 
+\code{\link{genedf}},
+\code{\link{reporter_score_res}}
+}
+\concept{test_data}

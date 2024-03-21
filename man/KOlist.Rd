@@ -16,3 +16,15 @@ four columns in each data.frame.
 \description{
 an list contains two data.frame named pathway and module.
 }
+\seealso{
+Other data: 
+\code{\link{CPDlist}},
+\code{\link{Compound_htable}},
+\code{\link{GOlist}},
+\code{\link{KO_htable}},
+\code{\link{Module_htable}},
+\code{\link{Pathway_htable}},
+\code{\link{hsa_kegg_pathway}},
+\code{\link{mmu_kegg_pathway}}
+}
+\concept{data}

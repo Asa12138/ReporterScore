@@ -11,7 +11,7 @@
 #' @param type "pathway" or "module" for default KOlist_file.
 #' @param modulelist NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use \code{\link{custom_modulelist}}.
 #' @param verbose logical
-#'
+#' @family common_enrich
 #' @return A data frame containing the enrichment results.
 #' @export
 #' @examples
@@ -128,13 +128,15 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
 }
 
 #' Perform fisher's exact enrichment analysis
-#' @rdname KO_enrich
+#' @inheritParams KO_enrich
+#' @family common_enrich
 #'
 #' @return data.frame
 #' @export
 #'
 #' @examples
 #' ## use `fisher.test` from the `stats` package.
+#' data("reporter_score_res")
 #' fisher_res <- KO_fisher(reporter_score_res)
 KO_fisher <- function(ko_stat, padj_threshold = 0.05,
                       logFC_threshold = NULL, add_mini = NULL, p.adjust.method = "BH",
@@ -227,6 +229,7 @@ as.enrich_res <- function(gsea_res) {
 #' @param facet_str_width str width for facet label
 #' @param facet_anno annotation table for facet, two columns, first is level summary, second is pathway id.
 #'
+#' @family common_enrich
 #' @return ggplot
 #' @export
 plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
@@ -366,8 +369,8 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' Perform gene set enrichment analysis
 #'
 #' @param weight the metric used for ranking, default: logFC
-#' @rdname KO_enrich
-#'
+#' @inheritParams KO_enrich
+#' @family common_enrich
 #' @export
 #'
 #' @examples
@@ -375,6 +378,7 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' \donttest{
 #' ## use `GSEA` from the `clusterProfiler` package.
 #' if (requireNamespace("clusterProfiler")) {
+#'   data("reporter_score_res")
 #'   gsea_res <- KO_gsea(reporter_score_res, p.adjust.method = "none")
 #'   enrichplot::gseaplot(gsea_res, geneSetID = data.frame(gsea_res)$ID[1])
 #'   gsea_res_df <- as.enrich_res(gsea_res)
@@ -491,6 +495,7 @@ pre_rs <- function(reporter_res, mode = 1, verbose = TRUE) {
 #' @return enrich_res object
 #' @export
 #'
+#' @family common_enrich
 #' @examples
 #' \donttest{
 #' ## use `GSA` from the `GSA` package.
@@ -540,7 +545,7 @@ KO_gsa <- function(reporter_res, method = "Two class unpaired", p.adjust.method 
 #'
 #' @return enrich_res
 #' @export
-#'
+#' @family common_enrich
 #' @examples
 #' \donttest{
 #' ## use `gsva` from the `GSVA` package.
@@ -584,7 +589,7 @@ KO_gsva <- function(reporter_res, verbose = TRUE, method = "wilcox.test", p.adju
 #' @return enrich_res
 #'
 #' @export
-#'
+#' @family common_enrich
 #' @examples
 #' \donttest{
 #' ## use `SEA` from the `rSEA` package.
@@ -619,7 +624,7 @@ KO_sea <- function(reporter_res, verbose = TRUE, ...) {
 #' @return A data frame containing SAFE results for KO enrichment.
 #'
 #' @export
-#'
+#' @family common_enrich
 #' @examples
 #' \donttest{
 #' ## use `safe` from the `safe` package.
@@ -663,7 +668,7 @@ KO_safe <- function(reporter_res, verbose = TRUE, perm = 1000,
 #' @return A data frame with columns "ID," "Description," "K_num," "Exist_K_num," "p.value," and "p.adjust."
 #'
 #' @export
-#'
+#' @family common_enrich
 #' @examples
 #' \donttest{
 #' ## use `PADOG` from the `PADOG` package.

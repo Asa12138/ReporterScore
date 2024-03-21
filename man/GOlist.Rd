@@ -16,3 +16,15 @@ four columns in each data.frame.
 \description{
 an list contains three data.frame named BP, CC, MF.
 }
+\seealso{
+Other data: 
+\code{\link{CPDlist}},
+\code{\link{Compound_htable}},
+\code{\link{KO_htable}},
+\code{\link{KOlist}},
+\code{\link{Module_htable}},
+\code{\link{Pathway_htable}},
+\code{\link{hsa_kegg_pathway}},
+\code{\link{mmu_kegg_pathway}}
+}
+\concept{data}
