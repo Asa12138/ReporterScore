@@ -34,7 +34,13 @@
     <loc>/reference/KO_enrich.html</loc>
   </url>
   <url>
+    <loc>/reference/KO_fisher.html</loc>
+  </url>
+  <url>
     <loc>/reference/KO_gsa.html</loc>
+  </url>
+  <url>
+    <loc>/reference/KO_gsea.html</loc>
   </url>
   <url>
     <loc>/reference/KO_gsva.html</loc>
