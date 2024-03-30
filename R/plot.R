@@ -1135,7 +1135,7 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
   if (!pathway_label) tmp_v$label <- ifelse(tmp_v$v_group == "Pathway", NA, tmp_v$label)
   if (!kos_label) tmp_v$label <- ifelse(tmp_v$v_group == "KOs", NA, tmp_v$label)
   if (mark_module) {
-    ko_net_m <- MetaNet::modu_dect(ko_net, method = "cluster_walktrap")
+    ko_net_m <- MetaNet::module_detect(ko_net, method = "cluster_walktrap")
     if (return_net) {
       return(ko_net_m)
     }

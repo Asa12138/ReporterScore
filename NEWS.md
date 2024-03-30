@@ -15,7 +15,7 @@
 ## Fixed
 
 - revise and re-submit to CRAN <2024-01-12>
-- available on CRAN <https://cran.r-project.org/web/packages/ReporterScore/> <2024-01-12>
+- available on CRAN <https://CRAN.R-project.org/package=ReporterScore> <2024-01-12>
 
 # ReporterScore v0.1.0 Notes
 

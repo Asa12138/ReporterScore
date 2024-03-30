@@ -373,6 +373,7 @@ plot.enrich_res <- function(x, mode = 1, padj_threshold = 0.05,
 #' @family common_enrich
 #' @export
 #'
+#' @return DOSE object
 #' @examples
 #' message("The following example require some time to run:")
 #' \donttest{

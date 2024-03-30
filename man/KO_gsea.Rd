@@ -32,6 +32,9 @@ KO_gsea(
 
 \item{verbose}{logical}
 }
+\value{
+DOSE object
+}
 \description{
 Perform gene set enrichment analysis
 }
