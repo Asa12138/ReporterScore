@@ -1,3 +1,9 @@
+# ReporterScore v0.1.4 Notes
+
+## Fixed
+
+- fixed `get_modulelist` as the third argument is `gene` <2024-04-07, Sun>
+
 # ReporterScore v0.1.3 Notes
 
 ## Added

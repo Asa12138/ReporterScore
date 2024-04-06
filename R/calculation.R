@@ -639,7 +639,7 @@ get_reporter_score <- function(
   check_kodf_modulelist(ko_stat, type, feature, modulelist, verbose, mode = 2)
 
   if (is.null(modulelist)) {
-    modulelist <- get_modulelist(type, feature, verbose)
+    modulelist <- get_modulelist(type, feature, verbose = verbose)
     type_flag <- TRUE
   }
 

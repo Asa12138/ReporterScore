@@ -73,7 +73,7 @@ KO_enrich_internal <- function(ko_stat, padj_threshold = 0.05,
   }
   res.dt <- ko_stat
   if (is.null(modulelist)) {
-    modulelist <- get_modulelist(type, feature, verbose)
+    modulelist <- get_modulelist(type, feature, verbose = verbose)
   }
   if (!all(c("id", "K_num", "KOs", "Description") %in% colnames(modulelist))) stop("check your modulelist format!")
 
