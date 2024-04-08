@@ -492,7 +492,7 @@
 <li>Plot the KEGG pathway map:</li>
 </ul>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_KEGG_map.html">plot_KEGG_map</a></span><span class="op">(</span><span class="va">reporter_res</span><span class="op">$</span><span class="va">ko_stat</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, color_var <span class="op">=</span> <span class="st">"Z_score"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_KEGG_map.html">plot_KEGG_map</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, color_var <span class="op">=</span> <span class="st">"Z_score"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/ko00780.Z_score.png" width="100%"></p>
 </div>
 <div class="section level3">
@@ -608,7 +608,12 @@
 <span><span class="va">ko_stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pvalue2zs.html">pvalue2zs</a></span><span class="op">(</span><span class="va">ko_pvalue</span>, mode <span class="op">=</span> <span class="st">"directed"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Use `get_reporter_score` to get reporter score</span></span>
-<span><span class="va">reporter_s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_reporter_score.html">get_reporter_score</a></span><span class="op">(</span><span class="va">ko_stat</span>, perm <span class="op">=</span> <span class="fl">499</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">reporter_s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_reporter_score.html">get_reporter_score</a></span><span class="op">(</span><span class="va">ko_stat</span>, perm <span class="op">=</span> <span class="fl">499</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 4. Combine the result</span></span>
+<span><span class="va">reporter_res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/combine_rs_res.html">combine_rs_res</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>, <span class="va">ko_stat</span>, <span class="va">reporter_s1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Then the reporter_res1 can be used for visualization</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="other-commonly-used-enrichment-methods">Other commonly used enrichment methods<a class="anchor" aria-label="anchor" href="#other-commonly-used-enrichment-methods"></a>
