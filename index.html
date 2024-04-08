@@ -129,7 +129,8 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>Inspired by the classic ‘RSA’, we developed the improved ‘Generalized Reporter Score-based Analysis (GRSA)’ method, implemented in the R package ‘ReporterScore’, along with comprehensive visualization methods and pathway databases. ‘GRSA’ is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, and microbial species. Importantly, the ‘GRSA’ supports multi-group and longitudinal experimental designs, because of the included multi-group-compatible statistical methods.</p>
+<p>Inspired by the classic ‘RSA’, we developed the improved ‘Generalized Reporter Score-based Analysis (GRSA)’ method, implemented in the R package ‘ReporterScore’, along with comprehensive visualization methods and pathway databases.</p>
+<p>‘GRSA’ is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, and microbial species. Importantly, the ‘GRSA’ supports <strong>multi-group and longitudinal experimental designs</strong>, because of the included multi-group-compatible statistical methods.</p>
 <p><img src="reference/figures/1-workflow.png" width="100%"></p>
 <p>The HTML documentation of the latest version is available at <a href="https://asa12138.github.io/ReporterScore/" class="external-link">Github page</a>.</p>
 <div class="section level2">
@@ -154,9 +155,15 @@
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <div class="section level3">
-<h3 id="id_1-inputdata-ko-abundance-table-and-metadata">1. Inputdata (KO abundance table and metadata)<a class="anchor" aria-label="anchor" href="#id_1-inputdata-ko-abundance-table-and-metadata"></a>
+<h3 id="id_1-inputdata-feature-abundance-table-and-metadata">1. Inputdata (Feature abundance table and metadata)<a class="anchor" aria-label="anchor" href="#id_1-inputdata-feature-abundance-table-and-metadata"></a>
 </h3>
-<p>For transcriptomic, scRNA-seq, and related gene-based omics data of a specific species, a complete gene abundance table can be used. For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.</p>
+<ul>
+<li>For transcriptomic, scRNA-seq, and related gene-based omics data of a specific species, a complete gene abundance table can be used.</li>
+<li>For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database</li>
+<li>For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.</li>
+</ul>
+<p>⚠️<strong>Importantly, the input data should not be prefiltered to retain the background information. As ‘GRSA’ is a threshold-free method</strong></p>
+<p>Format of abundance table: - The rowname are feature ids (e.g. “K00001” (KEGG K number) if feature=“ko”; “PEX11A” (gene symbol) if feature=“gene”; “C00024” (KEGG C number) if feature=“compound”). - The colnames are samples. - The abundance value can be read counts or normalized values (e.g., TPM, FPKM, RPKM, or relative abundance, corresponds to suitable statistical test method).</p>
 <p>An example code tailored for a KO abundance table is as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"KO_abundance_test"</span><span class="op">)</span></span>
@@ -168,7 +175,8 @@
 <span><span class="co">#&gt; K03530 0.003788366 0.000239298 0.000445817 0.000557271 0.000222969 0.000529624</span></span>
 <span><span class="co">#&gt; K06147 0.000785654 0.001213630 0.001312569 0.001662740 0.002387006 0.001725797</span></span>
 <span><span class="co">#&gt; K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214</span></span></code></pre></div>
-<p>And you should also offer a experimental metadata (rows are samples, columns are groups).</p>
+<p>And you should also offer a experimental metadata:</p>
+<p>Format of metadata table: - The rows are samples, columns are groups - The grouping variable can be categories (at least two categories, for differential abundance analysis) - The grouping variable can also be multiple time points (for longitudinal analysis) - The grouping variable can also be continuous (for correlation analysis)</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     Group Group2</span></span>
@@ -180,7 +188,7 @@
 <span><span class="co">#&gt; WT6    WT     G1</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="id_2-pathway-database">2. Pathway database<a class="anchor" aria-label="anchor" href="#id_2-pathway-database"></a>
+<h3 id="id_2-pathway-databases">2. Pathway databases<a class="anchor" aria-label="anchor" href="#id_2-pathway-databases"></a>
 </h3>
 <p>The <code>ReporterScore</code> package has built-in KEGG pathway, module, gene, compound, and GO databases and also allows customized databases, making it compatible with feature abundance tables from diverse omics data.</p>
 <ol style="list-style-type: decimal">
@@ -214,41 +222,51 @@
 <span><span class="op">?</span><span class="fu"><a href="reference/custom_modulelist.html">custom_modulelist</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="id_3-one-step-enrichment">3. One step enrichment<a class="anchor" aria-label="anchor" href="#id_3-one-step-enrichment"></a>
+<h3 id="id_3-one-step-grsa">3. One step GRSA<a class="anchor" aria-label="anchor" href="#id_3-one-step-grsa"></a>
 </h3>
-<p>Use function <code>reporter_score</code> can get the reporter score result by one step.</p>
-<p>there are some important arguments for analysis:</p>
+<p>Use function <code>GRSA</code> or <code>reporter_score</code> can get the reporter score result by one step.</p>
+<p>⚠️There are some important arguments for analysis:</p>
 <ul>
 <li>
-<strong>mode</strong>: “mixed” or “directed” (only for two groups differential analysis or multi-groups correlation analysis.), see details in <code>pvalue2zs</code>.</li>
+<strong>mode</strong>: “mixed” or “directed” (directed mode only for two groups differential analysis or multi-groups correlation analysis.), see details in <code>pvalue2zs</code>.</li>
 <li>
-<strong>method</strong>: the type of test. Default is <code>wilcox.test</code>:
+<strong>method</strong>: the method of statistical test for calculating p-value. Default is <code>wilcox.test</code>:
 <ul>
 <li>
-<code>t.test</code> (parametric) and <code>wilcox.test</code> (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.</li>
+<code>t.test</code> (parametric) and <code>wilcox.test</code> (non-parametric). Perform comparison between two groups of samples.</li>
 <li>
-<code>anova</code> (parametric) and <code>kruskal.test</code> (non-parametric). Perform one-way ANOVA test comparing multiple groups.</li>
-<li>“pearson”, “kendall”, or “spearman” (correlation), see <code>cor</code>.</li>
+<code>anova</code> (parametric) and <code>kruskal.test</code> (non-parametric). Perform one-way ANOVA test or Kruskal-Wallis rank sum test comparing multiple groups.</li>
+<li>“pearson”, “kendall”, or “spearman” (correlation), see <code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">?cor</a></code>.</li>
+<li>“none”: use “none” for <code>step by step enrichment</code>. You can calculate the p-value by other methods like “DESeq2”, “Edger”, “Limma”, “ALDEX”, “ANCOM” yourself.</li>
 </ul>
 </li>
 <li>
-<strong>type</strong>/<strong>modulelist</strong>: choose the pathway database, “pathway”, “module”, for default database, or use a customized modulelist.</li>
+<strong>type</strong>: choose the built-in pathway database:
+<ul>
+<li>‘pathway’ or ‘module’ for default KEGG database for <strong>microbiome</strong>.</li>
+<li>‘CC’, ‘MF’, ‘BP’, ‘ALL’ for default GO database for <strong>homo sapiens</strong>.</li>
+<li>org in listed in <a href="https://www.genome.jp/kegg/catalog/org_list.html" class="external-link uri">https://www.genome.jp/kegg/catalog/org_list.html</a> such as ‘hsa’ (if your kodf is come from a specific organism, you should specify type here)</li>
+</ul>
+</li>
+<li>
+<strong>modulelist</strong>: customize database. A dataframe containing ‘id’,‘K_num’,‘KOs’,‘Description’ columns. Take the <code>KOlist</code> as example, use <code>custom_modulelist</code> to build a customize database.</li>
 <li>
 <strong>feature</strong>: one of “ko”, “gene”, “compound”.</li>
 </ul>
-<p>The first level will be set as the <strong>control group</strong>, you can change the factor level to change your comparison.</p>
+<p><strong>The first level will be set as the control group, you can change the factor level to change your comparison.</strong></p>
 <p>For example, we want to compare two groups ‘WT-OE’, and use the “directed” mode as we just want know which pathways are enriched or depleted in <strong>OE group</strong>:</p>
 <div class="section level4">
 <h4 id="ko-pathway">KO-pathway<a class="anchor" aria-label="anchor" href="#ko-pathway"></a>
 </h4>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Comparison: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">Group</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Comparison: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">Group</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Comparison:  WT OE</span></span>
 <span></span>
 <span><span class="co"># for microbiome!!!</span></span>
-<span><span class="va">reporter_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
+<span><span class="va">reporter_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
+<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"pathway"</span>, feature <span class="op">=</span> <span class="st">"ko"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ================================Use feature: ko=================================</span></span>
 <span><span class="co">#&gt; ===============================Checking rownames================================</span></span>
@@ -270,8 +288,8 @@
 <span><span class="co">#&gt; Compared groups: WT, OE</span></span>
 <span><span class="co">#&gt; Total KO number: 4535</span></span>
 <span><span class="co">#&gt; Compare method: wilcox.test</span></span>
-<span><span class="co">#&gt; Time use: 1.186</span></span>
-<span><span class="co">#&gt; =========================2.Transfer p.value to z-score==========================</span></span>
+<span><span class="co">#&gt; Time use: 1.179</span></span>
+<span><span class="co">#&gt; =========================2.Transfer p.value to Z-score==========================</span></span>
 <span><span class="co">#&gt; ==========================3.Calculating reporter score==========================</span></span>
 <span><span class="co">#&gt; ==================================load KOlist===================================</span></span>
 <span><span class="co">#&gt; ===================KOlist download time: 2023-08-14 16:00:52====================</span></span>
@@ -280,7 +298,7 @@
 <span><span class="co">#&gt; 100 pathways done.</span></span>
 <span><span class="co">#&gt; 400 pathways done.</span></span>
 <span><span class="co">#&gt; ID number: 481</span></span>
-<span><span class="co">#&gt; Time use: 1.693</span></span>
+<span><span class="co">#&gt; Time use: 1.689</span></span>
 <span><span class="co">#&gt; ====================================All done====================================</span></span></code></pre></div>
 <p>The result is a “reporter_score” object:</p>
 <table class="table">
@@ -323,49 +341,107 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"genedf"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Set the `feature` and `type`!</span></span>
-<span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">genedf</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
+<span><span class="co"># Method 1: Set the `feature` and `type`!</span></span>
+<span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">genedf</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span>  feature <span class="op">=</span> <span class="st">"gene"</span>, type <span class="op">=</span> <span class="st">"hsa"</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
+<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"hsa"</span>, feature <span class="op">=</span> <span class="st">"gene"</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Or give the database through `modulelist`</span></span>
+<span><span class="co">#&gt; ===============================Use feature: gene================================</span></span>
+<span><span class="co">#&gt; ===============================Checking rownames================================</span></span>
+<span><span class="co">#&gt; please make sure your input table rows are gene symbol!</span></span>
+<span><span class="co">#&gt; 100% of your genes in the modulelist!</span></span>
+<span><span class="co">#&gt; 30 samples are matched for next step.</span></span>
+<span><span class="co">#&gt; ===========================Removing all-zero rows: 0============================</span></span>
+<span><span class="co">#&gt; ===================================1.KO test====================================</span></span>
+<span><span class="co">#&gt; =================================Checking group=================================</span></span>
+<span><span class="co">#&gt; 30 samples are matched for next step.</span></span>
+<span><span class="co">#&gt; ===========================Removing all-zero rows: 0============================</span></span>
+<span><span class="co">#&gt; ==============================Calculating each KO===============================</span></span>
+<span><span class="co">#&gt; ===========================Using method: wilcox.test============================</span></span>
+<span><span class="co">#&gt; 1000 features done.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Compared groups: WT, OE</span></span>
+<span><span class="co">#&gt; Total KO number: 1000</span></span>
+<span><span class="co">#&gt; Compare method: wilcox.test</span></span>
+<span><span class="co">#&gt; Time use: 0.224</span></span>
+<span><span class="co">#&gt; =========================2.Transfer p.value to Z-score==========================</span></span>
+<span><span class="co">#&gt; ==========================3.Calculating reporter score==========================</span></span>
+<span><span class="co">#&gt; ================================load hsa pathway================================</span></span>
+<span><span class="co">#&gt; =================hsa pathway download time: 2023-08-14 23:28:13=================</span></span>
+<span><span class="co">#&gt; If you want to update hsa pathway, use `update_org_pathway('hsa')`</span></span>
+<span><span class="co">#&gt; please assgin this custom modulelist to `reporter_score(modulelist=your_modulelist)` to do a custom enrichment.</span></span>
+<span><span class="co">#&gt; You choose the feature: 'gene', make sure the rownames of your input table are right.</span></span>
+<span><span class="co">#&gt; ============================Calculating each pathway============================</span></span>
+<span><span class="co">#&gt; 100 pathways done.</span></span>
+<span><span class="co">#&gt; 150 pathways done.</span></span>
+<span><span class="co">#&gt; 200 pathways done.</span></span>
+<span><span class="co">#&gt; 250 pathways done.</span></span>
+<span><span class="co">#&gt; 300 pathways done.</span></span>
+<span><span class="co">#&gt; ID number: 343</span></span>
+<span><span class="co">#&gt; Time use: 1.558</span></span>
+<span><span class="co">#&gt; ====================================All done====================================</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Method 2: Give the database through `modulelist`, same to Method 1.</span></span>
 <span><span class="va">hsa_pathway_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/custom_modulelist_from_org.html">custom_modulelist_from_org</a></span><span class="op">(</span></span>
 <span>  org <span class="op">=</span> <span class="st">"hsa"</span>,</span>
 <span>  feature <span class="op">=</span> <span class="st">"gene"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">genedf</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
+<span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">genedf</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span>  modulelist <span class="op">=</span> <span class="va">hsa_pathway_gene</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
+<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
+<span>  modulelist <span class="op">=</span> <span class="va">hsa_pathway_gene</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res_gene</span>, rs_threshold <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Use `modify_description` to remove the suffix of pathway description</span></span>
+<span><span class="va">reporter_res_gene2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/modify_description.html">modify_description</a></span><span class="op">(</span><span class="va">reporter_res_gene</span>, pattern <span class="op">=</span> <span class="st">" - Homo sapiens (human)"</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res_gene2</span>, rs_threshold <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Use `ggplot_translator` to translate pathway description</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu">pcutils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pcutils/man/ggplot_translator.html" class="external-link">ggplot_translator</a></span><span class="op">(</span><span class="va">p2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Please set the font family to make the labels display well.</span></span>
+<span><span class="co">#&gt;  see `how_to_set_font_for_plot()`.</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">/</span> <span class="va">p2</span> <span class="op">/</span> <span class="va">p3</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-10-1.png" width="100%"></p>
 </div>
 <div class="section level4">
 <h4 id="compound-pathway">Compound-pathway<a class="anchor" aria-label="anchor" href="#compound-pathway"></a>
 </h4>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">chem_df</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
+<p>When you use the compound abundance table, remember to set the <code>feature</code> and <code>type</code>!!! Or give the database through <code>modulelist</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">chem_df</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span>  feature <span class="op">=</span> <span class="st">"compound"</span>, type <span class="op">=</span> <span class="st">"hsa"</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
+<span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"hsa"</span>, feature <span class="op">=</span> <span class="st">"compound"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level3">
 <h3 id="id_4-visualization">4. Visualization<a class="anchor" aria-label="anchor" href="#id_4-visualization"></a>
 </h3>
-<p>Plot the most significantly enriched pathways:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p>After we get the reporter score result, we can visualize the result in various ways.</p>
+<p>When we focus on the whole result:</p>
+<ul>
+<li>Plot the most significantly enriched pathways:</li>
+</ul>
+<p>You can set the <code>rs_threshold</code> to filter the pathways, the default <code>rs_threshold</code> is 1.64, which is be considered as significant at the 0.05 level.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View(reporter_res$reporter_s)</span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res</span>, rs_threshold <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span><span class="op">)</span>, facet_level <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==============================load Pathway_htable===============================</span></span>
 <span><span class="co">#&gt; ===============Pathway_htable download time: 2024-01-12 00:52:39================</span></span>
 <span><span class="co">#&gt; If you want to update Pathway_htable, use `update_htable(type='pathway')`</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-10-1.png" width="100%"></p>
-<p>Plot the most significantly enriched pathways (circle packing):</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-12-1.png" width="100%"></p>
+<p>⚠️<strong>In the directed mode, Enriched in one group means depleted in another group.</strong></p>
+<ul>
+<li>Plot the most significantly enriched pathways (circle packing):</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_report_circle_packing.html">plot_report_circle_packing</a></span><span class="op">(</span><span class="va">reporter_res</span>, rs_threshold <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==============================load Pathway_htable===============================</span></span>
 <span><span class="co">#&gt; ===============Pathway_htable download time: 2024-01-12 00:52:39================</span></span>
@@ -373,36 +449,49 @@
 <span><span class="co">#&gt; Non-leaf weights ignored</span></span>
 <span><span class="co">#&gt; Scale for fill is already present.</span></span>
 <span><span class="co">#&gt; Adding another scale for fill, which will replace the existing scale.</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-11-1.png" width="100%"></p>
-<p>When we focus on one pathway, e.g. “map00780”:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-12-1.png" width="100%"></p>
-<p>Or show the distribution of Z-scores</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_distribution.html">plot_KOs_distribution</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-13-1.png" width="100%"></p>
-<p>Or display as a network:</p>
+<p>When we focus on one pathway, e.g. “map00780”:</p>
+<ul>
+<li>Plot boxes and lines</li>
+</ul>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-14-1.png" width="100%"></p>
+<ul>
+<li>Plot the distribution of Z-scores</li>
+</ul>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_distribution.html">plot_KOs_distribution</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-15-1.png" width="100%"></p>
+<ul>
+<li>Plot as a network:</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_network.html">plot_KOs_network</a></span><span class="op">(</span><span class="va">reporter_res</span>,</span>
 <span>  map_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"map00780"</span>, <span class="st">"map00785"</span>, <span class="st">"map00900"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">""</span>, mark_module <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-14-1.png" width="100%"></p>
-<p>And we also look at the KOs abundance in a pathway:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-16-1.png" width="100%"></p>
+<ul>
+<li>Plot the KOs abundance in a pathway:</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_box.html">plot_KOs_box</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, only_sig <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-15-1.png" width="100%"></p>
-<p>Or display as a heatmap:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-17-1.png" width="100%"></p>
+<ul>
+<li>Plot the KOs abundance in a pathway (heatmap):</li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_heatmap.html">plot_KOs_heatmap</a></span><span class="op">(</span><span class="va">reporter_res</span>,</span>
 <span>  map_id <span class="op">=</span> <span class="st">"map00780"</span>, only_sig <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  heatmap_param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cutree_rows <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-16-1.png" width="100%"></p>
-<p>Or plot the KEGG pathway:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-18-1.png" width="100%"></p>
+<ul>
+<li>Plot the KEGG pathway map:</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_KEGG_map.html">plot_KEGG_map</a></span><span class="op">(</span><span class="va">reporter_res</span><span class="op">$</span><span class="va">ko_stat</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, color_var <span class="op">=</span> <span class="st">"Z_score"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/ko00780.Z_score.png" width="100%"></p>
 </div>
@@ -410,13 +499,13 @@
 <h3 id="example-for-multi-group-or-longitudinal">Example for multi-group or longitudinal<a class="anchor" aria-label="anchor" href="#example-for-multi-group-or-longitudinal"></a>
 </h3>
 <p>If our experimental design is more than two groups or longitudinal, we can choose multi-groups comparison (or correlation):</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Comparison: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">Group2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Comparison:  G1 G2 G3</span></span>
 <span></span>
-<span><span class="va">reporter_res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
+<span><span class="va">reporter_res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
-<span>  method <span class="op">=</span> <span class="st">"spearman"</span>, p.adjust.method1 <span class="op">=</span> <span class="st">"none"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
+<span>  method <span class="op">=</span> <span class="st">"spearman"</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; ================================Use feature: ko=================================</span></span>
 <span><span class="co">#&gt; ===============================Checking rownames================================</span></span>
@@ -439,8 +528,8 @@
 <span><span class="co">#&gt; Compared groups: G1, G2, G3</span></span>
 <span><span class="co">#&gt; Total KO number: 4535</span></span>
 <span><span class="co">#&gt; Compare method: spearman</span></span>
-<span><span class="co">#&gt; Time use: 0.530</span></span>
-<span><span class="co">#&gt; =========================2.Transfer p.value to z-score==========================</span></span>
+<span><span class="co">#&gt; Time use: 0.549</span></span>
+<span><span class="co">#&gt; =========================2.Transfer p.value to Z-score==========================</span></span>
 <span><span class="co">#&gt; ==========================3.Calculating reporter score==========================</span></span>
 <span><span class="co">#&gt; ==================================load KOlist===================================</span></span>
 <span><span class="co">#&gt; ===================KOlist download time: 2023-08-14 16:00:52====================</span></span>
@@ -449,40 +538,40 @@
 <span><span class="co">#&gt; 100 pathways done.</span></span>
 <span><span class="co">#&gt; 400 pathways done.</span></span>
 <span><span class="co">#&gt; ID number: 481</span></span>
-<span><span class="co">#&gt; Time use: 1.638</span></span>
+<span><span class="co">#&gt; Time use: 1.643</span></span>
 <span><span class="co">#&gt; ====================================All done====================================</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res2</span>, map_id <span class="op">=</span> <span class="st">"map02060"</span><span class="op">)</span> <span class="op">+</span> <span class="fu">scale_y_log10</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-19-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-21-1.png" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="example-for-specified-pattern">Example for specified pattern<a class="anchor" aria-label="anchor" href="#example-for-specified-pattern"></a>
 </h3>
 <p>For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 100 if an exponentially increasing trend is expected.</p>
 <p>We use 1,5,1 to found pathways with the down-up-down pattern</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reporter_res3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">reporter_score</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reporter_res3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"pearson"</span>, pattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G1"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"G2"</span> <span class="op">=</span> <span class="fl">5</span>, <span class="st">"G3"</span> <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res3</span>, rs_threshold <span class="op">=</span> <span class="fl">3</span>, show_ID <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-20-1.png" width="100%"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-22-1.png" width="100%"></p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res3</span>, map_id <span class="op">=</span> <span class="st">"map00860"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-20-2.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-22-2.png" width="100%"></p>
 <p>To explore potential patterns within the data, clustering methods, such as C-means clustering, can be used.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rsa_cm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/RSA_by_cm.html">RSA_by_cm</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"pearson"</span>,</span>
 <span>  k_num <span class="op">=</span> <span class="fl">3</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co"># show the patterns</span></span>
 <span><span class="fu"><a href="reference/RSA_by_cm.html">plot_c_means</a></span><span class="op">(</span><span class="va">rsa_cm_res</span>, filter_membership <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-21-1.png" width="100%"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-23-1.png" width="100%"></p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">rsa_cm_res</span>, rs_threshold <span class="op">=</span> <span class="fl">2.5</span>, y_text_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-21-2.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-23-2.png" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -492,15 +581,34 @@
 <h3 id="step-by-step">Step by step<a class="anchor" aria-label="anchor" href="#step-by-step"></a>
 </h3>
 <p>The one step function <code>reporter_score</code> consists of three parts：</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"KO_abundance_test"</span><span class="op">)</span></span>
+<span><span class="va">ko_pvalue</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ko.test.html">ko.test</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>, method <span class="op">=</span> <span class="st">"wilcox.test"</span><span class="op">)</span></span>
+<span><span class="va">ko_stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pvalue2zs.html">pvalue2zs</a></span><span class="op">(</span><span class="va">ko_pvalue</span>, mode <span class="op">=</span> <span class="st">"directed"</span><span class="op">)</span></span>
+<span><span class="va">reporter_s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_reporter_score.html">get_reporter_score</a></span><span class="op">(</span><span class="va">ko_stat</span>, perm <span class="op">=</span> <span class="fl">499</span><span class="op">)</span></span></code></pre></div>
 <ol style="list-style-type: decimal">
 <li>
-<code>ko.test</code>: this function help to calculate <em>p-value</em> for KO_abundance by various built-in methods such as differential analysis (t.test, wilcox.test, kruskal.test, anova) or correlation analysis (pearson, spearman, kendall). <strong>You can also calculate this <em>p-value</em> for KO_abundance by other methods</strong> like “DESeq2”, “Edger”, “Limma”, “ALDEX”, “ANCOM” and do a p.adjust yourself, then skip <code>ko.test</code> step go to step2…</li>
+<code>ko.test</code>: this function help to calculate <em>p-value</em> for KO_abundance by various built-in methods such as differential analysis (<code>t.test</code>, <code>wilcox.test</code>, <code>kruskal.test</code>, <code>anova</code>) or correlation analysis (<code>pearson</code>, <code>spearman</code>, <code>kendall</code>). <strong>You can also calculate this <em>p-value</em> for KO_abundance by other methods</strong> like “DESeq2”, “Edger”, “Limma”, “ALDEX”, “ANCOM” and do a p.adjust yourself, then skip <code>ko.test</code> step go to step2…</li>
 <li>
 <code>pvalue2zs</code>: this function transfers p-value of KOs to Z-score (select mode: “mixed” or “directed”).</li>
 <li>
 <code>get_reporter_score</code> this function calculate reporter score of each pathways in a specific database. You can use a custom database here.</li>
 </ol>
-<p>So that you can get reporter score step by step.</p>
+<p>Take the “Limma” as an example:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 1-1. Calculate p-value by Limma</span></span>
+<span><span class="va">ko_pvalue</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ko.test.html">ko.test</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>, method <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ko_Limma_p</span> <span class="op">&lt;-</span> <span class="fu">pctax</span><span class="fu">::</span><span class="fu">diff_da</span><span class="op">(</span><span class="va">KO_abundance</span>, group_df <span class="op">=</span> <span class="va">metadata</span><span class="op">[</span><span class="st">"Group"</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"limma"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 1-2. Replace the p-value in ko_pvalue, remember to match the KO_ids</span></span>
+<span><span class="va">ko_pvalue</span><span class="op">$</span><span class="va">`p.value`</span> <span class="op">&lt;-</span> <span class="va">ko_Limma_p</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">ko_pvalue</span><span class="op">$</span><span class="va">KO_id</span>, <span class="va">ko_Limma_p</span><span class="op">$</span><span class="va">tax</span><span class="op">)</span>, <span class="st">"pvalue"</span><span class="op">]</span></span>
+<span></span>
+<span><span class="co"># 2. Use `pvalue2zs` to get Z-score</span></span>
+<span><span class="va">ko_stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pvalue2zs.html">pvalue2zs</a></span><span class="op">(</span><span class="va">ko_pvalue</span>, mode <span class="op">=</span> <span class="st">"directed"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 3. Use `get_reporter_score` to get reporter score</span></span>
+<span><span class="va">reporter_s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_reporter_score.html">get_reporter_score</a></span><span class="op">(</span><span class="va">ko_stat</span>, perm <span class="op">=</span> <span class="fl">499</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="other-commonly-used-enrichment-methods">Other commonly used enrichment methods<a class="anchor" aria-label="anchor" href="#other-commonly-used-enrichment-methods"></a>
@@ -570,8 +678,9 @@
 </tbody>
 </table>
 <p>Commonly used enrichment methods for omics data.</p>
-<p><code>ReporterScore</code> also provides other enrichment methods like <code>KO_fisher</code>(fisher.test), <code>KO_enrich</code>(fisher.test, from <code>clusterProfiler</code>), <code>KO_gsea</code> (GSEA, from <code>clusterProfiler</code>), The input data is from <code>reporter_score</code>, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<p><code>ReporterScore</code> also provides other enrichment methods like <code>KO_fisher</code>(fisher.test), <code>KO_enrich</code>(fisher.test, from <code>clusterProfiler</code>), <code>KO_gsea</code> (GSEA, from <code>clusterProfiler</code>).</p>
+<p>The input data is from <code>reporter_score</code>, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View(reporter_res2$reporter_s)</span></span>
 <span><span class="co"># reporter_score</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">reporter_res</span><span class="op">$</span><span class="va">reporter_s</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">ReporterScore</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1.64</span>, <span class="va">p.adjust</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> <span class="fu">pull</span><span class="op">(</span><span class="va">ID</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">RS</span></span>
@@ -594,7 +703,7 @@
 <span><span class="va">venn_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>GRSA <span class="op">=</span> <span class="va">RS</span>, Fisher <span class="op">=</span> <span class="va">Fisher</span>, CP <span class="op">=</span> <span class="va">clusterProfiler</span>, GSEA <span class="op">=</span> <span class="va">GSEA</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Asa12138/pcutils" class="external-link">pcutils</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/pcutils/man/venn.html" class="external-link">venn</a></span><span class="op">(</span><span class="va">venn_res</span>, <span class="st">"network"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-23-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-25-1.png" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
@@ -605,7 +714,7 @@
 </h3>
 <p><a href="https://www.genome.jp/kegg/brite.html" class="external-link">KEGG BRITE</a> is a collection of hierarchical classification systems capturing functional hierarchies of various biological objects, especially those represented as KEGG objects.</p>
 <p>We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use <code>load_KO_htable</code> to get KO_htable and use <code>update_KO_htable</code> to update. Use <code>up_level_KO</code> can upgrade to specific level in one of “pathway”, “module”, “level1”, “level2”, “level3”, “module1”, “module2”, “module3”.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">KO_htable</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_htable.html">load_KO_htable</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load KO_htable=================================</span></span>
 <span><span class="co">#&gt; ==================KO_htable download time: 2024-01-12 00:49:03==================</span></span>
@@ -631,8 +740,8 @@
 <span><span class="co">#&gt; If you want to update KO_htable, use `update_htable(type='ko')`</span></span>
 <span><span class="co">#&gt; Warning: Vectorized input to `element_text()` is not officially supported.</span></span>
 <span><span class="co">#&gt; ℹ Results may be unexpected or may change in future versions of ggplot2.</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-24-1.png" width="100%"></p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<p><img src="reference/figures/README-unnamed-chunk-26-1.png" width="100%"></p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">KO_level1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/up_level_KO.html">up_level_KO</a></span><span class="op">(</span><span class="va">KO_abundance</span>, level <span class="op">=</span> <span class="st">"level1"</span>, show_name <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load KO_htable=================================</span></span>
 <span><span class="co">#&gt; ==================KO_htable download time: 2024-01-12 00:49:03==================</span></span>
@@ -640,13 +749,13 @@
 <span><span class="fu">pcutils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pcutils/man/stackplot.html" class="external-link">stackplot</a></span><span class="op">(</span><span class="va">KO_level1</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">KO_level1</span><span class="op">)</span> <span class="op">==</span> <span class="st">"Unknown"</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggsci</span><span class="fu">::</span><span class="fu">scale_fill_d3</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">90</span>, hjust <span class="op">=</span> <span class="fl">1</span>, vjust <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-25-1.png" width="100%"></p>
+<p><img src="reference/figures/README-unnamed-chunk-27-1.png" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="card-for-args">CARD for ARGs<a class="anchor" aria-label="anchor" href="#card-for-args"></a>
 </h3>
 <p>For convenience, I also included the CARD database from <a href="https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2" class="external-link uri">https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2</a>.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CARDinfo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_CARDinfo.html">load_CARDinfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load CARDinfo==================================</span></span>
 <span><span class="co">#&gt; ==================CARDinfo download time: 2024-01-12 01:12:11===================</span></span>
