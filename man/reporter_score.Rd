@@ -107,6 +107,7 @@ reporter_score_res3 <- reporter_score(KO_abundance, "Group2", metadata,
 }
 \seealso{
 Other GRSA: 
+\code{\link{combine_rs_res}()},
 \code{\link{get_reporter_score}()},
 \code{\link{ko.test}()},
 \code{\link{pvalue2zs}()}

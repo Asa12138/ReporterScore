@@ -50,6 +50,7 @@ ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
 }
 \seealso{
 Other GRSA: 
+\code{\link{combine_rs_res}()},
 \code{\link{get_reporter_score}()},
 \code{\link{pvalue2zs}()},
 \code{\link{reporter_score}()}

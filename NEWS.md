@@ -7,6 +7,7 @@
 
 ## Added
 
+- added `combine_rs_res()` for combining the results of 'step by step GRSA' to `reporterscore` object <2024-04-08, Mon>
 - method can be 'none' in `ko.test()`, and return a NA pvalue <2024-04-08, Mon>
 
 # ReporterScore v0.1.3 Notes

@@ -321,7 +321,7 @@ plot_KOs_heatmap(reporter_res,
 - Plot the KEGG pathway map:
 
 ```{r eval=FALSE}
-plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
+plot_KEGG_map(reporter_res, map_id = "map00780", color_var = "Z_score")
 ```
 
 ```{r echo=FALSE}
@@ -405,6 +405,11 @@ ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 
 # 3. Use `get_reporter_score` to get reporter score
 reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+
+# 4. Combine the result
+reporter_res1 <- combine_rs_res(KO_abundance, "Group", metadata, ko_stat, reporter_s1)
+
+# Then the reporter_res1 can be used for visualization
 ```
 
 

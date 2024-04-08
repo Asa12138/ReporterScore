@@ -497,6 +497,8 @@ plot_features_in_pathway <- function(ko_stat, map_id = "map00780",
     RS <- reporter_res$reporter_s[reporter_res$reporter_s$ID == map_id, "ReporterScore"]
   }
 
+  if (is.null(modulelist)) stop("please input a modulelist dataframe")
+
   if (is.null(select_ko)) {
     A <- get_KOs(map_id = map_id, ko_stat = ko_stat, modulelist = modulelist)
   } else {
@@ -645,6 +647,7 @@ plot_features_box <- function(kodf, group = NULL, metadata = NULL,
     flag <- TRUE
   }
 
+  if (is.null(modulelist)) stop("please input a modulelist dataframe")
   if (is.null(select_ko)) select_ko <- get_KOs(map_id = map_id, modulelist = modulelist)
   if (only_sig & flag) {
     sig_names <- reporter_res$ko_stat %>%
@@ -750,6 +753,7 @@ plot_features_heatmap <- function(kodf, group = NULL, metadata = NULL,
     flag <- TRUE
   }
 
+  if (is.null(modulelist)) stop("please input a modulelist dataframe")
   if (is.null(select_ko)) select_ko <- get_KOs(map_id = map_id, modulelist = modulelist)
 
   if (only_sig & flag) {

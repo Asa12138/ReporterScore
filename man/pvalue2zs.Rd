@@ -98,6 +98,7 @@ ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 }
 \seealso{
 Other GRSA: 
+\code{\link{combine_rs_res}()},
 \code{\link{get_reporter_score}()},
 \code{\link{ko.test}()},
 \code{\link{reporter_score}()}

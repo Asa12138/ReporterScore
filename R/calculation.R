@@ -137,6 +137,41 @@ reporter_score <- function(
   res
 }
 
+#' Combine the results of 'step by step GRSA'
+#'
+#' @inheritParams reporter_score
+#' @param ko_stat result of \code{\link{pvalue2zs}}
+#' @param reporter_s result of \code{\link{get_reporter_score}}
+#'
+#' @return reporter_score object
+#' @export
+#' @family GRSA
+#' @examples
+#' \donttest{
+#' data("KO_abundance_test")
+#' ko_pvalue <- ko.test(KO_abundance, "Group", metadata)
+#' ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+#' reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+#' reporter_res <- combine_rs_res(KO_abundance, "Group", metadata, ko_stat, reporter_s1)
+#' }
+combine_rs_res <- function(kodf, group, metadata, ko_stat, reporter_s, modulelist = NULL) {
+  if (is.null(modulelist)) {
+    if (!is.null(attributes(reporter_s)$type)) {
+      modulelist <- get_modulelist(
+        type = attributes(reporter_s)$type, feature = attributes(reporter_s)$feature,
+        verbose = FALSE, chr = TRUE
+      )
+    } else {
+      stop("modulelist is NULL as you may customize it, please set modulelist.")
+    }
+  }
+  res <- list(
+    kodf = kodf, ko_stat = ko_stat, reporter_s = reporter_s,
+    modulelist = modulelist, group = group, metadata = metadata
+  )
+  class(res) <- "reporter_score"
+  res
+}
 
 #' Differential analysis or Correlation analysis for KO-abundance table
 #'

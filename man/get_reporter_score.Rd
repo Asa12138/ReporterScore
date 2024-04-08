@@ -54,6 +54,7 @@ reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 }
 \seealso{
 Other GRSA: 
+\code{\link{combine_rs_res}()},
 \code{\link{ko.test}()},
 \code{\link{pvalue2zs}()},
 \code{\link{reporter_score}()}
