@@ -11,7 +11,7 @@ pvalue2zs(
 )
 }
 \arguments{
-\item{ko_pvalue}{data.frame from \code{\link{ko.test}}}
+\item{ko_pvalue}{data.frame from \code{\link{ko.test}}, `KO_id` and `p.value` columns are required.}
 
 \item{mode}{'mixed' or 'directed' (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.}
 

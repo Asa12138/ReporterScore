@@ -1,6 +1,6 @@
 #' One step to get the reporter score of your KO abundance table.
 #'
-#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
+#' @param kodf KO_abundance table, rowname are feature ids (e.g. K00001 if feature="ko"; PEX11A if feature="gene"; C00024 if feature="compound"), colnames are samples.
 #' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
 #' @param metadata sample information data.frame contains group
 #' @param mode 'mixed' or 'directed' (default, only for two groups differential analysis or multi-groups correlation analysis.), see details in \code{\link{pvalue2zs}}.
@@ -113,7 +113,7 @@ reporter_score <- function(
   }
   ko_pvalue <- ko.test(kodf, group, metadata, method = method, pattern = pattern, threads = threads, p.adjust.method1 = p.adjust.method1, verbose = verbose)
   if (verbose) {
-    pcutils::dabiao("2.Transfer p.value to z-score")
+    pcutils::dabiao("2.Transfer p.value to Z-score")
   }
   ko_stat <- pvalue2zs(ko_pvalue, mode = mode, p.adjust.method1 = p.adjust.method1)
   attributes(ko_stat)$check <- TRUE
@@ -155,7 +155,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
   i <- NULL
   t1 <- Sys.time()
 
-  method <- match.arg(method, c("t.test", "wilcox.test", "kruskal.test", "anova", "pearson", "kendall", "spearman", "lm"))
+  method <- match.arg(method, c("t.test", "wilcox.test", "kruskal.test", "anova", "pearson", "kendall", "spearman", "lm", "none"))
   if (!is.null(pattern)) {
     if (!method %in% c("pearson", "kendall", "spearman")) {
       stop("method should be one of \"pearson\", \"kendall\", \"spearman\" when you specify a pattern")
@@ -271,6 +271,9 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
   # main function
   loop <- function(i) {
     val <- tkodf[, i]
+    if (method == "none") {
+      return(NA)
+    }
     if (method == "wilcox.test") {
       pval <- stats::wilcox.test(val ~ group)$p.value
     }
@@ -367,7 +370,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 
 #' Transfer p-value of KOs to Z-score
 #'
-#' @param ko_pvalue data.frame from \code{\link{ko.test}}
+#' @param ko_pvalue data.frame from \code{\link{ko.test}}, `KO_id` and `p.value` columns are required.
 #' @inheritParams reporter_score
 #'
 #' @return ko_stat data.frame
@@ -453,8 +456,12 @@ pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.meth
     message("detect the origin_p.value, use the origin_p.value")
     res.dt$p.value <- res.dt$origin_p.value
   }
-  if (!all(c("p.value") %in% colnames(res.dt))) {
-    stop("check if `p.value` in your ko_stat dataframe!")
+  if (!all(c("KO_id", "p.value") %in% colnames(res.dt))) {
+    stop("check if `KO_id` and `p.value` in colnames of your ko_pvalue dataframe!")
+  }
+
+  if (all(is.na(res.dt$p.value))) {
+    stop("all `p.value` are NA!, please check your ko_pvalue dataframe!")
   }
 
   stopifnot(mode %in% c("mixed", "directed"))
@@ -497,7 +504,8 @@ pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.meth
     attributes(res.dt)$mode <- "mixed"
   }
   if (mode == "directed") {
-    if (!"type" %in% colnames(res.dt)) {
+    if (!"sign" %in% colnames(res.dt)) {
+      message("No `sign` in colnames of your ko_pvalue dataframe, use the `diff_mean` column to determine the sign of ko!")
       stop("directed mode only use for two groups differential analysis or multi-groups correlation analysis.")
     }
     res.dt$origin_p.value <- ko_pvalue$p.value
@@ -523,7 +531,7 @@ pvalue2zs <- function(ko_pvalue, mode = c("directed", "mixed")[1], p.adjust.meth
     zs <- ifelse(zs > 8.209536, 8.209536, zs)
     zs <- ifelse(zs < -8.209536, -8.209536, zs)
 
-    # 通过判断上下调给予z-score正负号，让最后的reporter-score正负号作为上下调标志
+    # 通过判断上下调给予Z-score正负号，让最后的reporter-score正负号作为上下调标志
     res.dt$Z_score <- ifelse(res.dt$sign < 0, -zs, zs)
     attributes(res.dt)$mode <- "directed"
   }

@@ -365,6 +365,7 @@ load_CPDlist <- function(verbose = TRUE) {
       message("If you want to update CPDlist, use `update_KO_file()`")
     }
   }
+  return(CPDlist)
 }
 
 

@@ -46,10 +46,11 @@ sticker("~/Documents/R/test/icons/enrichment.png",
 
 Inspired by the classic 'RSA', we developed the improved 'Generalized Reporter 
 Score-based Analysis (GRSA)' method, implemented in the R package 'ReporterScore', along 
-with comprehensive visualization methods and pathway databases. 'GRSA' is a threshold-free 
-method that works well with all types of biomedical features, such as genes, chemical compounds, 
-and microbial species. Importantly, the 'GRSA' supports multi-group and longitudinal experimental 
-designs, because of the included multi-group-compatible statistical methods. 
+with comprehensive visualization methods and pathway databases. 
+
+'GRSA' is a threshold-free method that works well with all types of biomedical features, such as genes, chemical compounds, 
+and microbial species. Importantly, the 'GRSA' supports **multi-group and longitudinal experimental 
+designs**, because of the included multi-group-compatible statistical methods. 
 
 ```{r echo=FALSE}
 knitr::include_graphics("man/figures/1-workflow.png")
@@ -81,9 +82,18 @@ devtools::install_github("Asa12138/ReporterScore")
 
 ## Usage
 
-### 1. Inputdata (KO abundance table and metadata)
+### 1. Inputdata (Feature abundance table and metadata)
 
-For transcriptomic, scRNA-seq, and related gene-based omics data of a specific species, a complete gene abundance table can be used. For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.
+- For transcriptomic, scRNA-seq, and related gene-based omics data of a specific species, a complete gene abundance table can be used. 
+- For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database 
+- For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.
+
+⚠️**Importantly, the input data should not be prefiltered to retain the background information. As 'GRSA' is a threshold-free method**
+
+Format of abundance table: 
+- The rowname are feature ids (e.g. "K00001" (KEGG K number) if feature="ko"; "PEX11A" (gene symbol) if feature="gene"; "C00024" (KEGG C number) if feature="compound").
+- The colnames are samples. 
+- The abundance value can be read counts or normalized values (e.g., TPM, FPKM, RPKM, or relative abundance, corresponds to suitable statistical test method).
 
 An example code tailored for a KO abundance table is as follows:
 
@@ -92,13 +102,19 @@ data("KO_abundance_test")
 head(KO_abundance[, 1:6])
 ```
 
-And you should also offer a experimental metadata (rows are samples, columns are groups).
+And you should also offer a experimental metadata:
+
+Format of metadata table: 
+- The rows are samples, columns are groups
+- The grouping variable can be categories (at least two categories, for differential abundance analysis) 
+- The grouping variable can also be multiple time points (for longitudinal analysis)
+- The grouping variable can also be continuous (for correlation analysis)
 
 ```{r}
 head(metadata)
 ```
 
-### 2. Pathway database
+### 2. Pathway databases
 
 The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, and GO databases and also allows customized databases, making it compatible with feature abundance tables from diverse omics data.
 
@@ -136,34 +152,39 @@ head(GOlist$BP)
 ?custom_modulelist()
 ```
 
-### 3. One step enrichment
+### 3. One step GRSA
 
-Use function `reporter_score` can get the reporter score result by one step.
+Use function `GRSA` or `reporter_score` can get the reporter score result by one step.
 
-there are some important arguments for analysis:
+⚠️There are some important arguments for analysis:
 
--   **mode**: "mixed" or "directed" (only for two groups differential analysis or multi-groups correlation analysis.), see details in `pvalue2zs`.
--   **method**: the type of test. Default is `wilcox.test`:
-    -   `t.test` (parametric) and `wilcox.test` (non-parametric). Perform comparison between two groups of samples. If the grouping variable contains more than two levels, then a pairwise comparison is performed.
-    -   `anova` (parametric) and `kruskal.test` (non-parametric). Perform one-way ANOVA test comparing multiple groups.
-    -   "pearson", "kendall", or "spearman" (correlation), see `cor`.
--   **type**/**modulelist**: choose the pathway database, "pathway", "module", for default database, or use a customized modulelist.
+-   **mode**: "mixed" or "directed" (directed mode only for two groups differential analysis or multi-groups correlation analysis.), see details in `pvalue2zs`.
+-   **method**: the method of statistical test for calculating p-value. Default is `wilcox.test`:
+    -   `t.test` (parametric) and `wilcox.test` (non-parametric). Perform comparison between two groups of samples.
+    -   `anova` (parametric) and `kruskal.test` (non-parametric). Perform one-way ANOVA test or Kruskal-Wallis rank sum test comparing multiple groups.
+    -   "pearson", "kendall", or "spearman" (correlation), see `?cor`.
+    -   "none": use "none" for `step by step enrichment`. You can calculate the p-value by other methods like "DESeq2", "Edger", "Limma", "ALDEX", "ANCOM" yourself.
+-   **type**: choose the built-in pathway database:
+    -   'pathway' or 'module' for default KEGG database for **microbiome**.
+    -   'CC', 'MF', 'BP', 'ALL' for default GO database for **homo sapiens**.
+    -   org in listed in <https://www.genome.jp/kegg/catalog/org_list.html> such as 'hsa' (if your kodf is come from a specific organism, you should specify type here)
+-   **modulelist**: customize database. A dataframe containing 'id','K_num','KOs','Description' columns. Take the `KOlist` as example, use `custom_modulelist` to build a customize database.
 -   **feature**: one of "ko", "gene", "compound".
 
-
-The first level will be set as the **control group**, you can change the factor level to change your comparison.
+**The first level will be set as the control group, you can change the factor level to change your comparison.**
 
 For example, we want to compare two groups 'WT-OE', and use the "directed" mode as we just want know which pathways are enriched or depleted in **OE group**:
 
 #### KO-pathway
 
 ```{r collapse=TRUE}
-cat("Comparison: ", levels(factor(metadata$Group)))
+cat("Comparison: ", levels(factor(metadata$Group)), "\n")
 
 # for microbiome!!!
-reporter_res <- reporter_score(KO_abundance, "Group", metadata,
+reporter_res <- GRSA(KO_abundance, "Group", metadata,
   mode = "directed",
-  method = "wilcox.test", perm = 999
+  method = "wilcox.test", perm = 999,
+  type = "pathway", feature = "ko"
 )
 ```
 
@@ -181,50 +202,78 @@ The result is a "reporter_score" object:
 #### Gene-pathway
 
 When you use the gene abundance table of a specific species (e.g. human), remember to set the `feature` and `type`!!! Or give the database through `modulelist`.
-```{r eval=FALSE}
+
+```{r }
 data("genedf")
 
-# Set the `feature` and `type`!
-reporter_res_gene <- reporter_score(genedf, "Group", metadata,
+# Method 1: Set the `feature` and `type`!
+reporter_res_gene <- GRSA(genedf, "Group", metadata,
   mode = "directed",
-  feature = "gene", type = "hsa",
-  method = "wilcox.test", perm = 999
+  method = "wilcox.test", perm = 999,
+  type = "hsa", feature = "gene"
 )
+```
 
-# Or give the database through `modulelist`
+```{r eval=FALSE}
+# Method 2: Give the database through `modulelist`, same to Method 1.
 hsa_pathway_gene <- custom_modulelist_from_org(
   org = "hsa",
   feature = "gene"
 )
 
-reporter_res_gene <- reporter_score(genedf, "Group", metadata,
+reporter_res_gene <- GRSA(genedf, "Group", metadata,
   mode = "directed",
-  modulelist = hsa_pathway_gene,
-  method = "wilcox.test", perm = 999
+  method = "wilcox.test", perm = 999,
+  modulelist = hsa_pathway_gene
 )
 ```
 
+```{r fig.width=10,fig.height=8}
+library(patchwork)
+p1 <- plot_report_bar(reporter_res_gene, rs_threshold = 2)
+
+# Use `modify_description` to remove the suffix of pathway description
+reporter_res_gene2 <- modify_description(reporter_res_gene, pattern = " - Homo sapiens (human)")
+p2 <- plot_report_bar(reporter_res_gene2, rs_threshold = 2)
+
+# Use `ggplot_translator` to translate pathway description
+p3 <- pcutils::ggplot_translator(p2)
+
+p1 / p2 / p3
+```
+
+
+
 #### Compound-pathway
 
+When you use the compound abundance table, remember to set the `feature` and `type`!!! Or give the database through `modulelist`.
+
 ```{r eval=FALSE}
-reporter_res_gene <- reporter_score(chem_df, "Group", metadata,
+reporter_res_gene <- GRSA(chem_df, "Group", metadata,
   mode = "directed",
-  feature = "compound", type = "hsa",
-  method = "wilcox.test", perm = 999
+  method = "wilcox.test", perm = 999,
+  type = "hsa", feature = "compound"
 )
 ```
 
 ### 4. Visualization
 
-Plot the most significantly enriched pathways:
+After we get the reporter score result, we can visualize the result in various ways.
+
+When we focus on the whole result:
+
+- Plot the most significantly enriched pathways:
+
+You can set the `rs_threshold` to filter the pathways, the default `rs_threshold` is 1.64, which is be considered as significant at the 0.05 level.
 
 ```{r fig.height=7,fig.width=12}
 # View(reporter_res$reporter_s)
 plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
 ```
 
+⚠️**In the directed mode, Enriched in one group means depleted in another group.**
 
-Plot the most significantly enriched pathways (circle packing):
+- Plot the most significantly enriched pathways (circle packing):
 
 ```{r fig.height=7}
 plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
@@ -233,17 +282,19 @@ plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
 
 When we focus on one pathway, e.g. "map00780":
 
+- Plot boxes and lines
+
 ```{r}
 plot_KOs_in_pathway(reporter_res, map_id = "map00780")
 ```
 
-Or show the distribution of Z-scores
+- Plot the distribution of Z-scores
 
 ```{r}
 plot_KOs_distribution(reporter_res, map_id = "map00780")
 ```
 
-Or display as a network:
+- Plot as a network:
 
 ```{r}
 plot_KOs_network(reporter_res,
@@ -252,28 +303,28 @@ plot_KOs_network(reporter_res,
 )
 ```
 
-And we also look at the KOs abundance in a pathway:
+- Plot the KOs abundance in a pathway:
 
 ```{r fig.height=7,fig.width=8}
 plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
 ```
 
-Or display as a heatmap:
+- Plot the KOs abundance in a pathway (heatmap):
 
-```{r }
+```{r}
 plot_KOs_heatmap(reporter_res,
   map_id = "map00780", only_sig = TRUE,
   heatmap_param = list(cutree_rows = 2)
 )
 ```
 
-Or plot the KEGG pathway:
+- Plot the KEGG pathway map:
 
-```{r,eval=FALSE}
+```{r eval=FALSE}
 plot_KEGG_map(reporter_res$ko_stat, map_id = "map00780", color_var = "Z_score")
 ```
 
-```{r,echo=FALSE}
+```{r echo=FALSE}
 knitr::include_graphics("man/figures/ko00780.Z_score.png")
 ```
 
@@ -284,9 +335,9 @@ If our experimental design is more than two groups or longitudinal, we can choos
 ```{r collapse=TRUE}
 cat("Comparison: ", levels(factor(metadata$Group2)))
 
-reporter_res2 <- reporter_score(KO_abundance, "Group2", metadata,
+reporter_res2 <- GRSA(KO_abundance, "Group2", metadata,
   mode = "directed",
-  method = "spearman", p.adjust.method1 = "none", perm = 999
+  method = "spearman", perm = 999
 )
 
 plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
@@ -299,7 +350,7 @@ For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 10
 We use 1,5,1 to found pathways with the down-up-down pattern
 
 ```{r message=FALSE}
-reporter_res3 <- reporter_score(KO_abundance, "Group2", metadata,
+reporter_res3 <- GRSA(KO_abundance, "Group2", metadata,
   mode = "directed", perm = 999,
   method = "pearson", pattern = c("G1" = 1, "G2" = 5, "G3" = 1)
 )
@@ -326,14 +377,38 @@ plot_report_bar(rsa_cm_res, rs_threshold = 2.5, y_text_size = 10)
 
 The one step function `reporter_score` consists of three parts：
 
-1.  `ko.test`: this function help to calculate *p-value* for KO_abundance by various built-in methods such as differential analysis (t.test, wilcox.test, kruskal.test, anova) or correlation analysis (pearson, spearman, kendall). **You can also calculate this *p-value* for KO_abundance by other methods** like "DESeq2", "Edger", "Limma", "ALDEX", "ANCOM" and do a p.adjust yourself, then skip `ko.test` step go to step2...
+```{r add, eval=FALSE}
+data("KO_abundance_test")
+ko_pvalue <- ko.test(KO_abundance, "Group", metadata, method = "wilcox.test")
+ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+```
+
+1.  `ko.test`: this function help to calculate *p-value* for KO_abundance by various built-in methods such as differential analysis (`t.test`, `wilcox.test`, `kruskal.test`, `anova`) or correlation analysis (`pearson`, `spearman`, `kendall`). **You can also calculate this *p-value* for KO_abundance by other methods** like "DESeq2", "Edger", "Limma", "ALDEX", "ANCOM" and do a p.adjust yourself, then skip `ko.test` step go to step2...
 2.  `pvalue2zs`: this function transfers p-value of KOs to Z-score (select mode: "mixed" or "directed").
 3.  `get_reporter_score` this function calculate reporter score of each pathways in a specific database. You can use a custom database here.
 
-So that you can get reporter score step by step.
+
+Take the "Limma" as an example:
+
+```{r add1, eval=FALSE}
+# 1-1. Calculate p-value by Limma
+ko_pvalue <- ko.test(KO_abundance, "Group", metadata, method = "none")
+
+ko_Limma_p <- pctax::diff_da(KO_abundance, group_df = metadata["Group"], method = "limma")
+
+# 1-2. Replace the p-value in ko_pvalue, remember to match the KO_ids
+ko_pvalue$`p.value` <- ko_Limma_p[match(ko_pvalue$KO_id, ko_Limma_p$tax), "pvalue"]
+
+# 2. Use `pvalue2zs` to get Z-score
+ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
+
+# 3. Use `get_reporter_score` to get reporter score
+reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
+```
+
 
 ### Other commonly used enrichment methods
-
 
 ```{r echo=FALSE}
 tibble::tribble(
@@ -352,7 +427,9 @@ tibble::tribble(
   knitr::kable(caption = "Commonly used enrichment methods for omics data.", format = "simple")
 ```
 
-`ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), The input data is from `reporter_score`, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:
+`ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`).
+
+The input data is from `reporter_score`, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:
 
 
 ```{r message=FALSE}
@@ -407,8 +484,7 @@ head(CARDinfo$ARO_index)
 
 # Reference
 
-1.  Patil, K. R.
-    & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology.
+1.  Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of metabolism by using metabolic network topology.
     Proc Natl Acad Sci U S A 102, 2685--2689 (2005).
 
 2.  L. Liu, R. Zhu, D. Wu, Misuse of reporter score in microbial enrichment analysis. iMeta. 2, e95 (2023).

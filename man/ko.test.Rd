@@ -16,7 +16,7 @@ ko.test(
 )
 }
 \arguments{
-\item{kodf}{KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.}
+\item{kodf}{KO_abundance table, rowname are feature ids (e.g. K00001 if feature="ko"; PEX11A if feature="gene"; C00024 if feature="compound"), colnames are samples.}
 
 \item{group}{The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.}
 

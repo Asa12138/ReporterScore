@@ -2,13 +2,18 @@
 
 ## Fixed
 
-- fixed `get_modulelist` as the third argument is `gene` <2024-04-07, Sun>
+- fixed `load_CPDlist()` as no return <2024-04-08, Mon>
+- fixed `get_modulelist()` as the third argument is `gene` <2024-04-07, Sun>
+
+## Added
+
+- method can be 'none' in `ko.test()`, and return a NA pvalue <2024-04-08, Mon>
 
 # ReporterScore v0.1.3 Notes
 
 ## Added
 
-- add the `KO_gsva`, `KO_sea`, `KO_safe` and `KO_padog`. <2024-01-19, Fri>
+- add the `KO_gsva()`, `KO_sea()`, `KO_safe()` and `KO_padog()`. <2024-01-19, Fri>
 
 # ReporterScore v0.1.2 Notes
 
