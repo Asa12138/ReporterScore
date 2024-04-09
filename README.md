@@ -73,10 +73,11 @@ devtools::install_github("Asa12138/ReporterScore")
 ⚠️**Importantly, the input data should not be prefiltered to retain the
 background information. As ‘GRSA’ is a threshold-free method**
 
-Format of abundance table: - The rowname are feature ids (e.g. “K00001”
-(KEGG K number) if feature=“ko”; “PEX11A” (gene symbol) if
-feature=“gene”; “C00024” (KEGG C number) if feature=“compound”). - The
-colnames are samples. - The abundance value can be read counts or
+Format of abundance table: 
+
+- The rownames are feature ids (e.g. “K00001” (KEGG K number) if feature=“ko”; “PEX11A” (gene symbol) if
+feature=“gene”; “C00024” (KEGG C number) if feature=“compound”).
+- The colnames are samples. - The abundance value can be read counts or
 normalized values (e.g., TPM, FPKM, RPKM, or relative abundance,
 corresponds to suitable statistical test method).
 
@@ -96,11 +97,13 @@ head(KO_abundance[, 1:6])
 
 And you should also offer a experimental metadata:
 
-Format of metadata table: - The rows are samples, columns are groups -
-The grouping variable can be categories (at least two categories, for
-differential abundance analysis) - The grouping variable can also be
-multiple time points (for longitudinal analysis) - The grouping variable
-can also be continuous (for correlation analysis)
+Format of metadata table: 
+
+- The rows are samples, columns are groups
+- The grouping variable can be categories (at least two categories, for
+differential abundance analysis)
+- The grouping variable can also be multiple time points (for longitudinal analysis)
+- The grouping variable can also be continuous (for correlation analysis)
 
 ``` r
 head(metadata)
