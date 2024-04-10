@@ -162,11 +162,14 @@
 <li>For metagenomic and metatranscriptomic data, which involve many different species, a KO abundance table can be used, generated using Blast, Diamond, or KEGG official mapper software to align the reads or contigs to the KEGG or the EggNOG database</li>
 <li>For metabolomic data, an annotated compound abundance table can be used, but the standardization of compound IDs (e.g., convert compound IDs to C numbers in the KEGG database) is required.</li>
 </ul>
-<p>⚠️<strong>Importantly, the input data should not be prefiltered to retain the background information. As ‘GRSA’ is a threshold-free method</strong></p>
-<p>Format of abundance table:</p>
+<div class="section level4">
+<h4 id="format-of-abundance-table">Format of abundance table:<a class="anchor" aria-label="anchor" href="#format-of-abundance-table"></a>
+</h4>
+<p>⚠️<strong>Importantly, the input abundance table should not be prefiltered to retain the background information, as the ‘GRSA’ is a threshold-free method.</strong></p>
 <ul>
 <li>The rownames are feature ids (e.g. “K00001” (KEGG K number) if feature=“ko”; “PEX11A” (gene symbol) if feature=“gene”; “C00024” (KEGG C number) if feature=“compound”).</li>
-<li>The colnames are samples. - The abundance value can be read counts or normalized values (e.g., TPM, FPKM, RPKM, or relative abundance, corresponds to suitable statistical test method).</li>
+<li>The colnames are samples.</li>
+<li>The abundance value can be read counts or normalized values (e.g., TPM, FPKM, RPKM, or relative abundance, corresponds to suitable statistical test method).</li>
 </ul>
 <p>An example code tailored for a KO abundance table is as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -180,12 +183,15 @@
 <span><span class="co">#&gt; K06147 0.000785654 0.001213630 0.001312569 0.001662740 0.002387006 0.001725797</span></span>
 <span><span class="co">#&gt; K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214</span></span></code></pre></div>
 <p>And you should also offer a experimental metadata:</p>
-<p>Format of metadata table:</p>
+</div>
+<div class="section level4">
+<h4 id="format-of-metadata-table">Format of metadata table:<a class="anchor" aria-label="anchor" href="#format-of-metadata-table"></a>
+</h4>
 <ul>
-<li>The rows are samples, columns are groups</li>
-<li>The grouping variable can be categories (at least two categories, for differential abundance analysis)</li>
-<li>The grouping variable can also be multiple time points (for longitudinal analysis)</li>
-<li>The grouping variable can also be continuous (for correlation analysis)</li>
+<li>The rownames are samples, columns are groups.</li>
+<li>The grouping variable can be categories (at least two categories, for differential abundance analysis).</li>
+<li>The grouping variable can also be multiple time points (for longitudinal analysis).</li>
+<li>The grouping variable can also be continuous (for correlation analysis).</li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span></span>
@@ -196,6 +202,15 @@
 <span><span class="co">#&gt; WT4    WT     G3</span></span>
 <span><span class="co">#&gt; WT5    WT     G3</span></span>
 <span><span class="co">#&gt; WT6    WT     G1</span></span></code></pre></div>
+<p>⚠️<strong>Importantly, the rownames of metadata and the colnames of feature abundance table should be matching or partial matching! </strong></p>
+<p>The <code>ReporterScore</code> will automatically match the samples based on the rownames of metadata and the colnames of feature abundance table.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">KO_abundance</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">## TRUE</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">KO_abundance</span><span class="op">)</span><span class="op">)</span><span class="op">&gt;</span><span class="fl">0</span></span>
+<span><span class="co">## TRUE</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level3">
 <h3 id="id_2-pathway-databases">2. Pathway databases<a class="anchor" aria-label="anchor" href="#id_2-pathway-databases"></a>
@@ -208,7 +223,7 @@
 <li><p><code>ReporterScore</code> has built-in GO-gene database, You can use <code><a href="reference/load_GOlist.html">load_GOlist()</a></code> to have a look and use <code><a href="reference/update_GOlist.html">update_GOlist()</a></code> to update these databases (by KEGG API).</p></li>
 <li><p>You can just customize your own pathway databases (gene set of interest) by using <code><a href="reference/custom_modulelist.html">custom_modulelist()</a></code>.</p></li>
 </ol>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. KEGG pathway-KO and module-KO databases</span></span>
 <span><span class="va">KOlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_htable.html">load_KOlist</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">KOlist</span><span class="op">$</span><span class="va">pathway</span><span class="op">)</span></span>
@@ -268,7 +283,7 @@
 <div class="section level4">
 <h4 id="ko-pathway">KO-pathway<a class="anchor" aria-label="anchor" href="#ko-pathway"></a>
 </h4>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Comparison: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">Group</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Comparison:  WT OE</span></span>
 <span></span>
@@ -348,7 +363,7 @@
 <h4 id="gene-pathway">Gene-pathway<a class="anchor" aria-label="anchor" href="#gene-pathway"></a>
 </h4>
 <p>When you use the gene abundance table of a specific species (e.g. human), remember to set the <code>feature</code> and <code>type</code>!!! Or give the database through <code>modulelist</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"genedf"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Method 1: Set the `feature` and `type`!</span></span>
@@ -391,7 +406,7 @@
 <span><span class="co">#&gt; ID number: 343</span></span>
 <span><span class="co">#&gt; Time use: 1.558</span></span>
 <span><span class="co">#&gt; ====================================All done====================================</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Method 2: Give the database through `modulelist`, same to Method 1.</span></span>
 <span><span class="va">hsa_pathway_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/custom_modulelist_from_org.html">custom_modulelist_from_org</a></span><span class="op">(</span></span>
 <span>  org <span class="op">=</span> <span class="st">"hsa"</span>,</span>
@@ -403,7 +418,7 @@
 <span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  modulelist <span class="op">=</span> <span class="va">hsa_pathway_gene</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res_gene</span>, rs_threshold <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
@@ -423,7 +438,7 @@
 <h4 id="compound-pathway">Compound-pathway<a class="anchor" aria-label="anchor" href="#compound-pathway"></a>
 </h4>
 <p>When you use the compound abundance table, remember to set the <code>feature</code> and <code>type</code>!!! Or give the database through <code>modulelist</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reporter_res_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">chem_df</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"wilcox.test"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
@@ -440,7 +455,7 @@
 <li>Plot the most significantly enriched pathways:</li>
 </ul>
 <p>You can set the <code>rs_threshold</code> to filter the pathways, the default <code>rs_threshold</code> is 1.64, which is be considered as significant at the 0.05 level.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View(reporter_res$reporter_s)</span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res</span>, rs_threshold <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span><span class="op">)</span>, facet_level <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==============================load Pathway_htable===============================</span></span>
@@ -451,7 +466,7 @@
 <ul>
 <li>Plot the most significantly enriched pathways (circle packing):</li>
 </ul>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_report_circle_packing.html">plot_report_circle_packing</a></span><span class="op">(</span><span class="va">reporter_res</span>, rs_threshold <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.5</span>, <span class="fl">2.5</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ==============================load Pathway_htable===============================</span></span>
 <span><span class="co">#&gt; ===============Pathway_htable download time: 2024-01-12 00:52:39================</span></span>
@@ -464,19 +479,19 @@
 <ul>
 <li>Plot boxes and lines</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-14-1.png" width="100%"></p>
 <ul>
 <li>Plot the distribution of Z-scores</li>
 </ul>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_distribution.html">plot_KOs_distribution</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-15-1.png" width="100%"></p>
 <ul>
 <li>Plot as a network:</li>
 </ul>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_network.html">plot_KOs_network</a></span><span class="op">(</span><span class="va">reporter_res</span>,</span>
 <span>  map_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"map00780"</span>, <span class="st">"map00785"</span>, <span class="st">"map00900"</span><span class="op">)</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">""</span>, mark_module <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -485,14 +500,14 @@
 <ul>
 <li>Plot the KOs abundance in a pathway:</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_box.html">plot_KOs_box</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, only_sig <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-17-1.png" width="100%"></p>
 <ul>
 <li>Plot the KOs abundance in a pathway (heatmap):</li>
 </ul>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_heatmap.html">plot_KOs_heatmap</a></span><span class="op">(</span><span class="va">reporter_res</span>,</span>
 <span>  map_id <span class="op">=</span> <span class="st">"map00780"</span>, only_sig <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  heatmap_param <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cutree_rows <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -501,7 +516,7 @@
 <ul>
 <li>Plot the KEGG pathway map:</li>
 </ul>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_KEGG_map.html">plot_KEGG_map</a></span><span class="op">(</span><span class="va">reporter_res</span>, map_id <span class="op">=</span> <span class="st">"map00780"</span>, color_var <span class="op">=</span> <span class="st">"Z_score"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/ko00780.Z_score.png" width="100%"></p>
 </div>
@@ -509,7 +524,7 @@
 <h3 id="example-for-multi-group-or-longitudinal">Example for multi-group or longitudinal<a class="anchor" aria-label="anchor" href="#example-for-multi-group-or-longitudinal"></a>
 </h3>
 <p>If our experimental design is more than two groups or longitudinal, we can choose multi-groups comparison (or correlation):</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Comparison: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">metadata</span><span class="op">$</span><span class="va">Group2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Comparison:  G1 G2 G3</span></span>
 <span></span>
@@ -559,18 +574,18 @@
 </h3>
 <p>For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 100 if an exponentially increasing trend is expected.</p>
 <p>We use 1,5,1 to found pathways with the down-up-down pattern</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reporter_res3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/reporter_score.html">GRSA</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"directed"</span>, perm <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"pearson"</span>, pattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"G1"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"G2"</span> <span class="op">=</span> <span class="fl">5</span>, <span class="st">"G3"</span> <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">reporter_res3</span>, rs_threshold <span class="op">=</span> <span class="fl">3</span>, show_ID <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-22-1.png" width="100%"></p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plot_features_in_pathway.html">plot_KOs_in_pathway</a></span><span class="op">(</span><span class="va">reporter_res3</span>, map_id <span class="op">=</span> <span class="st">"map00860"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-22-2.png" width="100%"></p>
 <p>To explore potential patterns within the data, clustering methods, such as C-means clustering, can be used.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rsa_cm_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/RSA_by_cm.html">RSA_by_cm</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group2"</span>, <span class="va">metadata</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"pearson"</span>,</span>
 <span>  k_num <span class="op">=</span> <span class="fl">3</span>, perm <span class="op">=</span> <span class="fl">999</span></span>
@@ -578,7 +593,7 @@
 <span><span class="co"># show the patterns</span></span>
 <span><span class="fu"><a href="reference/RSA_by_cm.html">plot_c_means</a></span><span class="op">(</span><span class="va">rsa_cm_res</span>, filter_membership <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-23-1.png" width="100%"></p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="reference/plot_report.html">plot_report_bar</a></span><span class="op">(</span><span class="va">rsa_cm_res</span>, rs_threshold <span class="op">=</span> <span class="fl">2.5</span>, y_text_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-23-2.png" width="100%"></p>
@@ -591,7 +606,7 @@
 <h3 id="step-by-step">Step by step<a class="anchor" aria-label="anchor" href="#step-by-step"></a>
 </h3>
 <p>The one step function <code>reporter_score</code> consists of three parts：</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"KO_abundance_test"</span><span class="op">)</span></span>
 <span><span class="va">ko_pvalue</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ko.test.html">ko.test</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>, method <span class="op">=</span> <span class="st">"wilcox.test"</span><span class="op">)</span></span>
 <span><span class="va">ko_stat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pvalue2zs.html">pvalue2zs</a></span><span class="op">(</span><span class="va">ko_pvalue</span>, mode <span class="op">=</span> <span class="st">"directed"</span><span class="op">)</span></span>
@@ -605,7 +620,7 @@
 <code>get_reporter_score</code> this function calculate reporter score of each pathways in a specific database. You can use a custom database here.</li>
 </ol>
 <p>Take the “Limma” as an example:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1-1. Calculate p-value by Limma</span></span>
 <span><span class="va">ko_pvalue</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ko.test.html">ko.test</a></span><span class="op">(</span><span class="va">KO_abundance</span>, <span class="st">"Group"</span>, <span class="va">metadata</span>, method <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span>
 <span></span>
@@ -695,7 +710,7 @@
 <p>Commonly used enrichment methods for omics data.</p>
 <p><code>ReporterScore</code> also provides other enrichment methods like <code>KO_fisher</code>(fisher.test), <code>KO_enrich</code>(fisher.test, from <code>clusterProfiler</code>), <code>KO_gsea</code> (GSEA, from <code>clusterProfiler</code>).</p>
 <p>The input data is from <code>reporter_score</code>, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View(reporter_res2$reporter_s)</span></span>
 <span><span class="co"># reporter_score</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">reporter_res</span><span class="op">$</span><span class="va">reporter_s</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">ReporterScore</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1.64</span>, <span class="va">p.adjust</span> <span class="op">&lt;</span> <span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> <span class="fu">pull</span><span class="op">(</span><span class="va">ID</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">RS</span></span>
@@ -729,7 +744,7 @@
 </h3>
 <p><a href="https://www.genome.jp/kegg/brite.html" class="external-link">KEGG BRITE</a> is a collection of hierarchical classification systems capturing functional hierarchies of various biological objects, especially those represented as KEGG objects.</p>
 <p>We collected k00001 KEGG Orthology (KO) table so that you can summaries each levels abundance. Use <code>load_KO_htable</code> to get KO_htable and use <code>update_KO_htable</code> to update. Use <code>up_level_KO</code> can upgrade to specific level in one of “pathway”, “module”, “level1”, “level2”, “level3”, “module1”, “module2”, “module3”.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">KO_htable</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_htable.html">load_KO_htable</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load KO_htable=================================</span></span>
 <span><span class="co">#&gt; ==================KO_htable download time: 2024-01-12 00:49:03==================</span></span>
@@ -756,7 +771,7 @@
 <span><span class="co">#&gt; Warning: Vectorized input to `element_text()` is not officially supported.</span></span>
 <span><span class="co">#&gt; ℹ Results may be unexpected or may change in future versions of ggplot2.</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-26-1.png" width="100%"></p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">KO_level1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/up_level_KO.html">up_level_KO</a></span><span class="op">(</span><span class="va">KO_abundance</span>, level <span class="op">=</span> <span class="st">"level1"</span>, show_name <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load KO_htable=================================</span></span>
 <span><span class="co">#&gt; ==================KO_htable download time: 2024-01-12 00:49:03==================</span></span>
@@ -770,7 +785,7 @@
 <h3 id="card-for-args">CARD for ARGs<a class="anchor" aria-label="anchor" href="#card-for-args"></a>
 </h3>
 <p>For convenience, I also included the CARD database from <a href="https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2" class="external-link uri">https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2</a>.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CARDinfo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_CARDinfo.html">load_CARDinfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; =================================load CARDinfo==================================</span></span>
 <span><span class="co">#&gt; ==================CARDinfo download time: 2024-01-12 01:12:11===================</span></span>
