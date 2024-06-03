@@ -1122,6 +1122,7 @@ up_level_KO <- function(KO_abundance, level = "pathway", show_name = FALSE, modu
 
   b <- pcutils::hebing(dplyr::select(aa, -c("KO_id", "Pathway")), aa$Pathway, 1, act = "sum")
   if (show_name) {
+    path2name <- setNames(make.unique(path2name), names(path2name))
     rownames(b) <- c(path2name, Unknown = "Unknown")[rownames(b)]
   }
   b

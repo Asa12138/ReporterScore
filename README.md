@@ -11,7 +11,7 @@
 [![](http://cranlogs.r-pkg.org/badges/grand-total/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](http://cranlogs.r-pkg.org/badges/last-month/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 [![](https://www.r-pkg.org/badges/version/ReporterScore?color=green)](https://cran.r-project.org/package=ReporterScore)
-[![](https://img.shields.io/badge/devel%20version-0.1.4-green.svg)](https://github.com/Asa12138/ReporterScore)
+[![](https://img.shields.io/badge/devel%20version-0.1.5-green.svg)](https://github.com/Asa12138/ReporterScore)
 <!-- badges: end -->
 
 Inspired by the classic ‘RSA’, we developed the improved ‘Generalized
@@ -122,7 +122,7 @@ head(metadata)
 ```
 
 ⚠️**Importantly, the rownames of metadata and the colnames of feature
-abundance table should be matching or partial matching! **
+abundance table should be matching or partial matching!**
 
 The `ReporterScore` will automatically match the samples based on the
 rownames of metadata and the colnames of feature abundance table.

@@ -16,6 +16,11 @@
 #'
 NULL
 
+# Load the value of the option on package startup
+.onAttach <- function(libname, pkgname) {
+  if (!dir.exists(tools::R_user_dir("ReporterScore"))) dir.create(tools::R_user_dir("ReporterScore"), recursive = TRUE)
+  packageStartupMessage("\033[38;5;246mIf you use the ReporterScore package in published research, please cite:\n\nChen Peng, Qiong Chen, Shangjin Tan, Xiaotao Shen, Chao Jiang, Generalized reporter score-based enrichment analysis for omics data, Briefings in Bioinformatics, Volume 25, Issue 3, May 2024, bbae116, https://doi.org/10.1093/bib/bbae116 \033[39m")
+}
 
 deprecated <- function(old, new) {
   assign(old, new, envir = asNamespace(packageName()))

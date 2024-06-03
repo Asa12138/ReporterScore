@@ -1,7 +1,7 @@
 bibentry(
-    header = "To cite ReporterScore in publications use:",
+    header = "If you use the ReporterScore package in published research, please cite:",
     bibtype = "Article",
-    title = "Generalized Reporter Score-based Enrichment Analysis for Omics Data",
+    title = "Generalized reporter score-based enrichment analysis for omics data",
     author = c(
         as.person("Chen Peng"),
         as.person("Qiong Chen"),
@@ -11,8 +11,11 @@ bibentry(
     ),
     year = "2024",
     journal = "Briefings in Bioinformatics",
+    doi = "10.1093/bib/bbae116",
+    volume = "Volume 25",
     url = "https://doi.org/10.1093/bib/bbae116",
-    textVersion = paste("C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang.",
-                        "Generalized Reporter Score-based Enrichment Analysis for Omics Data.",
-                        "Briefings in Bioinformatics (2024). https://doi.org/10.1093/bib/bbae116.")
+    textVersion = paste("Chen Peng, Qiong Chen, Shangjin Tan, Xiaotao Shen, Chao Jiang",
+                        "Generalized reporter score-based enrichment analysis for omics data",
+                        "Briefings in Bioinformatics", "Volume 25, Issue 3, May 2024, bbae116",
+                        "https://doi.org/10.1093/bib/bbae116 ", sep = ", ")
 )

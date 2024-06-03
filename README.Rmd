@@ -116,7 +116,7 @@ And you should also offer a experimental metadata:
 head(metadata)
 ```
 
-⚠️**Importantly, the rownames of metadata and the colnames of feature abundance table should be matching or partial matching! **
+⚠️**Importantly, the rownames of metadata and the colnames of feature abundance table should be matching or partial matching!**
 
 The `ReporterScore` will automatically match the samples based on the rownames of metadata and the colnames of feature abundance table.
 
