@@ -285,7 +285,8 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
     }
 
     for (i in vs_group) {
-      tmpdf <- data.frame(average = apply(kodf[, which(group == i)], 1, mean), sd = apply(kodf[, which(group == i)], 1, sd))
+      tmpdf <- data.frame(average = apply(kodf[, which(group == i), drop = FALSE], 1, mean),
+                          sd = apply(kodf[, which(group == i), drop = FALSE], 1, sd))
       colnames(tmpdf) <- paste0(colnames(tmpdf), "_", i)
       res.dt <- cbind(res.dt, tmpdf)
     }
