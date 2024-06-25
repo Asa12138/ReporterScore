@@ -4,6 +4,10 @@
 
 - fixed the `ko.test` for one smaple group <2024-06-25, Tue>
 
+## Added
+
+- added `kos_description` argument for `plot_features_network()` <2024-06-25, Tue>
+
 # ReporterScore v0.1.5 Notes
 
 ## Added
