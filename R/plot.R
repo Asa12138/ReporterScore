@@ -1154,6 +1154,8 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
     tmp_v[tmp_v$v_group=="KOs","label"] <- ifelse(is.na(newname), tmp_v[tmp_v$v_group=="KOs","name"], newname) %>% stringr::str_wrap(., width = str_width)
   }
 
+  igraph::vertex.attributes(ko_net) <- as.list(tmp_v)
+
   if (mark_module) {
     ko_net_m <- MetaNet::module_detect(ko_net, method = "cluster_walktrap")
     if (return_net) {
@@ -1174,11 +1176,11 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
       modules$color <- ifelse(modules$RS > 1.64, kos_color["Significant"], kos_color["None"])
     }
     modules_col <- setNames(modules$color, modules$module)
-    plot(ko_net_m, vertex.color = kos_color, vertex.label = tmp_v$label, mark_module = TRUE, mark_color = modules_col, ...)
+    plot(ko_net_m, ..., vertex.color = kos_color, mark_module = TRUE, mark_color = modules_col)
   } else {
     if (return_net) {
       return(ko_net)
     }
-    plot(ko_net, vertex.color = kos_color, vertex.label = tmp_v$label, ...)
+    plot(ko_net, ..., vertex.color = kos_color)
   }
 }
