@@ -1071,6 +1071,9 @@ plot_KEGG_map <- function(ko_stat, map_id = "map00780", modulelist = NULL, type 
 #' @param mark_module mark the modules?
 #' @param mark_color mark colors, default, c("Depleted"="seagreen","Enriched"="orange","None"="grey","Significant"="red2")
 #' @param return_net return the network
+#' @param pathway_description show the pathway description?
+#' @param kos_description show the kos description?
+#' @param str_width str width
 #'
 #' @aliases plot_KOs_network
 #' @export
@@ -1139,19 +1142,19 @@ plot_features_network <- function(ko_stat, map_id = "map00780",
   tmp_v <- MetaNet::get_v(ko_net)
   if (!pathway_label) tmp_v$label <- ifelse(tmp_v$v_group == "Pathway", NA, tmp_v$label)
   if (pathway_description) {
-    tmp_v$label <- ifelse(tmp_v$v_group == "Pathway", setNames(modulelist$Description,modulelist$id)[tmp_v$name], tmp_v$label) %>% stringr::str_wrap(., width = str_width)
+    tmp_v$label <- ifelse(tmp_v$v_group == "Pathway", setNames(modulelist$Description, modulelist$id)[tmp_v$name], tmp_v$label) %>% stringr::str_wrap(., width = str_width)
   }
   if (!kos_label) tmp_v$label <- ifelse(tmp_v$v_group == "KOs", NA, tmp_v$label)
   if (kos_label & kos_description) {
     ko_desc <- load_KO_desc()
-    if (grepl("C\\d{5}", tmp_v[tmp_v$v_group=="KOs","name"][1])) {
+    if (grepl("C\\d{5}", tmp_v[tmp_v$v_group == "KOs", "name"][1])) {
       Compound_htable <- load_Compound_htable()
       ko_desc <- Compound_htable[, c("Compound_id", "Compound_name")]
       colnames(ko_desc) <- c("KO_id", "KO_name")
     }
-    newname <- ko_desc[match(tmp_v[tmp_v$v_group=="KOs","name"], ko_desc$KO_id), "KO_name", drop = TRUE]
+    newname <- ko_desc[match(tmp_v[tmp_v$v_group == "KOs", "name"], ko_desc$KO_id), "KO_name", drop = TRUE]
     if (all(is.na(newname))) warning("No description for KO found, are you sure rownames of kodf are KOs?")
-    tmp_v[tmp_v$v_group=="KOs","label"] <- ifelse(is.na(newname), tmp_v[tmp_v$v_group=="KOs","name"], newname) %>% stringr::str_wrap(., width = str_width)
+    tmp_v[tmp_v$v_group == "KOs", "label"] <- ifelse(is.na(newname), tmp_v[tmp_v$v_group == "KOs", "name"], newname) %>% stringr::str_wrap(., width = str_width)
   }
 
   igraph::vertex.attributes(ko_net) <- as.list(tmp_v)

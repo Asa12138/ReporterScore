@@ -14,6 +14,9 @@ plot_features_network(
     "red2", Pathway = "#80b1d3"),
   pathway_label = TRUE,
   kos_label = TRUE,
+  pathway_description = FALSE,
+  kos_description = FALSE,
+  str_width = 50,
   mark_module = FALSE,
   mark_color = NULL,
   return_net = FALSE,
@@ -34,6 +37,12 @@ plot_features_network(
 \item{pathway_label}{show pathway_label?}
 
 \item{kos_label}{show kos_label?}
+
+\item{pathway_description}{show the pathway description?}
+
+\item{kos_description}{show the kos description?}
+
+\item{str_width}{str width}
 
 \item{mark_module}{mark the modules?}
 
