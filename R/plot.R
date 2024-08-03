@@ -89,7 +89,7 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
         levels = dplyr::arrange(reporter_res2, ReporterScore) %>%
           dplyr::pull(Description) %>% unique()
       )
-      p <- ggplot(reporter_res2, Description, size = Exist_K_num, fill = Exist_K_num)
+      p <- ggplot(reporter_res2, aes(ReporterScore, Description, size = Exist_K_num, fill = Exist_K_num))
     }
     p <- p +
       geom_point(shape = 21, position = "dodge") +
