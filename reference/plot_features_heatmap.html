@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -25,7 +25,7 @@
       <ul class="nav navbar-nav"><li>
   <a href="../index.html">
     <span class="fa fa-home fa-lg"></span>
-     
+
   </a>
 </li>
 <li>
@@ -40,7 +40,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Other Packages
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -68,25 +68,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/Asa12138/ReporterScore" class="external-link">
     <span class="fa fa-github"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Plot features heatmap</h1>
-    <small class="dont-index">Source: <a href="https://github.com/Asa12138/ReporterScore/blob/HEAD/R/plot.R" class="external-link"><code>R/plot.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/Asa12138/ReporterScore/blob/main/R/plot.R" class="external-link"><code>R/plot.R</code></a></small>
     <div class="hidden name"><code>plot_features_heatmap.Rd</code></div>
     </div>
 
@@ -112,55 +112,55 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>kodf</dt>
+
+
+<dl><dt id="arg-kodf">kodf<a class="anchor" aria-label="anchor" href="#arg-kodf"></a></dt>
 <dd><p>KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples. or result of `get_reporter_score`</p></dd>
 
 
-<dt>group</dt>
+<dt id="arg-group">group<a class="anchor" aria-label="anchor" href="#arg-group"></a></dt>
 <dd><p>The compare group (two category) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf.</p></dd>
 
 
-<dt>metadata</dt>
+<dt id="arg-metadata">metadata<a class="anchor" aria-label="anchor" href="#arg-metadata"></a></dt>
 <dd><p>metadata</p></dd>
 
 
-<dt>map_id</dt>
+<dt id="arg-map-id">map_id<a class="anchor" aria-label="anchor" href="#arg-map-id"></a></dt>
 <dd><p>the pathway or module id</p></dd>
 
 
-<dt>select_ko</dt>
+<dt id="arg-select-ko">select_ko<a class="anchor" aria-label="anchor" href="#arg-select-ko"></a></dt>
 <dd><p>select which ko</p></dd>
 
 
-<dt>only_sig</dt>
+<dt id="arg-only-sig">only_sig<a class="anchor" aria-label="anchor" href="#arg-only-sig"></a></dt>
 <dd><p>only show the significant KOs</p></dd>
 
 
-<dt>columns</dt>
+<dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>change columns</p></dd>
 
 
-<dt>modulelist</dt>
+<dt id="arg-modulelist">modulelist<a class="anchor" aria-label="anchor" href="#arg-modulelist"></a></dt>
 <dd><p>NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use <code><a href="custom_modulelist.html">custom_modulelist</a></code>.</p></dd>
 
 
-<dt>KO_description</dt>
+<dt id="arg-ko-description">KO_description<a class="anchor" aria-label="anchor" href="#arg-ko-description"></a></dt>
 <dd><p>show KO description rather than KO id.</p></dd>
 
 
-<dt>str_width</dt>
+<dt id="arg-str-width">str_width<a class="anchor" aria-label="anchor" href="#arg-str-width"></a></dt>
 <dd><p>str_width to wrap</p></dd>
 
 
-<dt>heatmap_param</dt>
+<dt id="arg-heatmap-param">heatmap_param<a class="anchor" aria-label="anchor" href="#arg-heatmap-param"></a></dt>
 <dd><p>parameters pass to <code>pheatmap</code></p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>ggplot</p>
+    <p>ggplot</p>
     </div>
 
     <div id="ref-examples">
@@ -186,16 +186,16 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '599cec31baffa4868cae4e79f180729b',
     indexName: 'docsearch',
     inputSelector: 'input#search-input.form-control',

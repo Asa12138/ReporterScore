@@ -3,7 +3,7 @@
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -25,7 +25,7 @@
       <ul class="nav navbar-nav"><li>
   <a href="../index.html">
     <span class="fa fa-home fa-lg"></span>
-     
+
   </a>
 </li>
 <li>
@@ -40,7 +40,7 @@
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Other Packages
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -68,25 +68,25 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/Asa12138/ReporterScore" class="external-link">
     <span class="fa fa-github"></span>
-     
+
   </a>
 </li>
       </ul><form class="navbar-form navbar-right hidden-xs hidden-sm" role="search">
         <div class="form-group">
           <input type="search" class="form-control" name="search-input" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off"></div>
       </form>
-      
+
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Perform enrichment analysis</h1>
-    <small class="dont-index">Source: <a href="https://github.com/Asa12138/ReporterScore/blob/HEAD/R/enrichment.R" class="external-link"><code>R/enrichment.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/Asa12138/ReporterScore/blob/main/R/enrichment.R" class="external-link"><code>R/enrichment.R</code></a></small>
     <div class="hidden name"><code>KO_enrich.Rd</code></div>
     </div>
 
@@ -112,58 +112,56 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>ko_stat</dt>
+
+
+<dl><dt id="arg-ko-stat">ko_stat<a class="anchor" aria-label="anchor" href="#arg-ko-stat"></a></dt>
 <dd><p>ko_stat dataframe from <code><a href="ko.test.html">ko.test</a></code>.</p></dd>
 
 
-<dt>padj_threshold</dt>
+<dt id="arg-padj-threshold">padj_threshold<a class="anchor" aria-label="anchor" href="#arg-padj-threshold"></a></dt>
 <dd><p>p.adjust threshold to determine whether a feature significant or not. p.adjust &lt; padj_threshold, default: 0.05</p></dd>
 
 
-<dt>logFC_threshold</dt>
+<dt id="arg-logfc-threshold">logFC_threshold<a class="anchor" aria-label="anchor" href="#arg-logfc-threshold"></a></dt>
 <dd><p>logFC threshold to determine whether a feature significant or not. abs(logFC)&gt;logFC_threshold, default: NULL</p></dd>
 
 
-<dt>add_mini</dt>
+<dt id="arg-add-mini">add_mini<a class="anchor" aria-label="anchor" href="#arg-add-mini"></a></dt>
 <dd><p>add_mini when calculate the logFC. e.g (10+0.1)/(0+0.1), default 0.05*min(avg_abundance)</p></dd>
 
 
-<dt>p.adjust.method</dt>
+<dt id="arg-p-adjust-method">p.adjust.method<a class="anchor" aria-label="anchor" href="#arg-p-adjust-method"></a></dt>
 <dd><p>The method used for p-value adjustment (default: "BH").</p></dd>
 
 
-<dt>type</dt>
+<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
 <dd><p>"pathway" or "module" for default KOlist_file.</p></dd>
 
 
-<dt>feature</dt>
+<dt id="arg-feature">feature<a class="anchor" aria-label="anchor" href="#arg-feature"></a></dt>
 <dd><p>one of "ko", "gene", "compound"</p></dd>
 
 
-<dt>modulelist</dt>
+<dt id="arg-modulelist">modulelist<a class="anchor" aria-label="anchor" href="#arg-modulelist"></a></dt>
 <dd><p>NULL or customized modulelist dataframe, must contain "id","K_num","KOs","Description" columns. Take the `KOlist` as example, use <code><a href="custom_modulelist.html">custom_modulelist</a></code>.</p></dd>
 
 
-<dt>verbose</dt>
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>logical</p></dd>
 
 
-<dt>gsea_res</dt>
+<dt id="arg-gsea-res">gsea_res<a class="anchor" aria-label="anchor" href="#arg-gsea-res"></a></dt>
 <dd><p>gsea_res from KO_gsea</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    
-
-<p>A data frame containing the enrichment results.</p>
-
-
+    <p>A data frame containing the enrichment results.</p>
 <p>enrich_res object</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p>Other common_enrich: 
+    <div class="dont-index"><p>Other common_enrich:
 <code><a href="KO_fisher.html">KO_fisher</a>()</code>,
 <code><a href="KO_gsa.html">KO_gsa</a>()</code>,
 <code><a href="KO_gsea.html">KO_gsea</a>()</code>,
@@ -197,16 +195,16 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/docsearch.js/2.6.1/docsearch.min.js" integrity="sha256-GKvGqXDznoRYHCwKXGnuchvKSwmx9SRMrZOTh2g4Sb0=" crossorigin="anonymous"></script><script>
   docsearch({
-    
-    
+
+
     apiKey: '599cec31baffa4868cae4e79f180729b',
     indexName: 'docsearch',
     inputSelector: 'input#search-input.form-control',

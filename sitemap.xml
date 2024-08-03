@@ -1,189 +1,65 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/articles/ReporterScore.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/news/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/CPDlist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Compound_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/GOlist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_abundance.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_enrich.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_fisher.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_gsa.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_gsea.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_gsva.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_padog.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_safe.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KO_sea.html</loc>
-  </url>
-  <url>
-    <loc>/reference/KOlist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Module_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/Pathway_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/RSA_by_cm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ReporterScore-package.html</loc>
-  </url>
-  <url>
-    <loc>/reference/c_means.html</loc>
-  </url>
-  <url>
-    <loc>/reference/combine_rs_res.html</loc>
-  </url>
-  <url>
-    <loc>/reference/custom_modulelist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/custom_modulelist_from_org.html</loc>
-  </url>
-  <url>
-    <loc>/reference/gene2ko.html</loc>
-  </url>
-  <url>
-    <loc>/reference/genedf.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_features.html</loc>
-  </url>
-  <url>
-    <loc>/reference/get_reporter_score.html</loc>
-  </url>
-  <url>
-    <loc>/reference/hsa_kegg_pathway.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ko.test.html</loc>
-  </url>
-  <url>
-    <loc>/reference/load_CARDinfo.html</loc>
-  </url>
-  <url>
-    <loc>/reference/load_GOlist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/load_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/mmu_kegg_pathway.html</loc>
-  </url>
-  <url>
-    <loc>/reference/modify_description.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pipe.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot.cm_res.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_KEGG_map.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_enrich_res.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_features_box.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_features_distribution.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_features_heatmap.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_features_in_pathway.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_features_network.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_htable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_report.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_report_circle_packing.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plot_significance.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.reporter_score.html</loc>
-  </url>
-  <url>
-    <loc>/reference/print.rs_by_cm.html</loc>
-  </url>
-  <url>
-    <loc>/reference/pvalue2zs.html</loc>
-  </url>
-  <url>
-    <loc>/reference/reporter_score.html</loc>
-  </url>
-  <url>
-    <loc>/reference/reporter_score_res.html</loc>
-  </url>
-  <url>
-    <loc>/reference/up_level_KO.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_CARDinfo.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_GOlist.html</loc>
-  </url>
-  <url>
-    <loc>/reference/update_KEGG.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/articles/ReporterScore.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/CPDlist.html</loc></url>
+<url><loc>/reference/Compound_htable.html</loc></url>
+<url><loc>/reference/GOlist.html</loc></url>
+<url><loc>/reference/KO_abundance.html</loc></url>
+<url><loc>/reference/KO_enrich.html</loc></url>
+<url><loc>/reference/KO_fisher.html</loc></url>
+<url><loc>/reference/KO_gsa.html</loc></url>
+<url><loc>/reference/KO_gsea.html</loc></url>
+<url><loc>/reference/KO_gsva.html</loc></url>
+<url><loc>/reference/KO_htable.html</loc></url>
+<url><loc>/reference/KO_padog.html</loc></url>
+<url><loc>/reference/KO_safe.html</loc></url>
+<url><loc>/reference/KO_sea.html</loc></url>
+<url><loc>/reference/KOlist.html</loc></url>
+<url><loc>/reference/Module_htable.html</loc></url>
+<url><loc>/reference/Pathway_htable.html</loc></url>
+<url><loc>/reference/RSA_by_cm.html</loc></url>
+<url><loc>/reference/ReporterScore-package.html</loc></url>
+<url><loc>/reference/c_means.html</loc></url>
+<url><loc>/reference/combine_rs_res.html</loc></url>
+<url><loc>/reference/custom_modulelist.html</loc></url>
+<url><loc>/reference/custom_modulelist_from_org.html</loc></url>
+<url><loc>/reference/gene2ko.html</loc></url>
+<url><loc>/reference/genedf.html</loc></url>
+<url><loc>/reference/get_features.html</loc></url>
+<url><loc>/reference/get_reporter_score.html</loc></url>
+<url><loc>/reference/hsa_kegg_pathway.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/ko.test.html</loc></url>
+<url><loc>/reference/load_CARDinfo.html</loc></url>
+<url><loc>/reference/load_GOlist.html</loc></url>
+<url><loc>/reference/load_htable.html</loc></url>
+<url><loc>/reference/mmu_kegg_pathway.html</loc></url>
+<url><loc>/reference/modify_description.html</loc></url>
+<url><loc>/reference/pipe.html</loc></url>
+<url><loc>/reference/plot.cm_res.html</loc></url>
+<url><loc>/reference/plot_KEGG_map.html</loc></url>
+<url><loc>/reference/plot_enrich_res.html</loc></url>
+<url><loc>/reference/plot_features_box.html</loc></url>
+<url><loc>/reference/plot_features_distribution.html</loc></url>
+<url><loc>/reference/plot_features_heatmap.html</loc></url>
+<url><loc>/reference/plot_features_in_pathway.html</loc></url>
+<url><loc>/reference/plot_features_network.html</loc></url>
+<url><loc>/reference/plot_htable.html</loc></url>
+<url><loc>/reference/plot_report.html</loc></url>
+<url><loc>/reference/plot_report_circle_packing.html</loc></url>
+<url><loc>/reference/plot_significance.html</loc></url>
+<url><loc>/reference/print.reporter_score.html</loc></url>
+<url><loc>/reference/print.rs_by_cm.html</loc></url>
+<url><loc>/reference/pvalue2zs.html</loc></url>
+<url><loc>/reference/reporter_score.html</loc></url>
+<url><loc>/reference/reporter_score_res.html</loc></url>
+<url><loc>/reference/up_level_KO.html</loc></url>
+<url><loc>/reference/update_CARDinfo.html</loc></url>
+<url><loc>/reference/update_GOlist.html</loc></url>
+<url><loc>/reference/update_KEGG.html</loc></url>
 </urlset>
+
