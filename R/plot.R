@@ -12,6 +12,7 @@ reporter_theme <- {
 #'
 #' @param reporter_res a reporter_score object or rs_by_cm object
 #' @param dir_name the directory to save the report tables
+#' @param overwrite overwrite the existed files or not, default is FALSE.
 #'
 #' @return No return value
 #' @export

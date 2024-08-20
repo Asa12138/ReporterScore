@@ -1,7 +1,7 @@
 Package: ReporterScore
 Type: Package
 Title: Generalized Reporter Score-Based Enrichment Analysis for Omics Data
-Version: 0.1.6
+Version: 0.1.7
 Authors@R:
     person("Chen", "Peng", email ="pengchen2001@zju.edu.cn", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-9449-7606"))
 Description: Inspired by the classic 'RSA', we developed the improved 'Generalized Reporter 

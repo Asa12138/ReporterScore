@@ -10,6 +10,8 @@ export_report_table(reporter_res, dir_name, overwrite = FALSE)
 \item{reporter_res}{a reporter_score object or rs_by_cm object}
 
 \item{dir_name}{the directory to save the report tables}
+
+\item{overwrite}{overwrite the existed files or not, default is FALSE.}
 }
 \value{
 No return value
