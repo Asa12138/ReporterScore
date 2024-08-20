@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
+<url><loc>/README_zh_CN.html</loc></url>
 <url><loc>/articles/ReporterScore.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
 <url><loc>/authors.html</loc></url>
@@ -27,6 +28,7 @@
 <url><loc>/reference/combine_rs_res.html</loc></url>
 <url><loc>/reference/custom_modulelist.html</loc></url>
 <url><loc>/reference/custom_modulelist_from_org.html</loc></url>
+<url><loc>/reference/export_report_table.html</loc></url>
 <url><loc>/reference/gene2ko.html</loc></url>
 <url><loc>/reference/genedf.html</loc></url>
 <url><loc>/reference/get_features.html</loc></url>
