@@ -621,9 +621,10 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
 #' @return modulelist
 #' @noRd
 get_modulelist <- function(type, feature, gene = "symbol", verbose = TRUE, chr = FALSE) {
+  type <- match.arg(type, c("pathway", "module"))
+  feature <- match.arg(feature, c("ko", "compound", "gene"))
   if (type %in% c("pathway", "module")) {
     # reference pathway
-    type <- match.arg(type, c("pathway", "module"))
     if (feature == "ko") {
       KOlist <- load_KOlist(verbose = verbose)
       modulelist <- KOlist[[type]]

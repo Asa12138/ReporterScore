@@ -33,6 +33,8 @@ sticker("~/Documents/R/test/icons/enrichment.png",
 )
 ```
 
+**Read this in other languages: [English](README.md), [中文](README_zh_CN.md).**
+
 # ReporterScore <img src="man/figures/ReporterScore.png" align="right" width="120" />
 
 <!-- badges: start -->
@@ -133,6 +135,8 @@ intersect(rownames(metadata), colnames(KO_abundance))>0
 
 The `ReporterScore` package has built-in KEGG pathway, module, gene, compound, and GO databases and also allows customized databases, making it compatible with feature abundance tables from diverse omics data.
 
+**You can choose any of the following methods to load the database based on your analysis needs:**
+
 1. `ReporterScore` has built-in KEGG pathway-KO and module-KO databases (2023-08 version) for KO abundance table. You can use `load_KOlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API) as using latest database is very important.
 
 2. `ReporterScore` has built-in KEGG pathway-compound and module-compound databases (2023-08 version) for compound abundance table. You can use `load_CPDlist()` to have a look and use `update_KO_file()` to update these databases (by KEGG API).
@@ -203,17 +207,6 @@ reporter_res <- GRSA(KO_abundance, "Group", metadata,
 )
 ```
 
-The result is a "reporter_score" object:
-
-|  elements    |  description                                      |
-|--------------|---------------------------------------------------|
-| `kodf`       | your input KO_abundance table                     |
-| `ko_stat`    | ko statistics result contains p.value and z_score |
-| `reporter_s` | the reporter score in each pathway                |
-| `modulelist` | default KOlist or customized modulelist dataframe |
-| `group`      | The comparison groups in your data                |
-| `metadata`   | sample information dataframe contains group       |
-
 #### Gene-pathway
 
 When you use the gene abundance table of a specific species (e.g. human), remember to set the `feature` and `type`!!! Or give the database through `modulelist`.
@@ -271,6 +264,31 @@ reporter_res_gene <- GRSA(chem_df, "Group", metadata,
 )
 ```
 
+#### Output
+
+The result is a "reporter_score" object:
+
+|  elements    |  description                                      |
+|--------------|---------------------------------------------------|
+| `kodf`       | your input KO_abundance table                     |
+| `ko_stat`    | ko statistics result contains p.value and z_score |
+| `reporter_s` | the reporter score in each pathway                |
+| `modulelist` | default KOlist or customized modulelist dataframe |
+| `group`      | The comparison groups in your data                |
+| `metadata`   | sample information dataframe contains group       |
+
+
+The important result is `reporter_res$reporter_s`, which is a dataframe contains the reporter score in each pathway:
+
+```r
+# view data.frame in Rstudio
+View(reporter_res$reporter_s)
+
+# export result as .csv and check using Excel:
+export_report_table(reporter_res, dir_name = "~/Downloads/")
+```
+
+
 ### 4. Visualization
 
 After we get the reporter score result, we can visualize the result in various ways.
@@ -279,7 +297,7 @@ When we focus on the whole result:
 
 - Plot the most significantly enriched pathways:
 
-You can set the `rs_threshold` to filter the pathways, the default `rs_threshold` is 1.64, which is be considered as significant at the 0.05 level.
+You can set the `rs_threshold` to filter the pathways, **the default `rs_threshold` is 1.64, which is be considered as significant at the 0.05 level**.
 
 ```{r fig.height=7,fig.width=12}
 # View(reporter_res$reporter_s)
@@ -390,7 +408,7 @@ plot_report_bar(rsa_cm_res, rs_threshold = 2.5, y_text_size = 10)
 
 ### Step by step
 
-The one step function `reporter_score` consists of three parts：
+The one step function `reporter_score`/`GRSA` consists of three parts：
 
 ```{r add, eval=FALSE}
 data("KO_abundance_test")
@@ -447,7 +465,7 @@ tibble::tribble(
   knitr::kable(caption = "Commonly used enrichment methods for omics data.", format = "simple")
 ```
 
-`ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`).
+`ReporterScore` also provides other enrichment methods like `KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from `clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), `KO_gsa` (GSA, from `GSA`), `KO_safe` (SAFE, from `safe`), `KO_padog` (PADOG, from `PADOG`), `KO_gsva` (GSVA, from `GSVA`).
 
 The input data is from `reporter_score`, and also supports custom databases, so you can easily compare the results of various enrichment methods and conduct a comprehensive analysis:
 

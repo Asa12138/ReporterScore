@@ -2,10 +2,12 @@
 
 ## Fixed
 
-- fixed the `ko.test` for one smaple group <2024-06-25, Tue>
+- fixed the `ko.test` for one sample group <2024-06-25, Tue>
 
 ## Added
 
+- add README_zh_CN.md <2024-08-20, Tue>
+- add `export_report_table` function <2024-08-20, Tue>
 - added `kos_description` argument for `plot_features_network()` <2024-06-25, Tue>
 
 # ReporterScore v0.1.5 Notes

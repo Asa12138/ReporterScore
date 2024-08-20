@@ -8,6 +8,36 @@ reporter_theme <- {
     )
 }
 
+#' Export report score result tables
+#'
+#' @param reporter_res a reporter_score object or rs_by_cm object
+#' @param dir_name the directory to save the report tables
+#'
+#' @return No return value
+#' @export
+#'
+export_report_table <- function(reporter_res, dir_name, overwrite = FALSE) {
+  if (!dir.exists(dir_name)) {
+    dir.create(dir_name)
+  }
+  if (!overwrite) {
+    if (file.exists(file.path(dir_name, "ko_stat.csv"))) {
+      stop("The directory already contains ko_stat.csv or reporter_s.csv, please set overwrite = TRUE to overwrite them.")
+    }
+  }
+  if (inherits(reporter_res, "reporter_score")) {
+    utils::write.csv(reporter_res$ko_stat, file = file.path(dir_name, "ko_stat.csv"), row.names = F)
+    utils::write.csv(reporter_res$reporter_s, file = file.path(dir_name, "reporter_s.csv"), row.names = F)
+  }
+  if (inherits(reporter_res, "rs_by_cm")) {
+    ncluster <- sum(grepl("Cluster", names(rsa_cm_res)))
+    for (i in seq_len(ncluster)) {
+      utils::write.csv(reporter_res[[paste0("Cluster", i)]]$ko_stat, file = file.path(dir_name, paste0("ko_stat_Cluster_", i, ".csv")), row.names = F)
+      utils::write.csv(reporter_res[[paste0("Cluster", i)]]$reporter_s, file = file.path(dir_name, paste0("reporter_s_Cluster_", i, ".csv")), row.names = F)
+    }
+  }
+}
+
 #' Plot the reporter_res
 #'
 #' @param reporter_res result of `get_reporter_score` or `reporter_score`
@@ -172,6 +202,9 @@ filter_report <- function(reporter_res, rs_threshold) {
   vs_group <- attributes(reporter_res)$vs_group
 
   rs_threshold <- sort(rs_threshold)
+  if (rs_threshold[1] > (-1.64) | rs_threshold[2] < 1.64) {
+    warning("The reporter score threshold is less than 1.64, which means the pathways may not be significantly enriched, please adjust the threshold!")
+  }
 
   if ((attributes(reporter_res)$mode == "directed") & is.null(attributes(reporter_res)$pattern)) {
     reporter_res2 <- reporter_res[(reporter_res$ReporterScore >= rs_threshold[2]) | (reporter_res$ReporterScore <= rs_threshold[1]), ]

@@ -1,8 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-**Read this in other languages: [English](README.md),
-[中文](README_zh_CN.md).**
+**其他语言版本: [English](README.md), [中文](README_zh_CN.md).**
 
 # ReporterScore <img src="man/figures/ReporterScore.png" align="right" width="120" />
 
@@ -17,41 +16,33 @@
 [![](https://img.shields.io/badge/devel%20version-0.1.6-green.svg)](https://github.com/Asa12138/ReporterScore)
 <!-- badges: end -->
 
-Inspired by the classic ‘RSA’, we developed the improved ‘Generalized
-Reporter Score-based Analysis (GRSA)’ method, implemented in the R
-package ‘ReporterScore’, along with comprehensive visualization methods
-and pathway databases.
+受经典RSA启发，我们开发了改进的广义报告评分分析（GRSA）方法，并在R包ReporterScore中实现了该方法，还集成了全面的可视化方法和通路数据库。 
 
-‘GRSA’ is a threshold-free method that works well with all types of
-biomedical features, such as genes, chemical compounds, and microbial
-species. Importantly, the ‘GRSA’ supports **multi-group and longitudinal
-experimental designs**, because of the included multi-group-compatible
-statistical methods.
+GRSA是一种无阈值方法，适用于所有类型的生物医学特征，如基因、化合物和微生物物种。GRSA可在mixed模式（经典RSA）和directed模式（增强RSA）下工作。directed模式使用报告评分的符号区分上调或下调的通路，所以更直观。
+
+重要的是，GRSA支持多组和纵向实验设计，因为它包含了与多组和纵向实验设计兼容的统计方法。 ReporterScore包还支持自定义的分层和关系数据库，为高级用户提供额外的灵活性。
 
 <img src="man/figures/1-workflow.png" width="100%" />
 
-The HTML documentation of the latest version is available at [Github
-page](https://asa12138.github.io/ReporterScore/).
+最新版本的HTML文档可在[Github 主页](https://asa12138.github.io/ReporterScore/)找到.
 
-## Citation
+## 引用
 
-To cite ReporterScore in publications use:
+在出版物中引用ReporterScore：
 
 C. Peng, Q. Chen, S. Tan, X. Shen, C. Jiang, Generalized Reporter
 Score-based Enrichment Analysis for Omics Data. *Briefings in
 Bioinformatics* (2024). <https://doi.org/10.1093/bib/bbae116>.
 
-## Installation
+## 安装
 
-You can install the released version of `ReporterScore` from
-[CRAN](https://CRAN.R-project.org) with:
+您可以从[CRAN](https://CRAN.R-project.org)安装已发布版本的`ReporterScore`：
 
 ``` r
 install.packages("ReporterScore")
 ```
 
-You can install the development version of `ReporterScore` from
-[GitHub](https://github.com/) with:
+也可以从[GitHub](https://github.com/)安装开发版本 `ReporterScore`：
 
 ``` r
 # install.packages("devtools")
@@ -59,35 +50,23 @@ devtools::install_github("Asa12138/pcutils")
 devtools::install_github("Asa12138/ReporterScore")
 ```
 
-## Usage
+## 使用
 
-### 1. Inputdata (Feature abundance table and metadata)
+### 1. 输入数据（特征丰度表和元数据）
 
-- For transcriptomic, scRNA-seq, and related gene-based omics data of a
-  specific species, a complete gene abundance table can be used.
-- For metagenomic and metatranscriptomic data, which involve many
-  different species, a KO abundance table can be used, generated using
-  Blast, Diamond, or KEGG official mapper software to align the reads or
-  contigs to the KEGG or the EggNOG database
-- For metabolomic data, an annotated compound abundance table can be
-  used, but the standardization of compound IDs (e.g., convert compound
-  IDs to C numbers in the KEGG database) is required.
+- 对于特定物种的转录组、单细胞RNA-seq和相关基因组学数据，可以使用完整的基因丰度表。
+- 对于涉及多种不同物种的宏基因组和宏转录组数据，可以使用KO丰度表，使用Blast、Diamond或KEGG官方映射软件来将reads或contigs对齐到KEGG或EggNOG数据库。
+- 对于代谢组数据，可以使用已注释的化合物丰度表，但需要进行化合物ID的标准化（例如，将化合物ID转换为KEGG数据库中的C编号）。
 
-#### Format of abundance table:
+#### 丰度表的格式：
 
-⚠️**Importantly, the input abundance table should not be prefiltered to
-retain the background information, as the ‘GRSA’ is a threshold-free
-method.**
+⚠️ **重要提示：输入的丰度表不应进行预过滤（保留背景信息），因为‘GRSA’是一种无阈值的方法。**
 
-- The rownames are feature ids (e.g. “K00001” (KEGG K number) if
-  feature=“ko”; “PEX11A” (gene symbol) if feature=“gene”; “C00024” (KEGG
-  C number) if feature=“compound”).
-- The colnames are samples.
-- The abundance value can be read counts or normalized values (e.g.,
-  TPM, FPKM, RPKM, or relative abundance, corresponds to suitable
-  statistical test method).
+- 行名为特征ID（例如，“K00001”（KEGG K号）如果特征为“ko”；“PEX11A”（基因符号）如果特征为“gene”；“C00024”（KEGG C号）如果特征为“compound”）。
+- 列名为样本。
+- 丰度值可以是读数count或标准化值（例如TPM、FPKM、RPKM或相对丰度），对应适当的统计检验方法。
 
-An example code tailored for a KO abundance table is as follows:
+适用于KO丰度表的示例代码如下：
 
 ``` r
 data("KO_abundance_test")
@@ -101,17 +80,14 @@ head(KO_abundance[, 1:6])
 #> K05349 0.001816325 0.002813642 0.003274701 0.001089906 0.002371921 0.001795214
 ```
 
-And you should also offer a experimental metadata:
+你还应该提供一个实验设计元数据：
 
-#### Format of metadata table:
+#### 元数据表的格式：
 
-- The rownames are samples, columns are groups.
-- The grouping variable can be categories (at least two categories, for
-  differential abundance analysis).
-- The grouping variable can also be multiple time points (for
-  longitudinal analysis).
-- The grouping variable can also be continuous (for correlation
-  analysis).
+- 行名为样本，列名为分组。
+- 分组变量可以是类别（至少包含两个类别，用于差异丰度分析）。
+- 分组变量也可以是多个时间点（用于纵向分析）。
+- 分组变量也可以是连续变量（用于相关性分析）。
 
 ``` r
 head(metadata)
@@ -124,11 +100,9 @@ head(metadata)
 #> WT6    WT     G1
 ```
 
-⚠️**Importantly, the rownames of metadata and the colnames of feature
-abundance table should be matching or partial matching!**
+⚠️ **重要提示：元数据的行名和特征丰度表的列名应该匹配或部分匹配！**
 
-The `ReporterScore` will automatically match the samples based on the
-rownames of metadata and the colnames of feature abundance table.
+`ReporterScore` 将根据元数据的行名和特征丰度表的列名自动进行样本匹配。
 
 ``` r
 all(rownames(metadata) %in% colnames(KO_abundance))
@@ -138,39 +112,21 @@ intersect(rownames(metadata), colnames(KO_abundance))>0
 ## TRUE
 ```
 
-### 2. Pathway databases
+### 2. 通路数据库
 
-The `ReporterScore` package has built-in KEGG pathway, module, gene,
-compound, and GO databases and also allows customized databases, making
-it compatible with feature abundance tables from diverse omics data.
+`ReporterScore` 包含内置的KEGG通路、模块、基因、化合物和GO数据库，并支持自定义数据库，使其能够兼容来自多种组学数据的特征丰度表。
 
-**You can choose any of the following methods to load the database based
-on your analysis needs:**
+**你可以根据自己的分析需求选择以下任一方法来加载数据库：**
 
-1.  `ReporterScore` has built-in KEGG pathway-KO and module-KO databases
-    (2023-08 version) for KO abundance table. You can use
-    `load_KOlist()` to have a look and use `update_KO_file()` to update
-    these databases (by KEGG API) as using latest database is very
-    important.
+1. 对于KO丰度表，`ReporterScore` 包含内置的KEGG通路-KO和模块-KO数据库（2023-08版本）。您可以使用 `load_KOlist()` 查看这些数据库，并使用 `update_KO_file()` 更新这些数据库（通过KEGG API），保持数据库的最新性非常重要。
 
-2.  `ReporterScore` has built-in KEGG pathway-compound and
-    module-compound databases (2023-08 version) for compound abundance
-    table. You can use `load_CPDlist()` to have a look and use
-    `update_KO_file()` to update these databases (by KEGG API).
+2. 对于化合物丰度表，`ReporterScore` 包含内置的KEGG通路-化合物和模块-化合物数据库（2023-08版本）。您可以使用 `load_CPDlist()` 查看这些数据库，并使用 `update_KO_file()` 更新这些数据库（通过KEGG API）。
 
-3.  `ReporterScore` has built-in pathway-ko, pathway-gene, and
-    pathway-compound databases of human (hsa) and mouse (mmu) for
-    ko/gene/compound abundance table. You can use
-    `custom_modulelist_from_org()` to have a look. Use
-    `update_org_pathway()` to update these databases and download other
-    organism databases (by KEGG API).
+3. 对于KO、基因和化合物丰度表，`ReporterScore` 包含人类（hsa）和小鼠（mmu）的内置通路-ko、通路-基因和通路-化合物数据库。您可以使用 `custom_modulelist_from_org()` 查看这些数据库。使用 `update_org_pathway()` 更新这些数据库，并下载其他生物数据库（通过KEGG API）。
 
-4.  `ReporterScore` has built-in GO-gene database, You can use
-    `load_GOlist()` to have a look and use `update_GOlist()` to update
-    these databases (by KEGG API).
+4. `ReporterScore` 包含内置的GO-基因数据库。您可以使用 `load_GOlist()` 查看这些数据库，并使用 `update_GOlist()` 更新这些数据库（通过KEGG API）。
 
-5.  You can just customize your own pathway databases (gene set of
-    interest) by using `custom_modulelist()`.
+5. 您可以通过使用 `custom_modulelist()` 自定义您自己的通路数据库（感兴趣的基因集）。
 
 ``` r
 # 1. KEGG pathway-KO and module-KO databases
@@ -192,49 +148,32 @@ head(hsa_pathway_gene)
 GOlist <- load_GOlist()
 head(GOlist$BP)
 
-# 5. customize your own pathway databases
+# 5. 自定义自己的通路数据库
 ?custom_modulelist()
 ```
 
-### 3. One step GRSA
+### 3. 一步GRSA
 
-Use function `GRSA` or `reporter_score` can get the reporter score
-result by one step.
+使用函数 `GRSA` 或 `reporter_score` 可以一步得到Reporter Score结果。
 
-⚠️There are some important arguments for analysis:
+⚠️分析中有一些重要的参数：
 
-- **mode**: “mixed” or “directed” (directed mode only for two groups
-  differential analysis or multi-groups correlation analysis.), see
-  details in `pvalue2zs`.
-- **method**: the method of statistical test for calculating p-value.
-  Default is `wilcox.test`:
-  - `t.test` (parametric) and `wilcox.test` (non-parametric). Perform
-    comparison between two groups of samples.
-  - `anova` (parametric) and `kruskal.test` (non-parametric). Perform
-    one-way ANOVA test or Kruskal-Wallis rank sum test comparing
-    multiple groups.
-  - “pearson”, “kendall”, or “spearman” (correlation), see `?cor`.
-  - “none”: use “none” for `step by step enrichment`. You can calculate
-    the p-value by other methods like “DESeq2”, “Edger”, “Limma”,
-    “ALDEX”, “ANCOM” yourself.
-- **type**: choose the built-in pathway database:
-  - ‘pathway’ or ‘module’ for default KEGG database for **microbiome**.
-  - ‘CC’, ‘MF’, ‘BP’, ‘ALL’ for default GO database for **homo
-    sapiens**.
-  - org in listed in <https://www.genome.jp/kegg/catalog/org_list.html>
-    such as ‘hsa’ (if your kodf is come from a specific organism, you
-    should specify type here)
-- **modulelist**: customize database. A dataframe containing
-  ‘id’,‘K_num’,‘KOs’,‘Description’ columns. Take the `KOlist` as
-  example, use `custom_modulelist` to build a customize database.
-- **feature**: one of “ko”, “gene”, “compound”.
+- **mode**: “mixed” 或 “directed”（仅用于两组差异分析或多组相关分析。详情见 `pvalue2zs`）。
+- **method**: 计算p值的统计测试方法。默认为 `wilcox.test`：
+  - `t.test`（参数检验）和 `wilcox.test`（非参数检验）。用于比较两组样本。
+  - `anova`（参数检验）和 `kruskal.test`（非参数检验）。执行单因素方差分析或Kruskal-Wallis秩和检验，比较多个组。
+  - “pearson”、“kendall” 或 “spearman”（相关性检验），参见 `cor`。
+  - “none”: 使用“none”进行“逐步富集”计算p值。您可以使用“DESeq2”、“Edger”、“Limma”、“ALDEX”、“ANCOM”等其他方法自行计算p值。
+- **type**: 选择内置的通路数据库：
+  - ‘pathway’ 或 ‘module’ 默认KEGG数据库适用于**微生物组**。
+  - ‘CC’, ‘MF’, ‘BP’, ‘ALL’ 默认GO数据库适用于**人类**。
+  - org 列在 <https://www.genome.jp/kegg/catalog/org_list.html> 中，例如 ‘hsa’（如果您的kodf来自特定的生物体，您应在此处指定type）。
+- **modulelist**: 自定义数据库。包含 ‘id’,‘K_num’,‘KOs’,‘Description’ 列的数据框。以 `KOlist` 为例，使用 `custom_modulelist` 构建自定义数据库。
+- **feature**: “ko”, “gene”, “compound” 中的一个。
 
-**The first level will be set as the control group, you can change the
-factor level to change your comparison.**
+**分组中第一个将被设置为对照组，您可以更改因子水平以改变比较。**
 
-For example, we want to compare two groups ‘WT-OE’, and use the
-“directed” mode as we just want know which pathways are enriched or
-depleted in **OE group**:
+例如，我们想比较两组 ‘WT-OE’，并使用“directed”模式，因为我们只需要知道**OE组**中哪些通路上调或下调（反过来就是WT组通路下调或上调）：
 
 #### KO-pathway
 
@@ -282,16 +221,15 @@ reporter_res <- GRSA(KO_abundance, "Group", metadata,
 #> ====================================All done====================================
 ```
 
+
 #### Gene-pathway
 
-When you use the gene abundance table of a specific species
-(e.g. human), remember to set the `feature` and `type`!!! Or give the
-database through `modulelist`.
+当您使用特定物种（例如人类）的基因丰度表时，请记得设置 `feature` 和 `type` 参数！或者通过 `modulelist` 提供数据库：
 
 ``` r
 data("genedf")
 
-# Method 1: Set the `feature` and `type`!
+# 方法 1: 设置 `feature` 和 `type` 参数
 reporter_res_gene <- GRSA(genedf, "Group", metadata,
   mode = "directed",
   method = "wilcox.test", perm = 999,
@@ -334,7 +272,7 @@ reporter_res_gene <- GRSA(genedf, "Group", metadata,
 ```
 
 ``` r
-# Method 2: Give the database through `modulelist`, same to Method 1.
+# 方法 2: 通过`modulelist`给出数据库，结果与方法1相同.
 hsa_pathway_gene <- custom_modulelist_from_org(
   org = "hsa",
   feature = "gene"
@@ -351,11 +289,11 @@ reporter_res_gene <- GRSA(genedf, "Group", metadata,
 library(patchwork)
 p1 <- plot_report_bar(reporter_res_gene, rs_threshold = 2)
 
-# Use `modify_description` to remove the suffix of pathway description
+# 使用`modify_description`删除通路描述的后缀
 reporter_res_gene2 <- modify_description(reporter_res_gene, pattern = " - Homo sapiens (human)")
 p2 <- plot_report_bar(reporter_res_gene2, rs_threshold = 2)
 
-# Use `ggplot_translator` to translate pathway description
+# 使用“ggplot_translator”翻译通路描述
 p3 <- pcutils::ggplot_translator(p2)
 #> Please set the font family to make the labels display well.
 #>  see `how_to_set_font_for_plot()`.
@@ -367,8 +305,7 @@ p1 / p2 / p3
 
 #### Compound-pathway
 
-When you use the compound abundance table, remember to set the `feature`
-and `type`!!! Or give the database through `modulelist`.
+当您使用化合物丰度表时，请记得设置 `feature` 和 `type` 参数！或者通过 `modulelist` 提供数据库。
 
 ``` r
 reporter_res_gene <- GRSA(chem_df, "Group", metadata,
@@ -378,42 +315,38 @@ reporter_res_gene <- GRSA(chem_df, "Group", metadata,
 )
 ```
 
-#### Output
+#### 输出结果
 
-The result is a “reporter_score” object:
+结果是一个“reporter_score”对象：
 
-| elements     | description                                       |
-|--------------|---------------------------------------------------|
-| `kodf`       | your input KO_abundance table                     |
-| `ko_stat`    | ko statistics result contains p.value and z_score |
-| `reporter_s` | the reporter score in each pathway                |
-| `modulelist` | default KOlist or customized modulelist dataframe |
-| `group`      | The comparison groups in your data                |
-| `metadata`   | sample information dataframe contains group       |
+| 元素         | 描述                                             |
+|--------------|--------------------------------------------------|
+| `kodf`       | 您的输入KO丰度表                                  |
+| `ko_stat`    | KO统计结果，包含p值和z分数                         |
+| `reporter_s` | 每个通路中的报告者分数                             |
+| `modulelist` | 默认的KOlist或自定义的模块列表数据框               |
+| `group`      | 您数据中的比较组                                 |
+| `metadata`   | 包含样本信息的数据框，包括组信息                   |
 
-The important result is `reporter_res$reporter_s`, which is a dataframe
-contains the reporter score in each pathway:
+重要的结果是 `reporter_res$reporter_s`，它是一个包含每个通路中报告者分数的数据框：
 
 ``` r
-# view data.frame in Rstudio
+# 在Rstudio中查看data.frame
 View(reporter_res$reporter_s)
 
-# export result as .csv and check using Excel:
+# 将结果导出为.csv格式，并使用Excel进行查看：
 export_report_table(reporter_res, dir_name = "~/Downloads/")
 ```
 
-### 4. Visualization
+### 4. 可视化
 
-After we get the reporter score result, we can visualize the result in
-various ways.
+在获得Reporter Score结果后，我们可以通过多种方式进行可视化。
 
-When we focus on the whole result:
+当我们关注整体结果时：
 
-- Plot the most significantly enriched pathways:
+- 绘制显著富集的通路：
 
-You can set the `rs_threshold` to filter the pathways, **the default
-`rs_threshold` is 1.64, which is be considered as significant at the
-0.05 level**.
+您可以设置 `rs_threshold` 来过滤部分通路， **默认的 `rs_threshold` 是 1.64， 对应的显著性水平为 0.05**。
 
 ``` r
 # View(reporter_res$reporter_s)
@@ -425,10 +358,9 @@ plot_report_bar(reporter_res, rs_threshold = c(-2.5, 2.5), facet_level = TRUE)
 
 <img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
-⚠️**In the directed mode, Enriched in one group means depleted in
-another group.**
+⚠️**在directed模式下，富集在一个组中意味着在另一个组中下调。**
 
-- Plot the most significantly enriched pathways (circle packing):
+- 绘制最显著富集的通路（珠包图）：
 
 ``` r
 plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
@@ -442,9 +374,9 @@ plot_report_circle_packing(reporter_res, rs_threshold = c(-2.5, 2.5))
 
 <img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
-When we focus on one pathway, e.g. “map00780”:
+当我们关注一条通路时，例如“map00780”：
 
-- Plot boxes and lines
+- 绘制箱线图：
 
 ``` r
 plot_KOs_in_pathway(reporter_res, map_id = "map00780")
@@ -452,7 +384,7 @@ plot_KOs_in_pathway(reporter_res, map_id = "map00780")
 
 <img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
 
-- Plot the distribution of Z-scores
+- 绘制Z分数的分布图：
 
 ``` r
 plot_KOs_distribution(reporter_res, map_id = "map00780")
@@ -460,7 +392,7 @@ plot_KOs_distribution(reporter_res, map_id = "map00780")
 
 <img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
 
-- Plot as a network:
+- 绘制网络图：
 
 ``` r
 plot_KOs_network(reporter_res,
@@ -471,7 +403,7 @@ plot_KOs_network(reporter_res,
 
 <img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
 
-- Plot the KOs abundance in a pathway:
+- 在通路中绘制KOs丰度：
 
 ``` r
 plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
@@ -480,7 +412,7 @@ plot_KOs_box(reporter_res, map_id = "map00780", only_sig = TRUE)
 
 <img src="man/figures/README-unnamed-chunk-17-1.png" width="100%" />
 
-- Plot the KOs abundance in a pathway (heatmap):
+- 在通路中绘制KOs丰度（热图）：
 
 ``` r
 plot_KOs_heatmap(reporter_res,
@@ -491,7 +423,7 @@ plot_KOs_heatmap(reporter_res,
 
 <img src="man/figures/README-unnamed-chunk-18-1.png" width="100%" />
 
-- Plot the KEGG pathway map:
+- 绘制KEGG通路图：
 
 ``` r
 plot_KEGG_map(reporter_res, map_id = "map00780", color_var = "Z_score")
@@ -499,10 +431,9 @@ plot_KEGG_map(reporter_res, map_id = "map00780", color_var = "Z_score")
 
 <img src="man/figures/ko00780.Z_score.png" width="100%" />
 
-### Example for multi-group or longitudinal
+### 多组或纵向研究
 
-If our experimental design is more than two groups or longitudinal, we
-can choose multi-groups comparison (or correlation):
+如果我们的实验设计涉及多于两组或纵向研究，我们可以选择多组比较（或相关分析）：
 
 ``` r
 cat("Comparison: ", levels(factor(metadata$Group2)))
@@ -551,12 +482,11 @@ plot_KOs_in_pathway(reporter_res2, map_id = "map02060") + scale_y_log10()
 
 <img src="man/figures/README-unnamed-chunk-21-1.png" width="100%" />
 
-### Example for specified pattern
+### 指定pattern
 
-For example, groups “G1”, “G2”, and “G3” can be set as 1, 10, and 100 if
-an exponentially increasing trend is expected.
+例如，如果我们期望出现指数增长趋势，可以将组别 “G1”，“G2” 和 “G3” 设置为 1、10 和 100。
 
-We use 1,5,1 to found pathways with the down-up-down pattern
+我们使用 1、5、1 来寻找表现为下降-上升-下降模式的通路。
 
 ``` r
 reporter_res3 <- GRSA(KO_abundance, "Group2", metadata,
@@ -574,8 +504,7 @@ plot_KOs_in_pathway(reporter_res3, map_id = "map00860")
 
 <img src="man/figures/README-unnamed-chunk-22-2.png" width="100%" />
 
-To explore potential patterns within the data, clustering methods, such
-as C-means clustering, can be used.
+为了探索数据中的潜在patterns，使用聚类方法，如C均值聚类。
 
 ``` r
 rsa_cm_res <- RSA_by_cm(KO_abundance, "Group2", metadata,
@@ -595,55 +524,49 @@ plot_report_bar(rsa_cm_res, rs_threshold = 2.5, y_text_size = 10)
 
 <img src="man/figures/README-unnamed-chunk-23-2.png" width="100%" />
 
-## Details
+## 详细信息
 
-### Step by step
+### 逐步说明
 
-The one step function `reporter_score`/`GRSA` consists of three parts：
+单步函数 `reporter_score`/`GRSA` 包含三个部分：
 
-``` r
+```r
 data("KO_abundance_test")
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata, method = "wilcox.test")
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 ```
 
-1.  `ko.test`: this function help to calculate *p-value* for
-    KO_abundance by various built-in methods such as differential
-    analysis (`t.test`, `wilcox.test`, `kruskal.test`, `anova`) or
-    correlation analysis (`pearson`, `spearman`, `kendall`). **You can
-    also calculate this *p-value* for KO_abundance by other methods**
-    like “DESeq2”, “Edger”, “Limma”, “ALDEX”, “ANCOM” and do a p.adjust
-    yourself, then skip `ko.test` step go to step2…
-2.  `pvalue2zs`: this function transfers p-value of KOs to Z-score
-    (select mode: “mixed” or “directed”).
-3.  `get_reporter_score` this function calculate reporter score of each
-    pathways in a specific database. You can use a custom database here.
+1. `ko.test`: 此函数用于计算 KO_abundance 的 *p-value*，可使用各种内置方法，如差异分析 (`t.test`, `wilcox.test`, `kruskal.test`, `anova`) 或相关分析 (`pearson`, `spearman`, `kendall`)。**您也可以使用其他方法计算 KO_abundance 的 *p-value*，比如 “DESeq2”, “Edger”, “Limma”, “ALDEX”, “ANCOM”，并自行进行 p.adjust，然后跳过 `ko.test` 步骤，继续下一步……**
 
-Take the “Limma” as an example:
+2. `pvalue2zs`: 此函数将 KOs 的 *p-value* 转换为 Z 分数（选择模式: “mixed” 或 “directed”）。
 
-``` r
-# 1-1. Calculate p-value by Limma
+3. `get_reporter_score`: 此函数在特定数据库中计算每个通路的Reporter Score。您可以在此处使用自定义数据库。
+
+以 “Limma” 为例：
+
+```r
+# 1-1. 使用 Limma 计算 p-value
 ko_pvalue <- ko.test(KO_abundance, "Group", metadata, method = "none")
 
 ko_Limma_p <- pctax::diff_da(KO_abundance, group_df = metadata["Group"], method = "limma")
 
-# 1-2. Replace the p-value in ko_pvalue, remember to match the KO_ids
+# 1-2. 替换 ko_pvalue 中的 p-value，记得匹配 KO_ids
 ko_pvalue$`p.value` <- ko_Limma_p[match(ko_pvalue$KO_id, ko_Limma_p$tax), "pvalue"]
 
-# 2. Use `pvalue2zs` to get Z-score
+# 2. 使用 `pvalue2zs` 获取 Z 分数
 ko_stat <- pvalue2zs(ko_pvalue, mode = "directed")
 
-# 3. Use `get_reporter_score` to get reporter score
+# 3. 使用 `get_reporter_score` 获取Reporter Score
 reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 
-# 4. Combine the result
+# 4. 组合结果
 reporter_res1 <- combine_rs_res(KO_abundance, "Group", metadata, ko_stat, reporter_s1)
 
-# Then the reporter_res1 can be used for visualization
+# 然后可以使用 reporter_res1 进行可视化
 ```
 
-### Other commonly used enrichment methods
+### 其他常用的富集方法
 
 | Category | Method                                                            | Tools                                             | Notes                                                                                                                                                        |
 |:---------|:------------------------------------------------------------------|:--------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -656,17 +579,11 @@ reporter_res1 <- combine_rs_res(KO_abundance, "Group", metadata, ko_stat, report
 | FCS      | Gene Set Variation Analysis (GSVA)                                | GSVA (R package)                                  | A nonparametric, unsupervised method that transforms gene expression data into gene set scores for downstream differential pathway activity analysis.        |
 | PT       | Topology-based pathway enrichment analysis (TPEA)                 | TPEA (R package)                                  | Integrate topological properties and global upstream/downstream positions of genes in pathways.                                                              |
 
-Commonly used enrichment methods for omics data.
+组学数据常用的富集方法.
 
-`ReporterScore` also provides other enrichment methods like
-`KO_fisher`(fisher.test), `KO_enrich`(fisher.test, from
-`clusterProfiler`), `KO_gsea` (GSEA, from `clusterProfiler`), `KO_gsa`
-(GSA, from `GSA`), `KO_safe` (SAFE, from `safe`), `KO_padog` (PADOG,
-from `PADOG`), `KO_gsva` (GSVA, from `GSVA`).
+`ReporterScore` 还提供其他的富集方法，如 `KO_fisher`（fisher.test）、`KO_enrich`（fisher.test，来自 `clusterProfiler`）、`KO_gsea`（GSEA，来自 `clusterProfiler`）、`KO_gsa`（GSA，来自 `GSA`）、`KO_safe`（SAFE，来自 `safe`）、`KO_padog`（PADOG，来自 `PADOG`）、`KO_gsva`（GSVA，来自 `GSVA`）。
 
-The input data is from `reporter_score`, and also supports custom
-databases, so you can easily compare the results of various enrichment
-methods and conduct a comprehensive analysis:
+输入数据来自 `reporter_score`，同时支持自定义数据库，因此您可以轻松比较各种富集方法的结果，并进行全面的分析：
 
 ``` r
 # View(reporter_res2$reporter_s)
@@ -695,20 +612,13 @@ venn(venn_res, "network")
 
 <img src="man/figures/README-unnamed-chunk-25-1.png" width="100%" />
 
-## Other features
+## 其他功能
 
-### uplevel the KOs
+### KOs高层级整合
 
-[KEGG BRITE](https://www.genome.jp/kegg/brite.html) is a collection of
-hierarchical classification systems capturing functional hierarchies of
-various biological objects, especially those represented as KEGG
-objects.
+[KEGG BRITE](https://www.genome.jp/kegg/brite.html) 是一个层次分类系统的集合，捕捉了各种生物对象的功能层次结构，特别是那些作为 KEGG 对象表示的对象。
 
-We collected k00001 KEGG Orthology (KO) table so that you can summaries
-each levels abundance. Use `load_KO_htable` to get KO_htable and use
-`update_KO_htable` to update. Use `up_level_KO` can upgrade to specific
-level in one of “pathway”, “module”, “level1”, “level2”, “level3”,
-“module1”, “module2”, “module3”.
+我们收集了 k00001 KEGG Orthology (KO) 表，因此您可以总结每个层级的丰度。使用 `load_KO_htable` 获取 KO_htable，并使用 `update_KO_htable` 进行更新。使用 `up_level_KO` 可以将 KOs 升级到特定的层级，例如 “pathway”、”module”、”level1”、”level2”、”level3”、“module1”、“module2”、“module3”。
 
 ``` r
 KO_htable <- load_KO_htable()
@@ -754,7 +664,7 @@ pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) +
 
 ### CARD for ARGs
 
-For convenience, I also included the CARD database from
+为了方便，我还整合了CARD数据库的描述信息
 <https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2>.
 
 ``` r
@@ -807,7 +717,7 @@ head(CARDinfo$ARO_index)
 #> 3002527      antibiotic inactivation      AAC(2')-Ie
 ```
 
-# Reference
+# 参考文献
 
 1.  Patil, K. R. & Nielsen, J. Uncovering transcriptional regulation of
     metabolism by using metabolic network topology. Proc Natl Acad Sci U
