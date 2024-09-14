@@ -1,3 +1,9 @@
+# ReporterScore v0.1.8 Notes
+
+## Fixed
+
+- fixed the filepath problem ':' in Windows, issue [#6](https://github.com/Asa12138/ReporterScore/issues/6). <2024-09-14, Sat>
+
 # ReporterScore v0.1.7 Notes
 
 ## Added

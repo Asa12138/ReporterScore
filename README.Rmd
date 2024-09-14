@@ -43,6 +43,7 @@ sticker("~/Documents/R/test/icons/enrichment.png",
 `r badge_custom("blog", "@asa", "blue", "https://asa-blog.netlify.app/")`
 `r badge_cran_download("ReporterScore", type = "grand-total")`
 `r badge_cran_download("ReporterScore", type = "last-month")`
+
 `r badge_cran_release("ReporterScore","green")`
 `r badge_devel("Asa12138/ReporterScore", color = "green")`
 <!-- badges: end -->

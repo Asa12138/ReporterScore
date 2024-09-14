@@ -31,7 +31,7 @@ export_report_table <- function(reporter_res, dir_name, overwrite = FALSE) {
     utils::write.csv(reporter_res$reporter_s, file = file.path(dir_name, "reporter_s.csv"), row.names = F)
   }
   if (inherits(reporter_res, "rs_by_cm")) {
-    ncluster <- sum(grepl("Cluster", names(rsa_cm_res)))
+    ncluster <- sum(grepl("Cluster", names(reporter_res)))
     for (i in seq_len(ncluster)) {
       utils::write.csv(reporter_res[[paste0("Cluster", i)]]$ko_stat, file = file.path(dir_name, paste0("ko_stat_Cluster_", i, ".csv")), row.names = F)
       utils::write.csv(reporter_res[[paste0("Cluster", i)]]$reporter_s, file = file.path(dir_name, paste0("reporter_s_Cluster_", i, ".csv")), row.names = F)

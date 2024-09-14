@@ -48,14 +48,6 @@ enrich_res object
 \description{
 This function performs KO enrichment analysis using the `clusterProfiler` package.
 }
-\examples{
-## use `enricher` from the `clusterProfiler` package.
-if (requireNamespace("clusterProfiler")) {
-  data("reporter_score_res")
-  enrich_res <- KO_enrich(reporter_score_res)
-  plot(enrich_res)
-}
-}
 \seealso{
 Other common_enrich: 
 \code{\link{KO_fisher}()},

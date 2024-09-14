@@ -14,13 +14,6 @@
 #' @family common_enrich
 #' @return A data frame containing the enrichment results.
 #' @export
-#' @examples
-#' ## use `enricher` from the `clusterProfiler` package.
-#' if (requireNamespace("clusterProfiler")) {
-#'   data("reporter_score_res")
-#'   enrich_res <- KO_enrich(reporter_score_res)
-#'   plot(enrich_res)
-#' }
 KO_enrich <- function(ko_stat, padj_threshold = 0.05,
                       logFC_threshold = NULL, add_mini = NULL, p.adjust.method = "BH",
                       type = c("pathway", "module")[1], feature = "ko",

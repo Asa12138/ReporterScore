@@ -59,7 +59,7 @@ update_KO_file <- function(download_dir, RDSfile = NULL) {
       pathway_desc = pathway_desc, module_desc = module_desc,
       path2ko = path2ko, module2ko = module2ko, path2compound = path2compound, module2compound = module2compound
     )
-    saveRDS(KO_files, file = file.path(dd, paste0("KO_files", Sys.time(), ".RDS")))
+    saveRDS(KO_files, file = file.path(dd, paste0("KO_files_", gsub("[: ]", "_", Sys.time()), ".RDS")))
   } else {
     KO_files <- readRDS(RDSfile)
   }
@@ -69,18 +69,18 @@ update_KO_file <- function(download_dir, RDSfile = NULL) {
   KOlist$pathway <- KO_files$path2ko %>%
     dplyr::mutate(pathway = gsub("path:", "", pathway), ko = gsub("ko:", "", ko)) %>%
     dplyr::filter(grepl("map", pathway)) %>%
-    custom_modulelist(., KO_files$pathway_desc)
+    custom_modulelist(., KO_files$pathway_desc, verbose = FALSE)
   KOlist$module <- KO_files$module2ko %>%
     dplyr::mutate(pathway = gsub("md:", "", pathway), ko = gsub("ko:", "", ko)) %>%
-    custom_modulelist(., KO_files$module_desc)
+    custom_modulelist(., KO_files$module_desc, verbose = FALSE)
   CPDlist <- list()
   CPDlist$pathway <- KO_files$path2compound %>%
     dplyr::mutate(pathway = gsub("path:", "", pathway), ko = gsub("cpd:", "", ko)) %>%
     dplyr::filter(grepl("map", pathway)) %>%
-    custom_modulelist(., KO_files$pathway_desc)
+    custom_modulelist(., KO_files$pathway_desc, verbose = FALSE)
   CPDlist$module <- KO_files$module2ko %>%
     dplyr::mutate(pathway = gsub("md:", "", pathway), ko = gsub("cpd:", "", ko)) %>%
-    custom_modulelist(., KO_files$module_desc)
+    custom_modulelist(., KO_files$module_desc, verbose = FALSE)
   attributes(CPDlist)$download_time <- attributes(KOlist)$download_time <- Sys.time()
 
   save(KOlist, file = paste0(pack_dir, "/new_KOlist.rda"))
@@ -122,7 +122,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
     } else {
       KEGGREST::keggGet(paste0("br:", br_id)) -> a
       if (download) {
-        writeLines(a, con = file.path(dd, paste0(br_id, "_", Sys.time(), ".keg")), sep = "")
+        writeLines(a, con = file.path(dd, paste0(br_id, "_", gsub("[: ]", "_", Sys.time()), ".keg")), sep = "")
         pcutils::dabiao("Download done")
       }
       lines <- strsplit(a, "\n")[[1]]
@@ -158,7 +158,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
     } else {
       KEGGREST::keggGet(paste0("br:", br_id)) -> a
       if (download) {
-        writeLines(a, con = file.path(dd, paste0(br_id, "_", Sys.time(), ".keg")), sep = "")
+        writeLines(a, con = file.path(dd, paste0(br_id, "_", gsub("[: ]", "_", Sys.time()), ".keg")), sep = "")
         pcutils::dabiao("Download done")
       }
       lines <- strsplit(a, "\n")[[1]]
@@ -184,7 +184,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
     } else {
       KEGGREST::keggGet(paste0("br:", br_id)) -> a
       if (download) {
-        writeLines(a, con = file.path(dd, paste0(br_id, "_", Sys.time(), ".keg")), sep = "")
+        writeLines(a, con = file.path(dd, paste0(br_id, "_", gsub("[: ]", "_", Sys.time()), ".keg")), sep = "")
         pcutils::dabiao("Download done")
       }
       lines <- strsplit(a, "\n")[[1]]
@@ -224,7 +224,7 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
       } else {
         KEGGREST::keggGet(paste0("br:", i)) -> a
         if (download) {
-          writeLines(a, con = file.path(dd, paste0(i, "_", Sys.time(), ".keg")), sep = "")
+          writeLines(a, con = file.path(dd, paste0(i, "_", gsub("[: ]", "_", Sys.time()), ".keg")), sep = "")
           pcutils::dabiao(i, ": download done")
         }
         lines <- strsplit(a, "\n")[[1]]
@@ -599,7 +599,7 @@ update_org_pathway <- function(org = "hsa", RDS_file = NULL, download = TRUE, do
       hsa_info[[1]]
     })
     names(hsa_gene) <- hsa_path$pathID
-    if (download) saveRDS(list(org_pathway = org_pathway, hsa_gene = hsa_gene), file = file.path(dd, paste0(org, "_", Sys.time(), ".RDS")))
+    if (download) saveRDS(list(org_pathway = org_pathway, hsa_gene = hsa_gene), file = file.path(dd, paste0(org, "_", gsub("[: ]", "_", Sys.time()), ".RDS")))
   }
 
   all_hsa_gene <- lapply(hsa_gene, pre_gene_in_pathway)
