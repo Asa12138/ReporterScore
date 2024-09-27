@@ -616,12 +616,12 @@ random_mean_sd <- function(vec, Knum, perm = 1000) {
 #' @param feature "ko", "compound", "gene"
 #' @param gene one of "symbol","id"
 #' @param verbose logical
-#' @param chr keep chraacter or not
+#' @param chr keep character or not
 #'
 #' @return modulelist
 #' @noRd
 get_modulelist <- function(type, feature, gene = "symbol", verbose = TRUE, chr = FALSE) {
-  type <- match.arg(type, c("pathway", "module"))
+  # type <- match.arg(type, c("pathway", "module"))
   feature <- match.arg(feature, c("ko", "compound", "gene"))
   if (type %in% c("pathway", "module")) {
     # reference pathway
