@@ -740,6 +740,18 @@ get_reporter_score <- function(
     mean_sd <- random_mean_sd(clean.KO, KOnum, perm = perm)
     Z_score <- sum(z$Z_score, na.rm = TRUE) / sqrt(KOnum)
 
+    # 考虑浮点数误差
+    if (isTRUE(all.equal(mean_sd$mean_sd[2], 0))) {
+      if (verbose) {
+        message("Warning: the standard deviation of the background distribution is zero, which may cause an error in calculating the reporter score.\nPlease check the input data, maybe all input KO are included in ", modulelist$id[i], "!")
+      }
+      if (attributes(ko_stat)$mode == "directed") {
+        return(c(exist_KO, significant_KO, sig_up, sig_down, NA, NA, NA, NA, NA))
+      } else {
+        return(c(exist_KO, significant_KO, NA, NA, NA, NA, NA))
+      }
+    }
+
     reporter_score <- (Z_score - mean_sd$mean_sd[1]) / mean_sd$mean_sd[2]
 
     if (attributes(ko_stat)$mode == "directed") {
