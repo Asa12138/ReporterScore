@@ -45,12 +45,14 @@ export_report_table <- function(reporter_res, dir_name, overwrite = FALSE) {
 #' @param rs_threshold plot threshold vector, default:1.64
 #' @param y_text_size y_text_size
 #' @param str_width str_width to wrap
-#' @param mode 1~2 plot style.
+#' @param mode 1~3 plot style.
 #' @param show_ID show pathway id
 #' @param Pathway_description show KO description rather than KO id.
 #' @param facet_level facet plot if the type is "pathway" or "module"
 #' @param facet_str_width str width for facet label
 #' @param facet_anno annotation table for facet, two columns, first is level summary, second is pathway id.
+#' @param plot_line plot line or not
+#' @param reorder reorder the order of the pathways
 #'
 #' @import ggplot2
 #' @return ggplot
@@ -61,7 +63,8 @@ export_report_table <- function(reporter_res, dir_name, overwrite = FALSE) {
 #' data("reporter_score_res")
 #' plot_report(reporter_score_res, rs_threshold = c(2.5, -2.5), y_text_size = 10, str_width = 40)
 plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size = 13, str_width = 100, show_ID = FALSE,
-                        Pathway_description = TRUE, facet_level = FALSE, facet_anno = NULL, facet_str_width = 15) {
+                        Pathway_description = TRUE, facet_level = FALSE, facet_anno = NULL, facet_str_width = 15,
+                        plot_line = TRUE, reorder = FALSE) {
   Group <- Description <- ReporterScore <- Exist_K_num <- NULL
   reporter_res2 <- cols1 <- title <- breaks <- NULL
 
@@ -90,43 +93,45 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
   if (show_ID) reporter_res2$Description <- paste0(reporter_res2$ID, ": ", reporter_res2$Description)
   if (!Pathway_description) reporter_res2$Description <- reporter_res2$ID
 
-  if (mode == 1) {
-    if (flag) {
+  if (flag) {
+    reporter_res2$Description <- factor(reporter_res2$Description,
+      levels = dplyr::arrange(reporter_res2, Group, ReporterScore) %>%
+        dplyr::pull(Description) %>% unique()
+    )
+  } else {
+    if (reorder) {
       reporter_res2$Description <- factor(reporter_res2$Description,
-        levels = dplyr::arrange(reporter_res2, Group, ReporterScore) %>%
+        levels = mutate(reporter_res2, sign = ReporterScore < 0) %>%
+          dplyr::arrange(sign, ReporterScore) %>%
           dplyr::pull(Description) %>% unique()
       )
-      p <- ggplot(reporter_res2, aes(ReporterScore, Description, fill = Group))
     } else {
       reporter_res2$Description <- factor(reporter_res2$Description,
         levels = dplyr::arrange(reporter_res2, ReporterScore) %>%
           dplyr::pull(Description) %>% unique()
       )
-      p <- ggplot(reporter_res2, aes(ReporterScore, Description, fill = Group))
     }
+  }
+
+  if (mode == 1) {
+    p <- ggplot(reporter_res2, aes(ReporterScore, Description, fill = Group))
     p <- p + geom_bar(stat = "identity", position = "dodge") +
       scale_fill_manual(values = cols1) +
       theme_light()
   }
   if (mode == 2) {
-    if (flag) {
-      reporter_res2$Description <- factor(reporter_res2$Description,
-        levels = dplyr::arrange(reporter_res2, Group, ReporterScore) %>%
-          dplyr::pull(Description) %>% unique()
-      )
-      p <- ggplot(reporter_res2, aes(ReporterScore, Description, size = Exist_K_num, fill = Exist_K_num))
-    } else {
-      reporter_res2$Description <- factor(reporter_res2$Description,
-        levels = dplyr::arrange(reporter_res2, ReporterScore) %>%
-          dplyr::pull(Description) %>% unique()
-      )
-      p <- ggplot(reporter_res2, aes(ReporterScore, Description, size = Exist_K_num, fill = Exist_K_num))
-    }
+    p <- ggplot(reporter_res2, aes(ReporterScore, Description, size = Exist_K_num, fill = Exist_K_num))
     p <- p +
       geom_point(shape = 21, position = "dodge") +
       scale_fill_gradient(low = "#FF000033", high = "red", guide = "legend") + theme_light()
   }
-
+  if (mode == 3) {
+    p <- ggplot(reporter_res2, aes(ReporterScore, Description, color = Group))
+    p <- p +
+      geom_segment(aes(xend = 0, yend = Description), color = "grey", linewidth = 1) +
+      geom_point(position = position_dodge(width = 0.4), size = 4) +
+      scale_color_manual(values = cols1) + theme_light()
+  }
   p <- p + labs(y = "") +
     scale_y_discrete(labels = label_wrap_gen(width = str_width)) +
     scale_x_continuous(breaks = breaks) +
@@ -142,12 +147,15 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
         strip.text = element_text(face = "bold", color = "black")
       )
   }
-  if (attributes(reporter_res)$mode == "directed" & is.null(attributes(reporter_res)$pattern)) {
-    if (any(reporter_res2$ReporterScore > rs_threshold[2])) p <- p + geom_vline(xintercept = rs_threshold[2], linetype = 2)
-    if (any(reporter_res2$ReporterScore < rs_threshold[1])) p <- p + geom_vline(xintercept = rs_threshold[1], linetype = 2)
-  } else {
-    p <- p + geom_vline(xintercept = rs_threshold[2], linetype = 2)
+  if (plot_line) {
+    if (attributes(reporter_res)$mode == "directed" & is.null(attributes(reporter_res)$pattern)) {
+      if (any(reporter_res2$ReporterScore > rs_threshold[2])) p <- p + geom_vline(xintercept = rs_threshold[2], linetype = 2)
+      if (any(reporter_res2$ReporterScore < rs_threshold[1])) p <- p + geom_vline(xintercept = rs_threshold[1], linetype = 2)
+    } else {
+      p <- p + geom_vline(xintercept = rs_threshold[2], linetype = 2)
+    }
   }
+
   # if(length(attributes(reporter_res)$vs_group)==2)p=p+labs(title = paste(attributes(reporter_res)$vs_group,collapse = " vs "))
   p <- p + labs(title = title)
   return(p)

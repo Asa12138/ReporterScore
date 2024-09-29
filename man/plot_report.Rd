@@ -15,7 +15,9 @@ plot_report(
   Pathway_description = TRUE,
   facet_level = FALSE,
   facet_anno = NULL,
-  facet_str_width = 15
+  facet_str_width = 15,
+  plot_line = TRUE,
+  reorder = FALSE
 )
 }
 \arguments{
@@ -23,7 +25,7 @@ plot_report(
 
 \item{rs_threshold}{plot threshold vector, default:1.64}
 
-\item{mode}{1~2 plot style.}
+\item{mode}{1~3 plot style.}
 
 \item{y_text_size}{y_text_size}
 
@@ -38,6 +40,10 @@ plot_report(
 \item{facet_anno}{annotation table for facet, two columns, first is level summary, second is pathway id.}
 
 \item{facet_str_width}{str width for facet label}
+
+\item{plot_line}{plot line or not}
+
+\item{reorder}{reorder the order of the pathways}
 }
 \value{
 ggplot
