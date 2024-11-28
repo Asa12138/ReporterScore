@@ -639,7 +639,7 @@ load_org_pathway <- function(org = "hsa", verbose = TRUE) {
     message("No pathway information for organism '", org, "', download?\n")
     flag <- readline("yes/no(y/n)?")
     if (tolower(flag) %in% c("yes", "y")) {
-      update_org_pathway(org = org)
+      update_org_pathway(org = org, download_dir = tempdir())
       load(path_file, envir = envir)
     } else {
       message("No pathway information for organism '", org, "', please use `update_org_pathway('", org, "')` to download.")

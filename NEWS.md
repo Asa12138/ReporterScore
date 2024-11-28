@@ -1,7 +1,8 @@
-# ReporterScore v0.1.8 Notes
+# ReporterScore v0.1.9 Notes
 
 ## Fixed
 
+- fixed `load_org_pathway` function <2024-11-28, Thu>
 - fixed issue [#8](https://github.com/Asa12138/ReporterScore/issues/8) <2024-09-27, Fri>
 - fixed the filepath problem ':' in Windows, issue [#6](https://github.com/Asa12138/ReporterScore/issues/6). <2024-09-14, Sat>
 
