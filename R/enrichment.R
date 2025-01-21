@@ -232,7 +232,7 @@ plot_enrich_res <- function(enrich_res, mode = 1, padj_threshold = 0.05,
   Description <- Significant_K_num <- order_value <- x <- fill <- size <- size_lab <- x_lab <- NULL
   GO <- pre_enrich_res(enrich_res, padj_threshold, show_ID, Pathway_description, facet_level, facet_anno)
 
-  GO$Description <- factor(GO$Description, levels = dplyr::arrange(GO, -order_value) %>% dplyr::pull(Description))
+  GO$Description <- factor(GO$Description, levels = dplyr::arrange(GO, -order_value) %>% dplyr::pull(Description) %>% unique())
   # 经典图
   if (mode == 1) {
     p <- ggplot(data = GO, aes(y = Description, x = x, fill = fill)) +
