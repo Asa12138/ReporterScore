@@ -37,10 +37,13 @@
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/ko.test.html</loc></url>
 <url><loc>/reference/load_CARDinfo.html</loc></url>
+<url><loc>/reference/load_CAZy_info.html</loc></url>
+<url><loc>/reference/load_Enzyme_info.html</loc></url>
 <url><loc>/reference/load_GOlist.html</loc></url>
 <url><loc>/reference/load_htable.html</loc></url>
 <url><loc>/reference/mmu_kegg_pathway.html</loc></url>
 <url><loc>/reference/modify_description.html</loc></url>
+<url><loc>/reference/parse_enzyme_dat.html</loc></url>
 <url><loc>/reference/pipe.html</loc></url>
 <url><loc>/reference/plot.cm_res.html</loc></url>
 <url><loc>/reference/plot_KEGG_map.html</loc></url>
@@ -61,6 +64,8 @@
 <url><loc>/reference/reporter_score_res.html</loc></url>
 <url><loc>/reference/up_level_KO.html</loc></url>
 <url><loc>/reference/update_CARDinfo.html</loc></url>
+<url><loc>/reference/update_CAZy_info.html</loc></url>
+<url><loc>/reference/update_Enzyme_info.html</loc></url>
 <url><loc>/reference/update_GOlist.html</loc></url>
 <url><loc>/reference/update_KEGG.html</loc></url>
 </urlset>
