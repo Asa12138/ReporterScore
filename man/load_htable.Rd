@@ -7,6 +7,7 @@
 \alias{load_KO_desc}
 \alias{load_KO_htable}
 \alias{load_Pathway_htable}
+\alias{load_Enzyme_htable}
 \alias{load_Module_htable}
 \alias{load_Compound_htable}
 \alias{load_org_pathway}
@@ -23,6 +24,8 @@ load_KO_desc(verbose = TRUE)
 load_KO_htable(verbose = TRUE)
 
 load_Pathway_htable(verbose = TRUE)
+
+load_Enzyme_htable(verbose = TRUE)
 
 load_Module_htable(verbose = TRUE)
 
@@ -50,6 +53,8 @@ KO_htable
 
 Pathway_htable
 
+Enzyme_htable
+
 Module_htable
 
 Compound_htable
@@ -68,6 +73,8 @@ Load the KO description (from 'KEGG')
 Load the KO_htable (from 'KEGG')
 
 Load the Pathway_htable (from 'KEGG')
+
+Load the Enzyme_htable (from 'KEGG')
 
 Load the Module_htable (from 'KEGG')
 

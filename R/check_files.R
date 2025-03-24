@@ -100,7 +100,7 @@ update_KO_file <- function(download_dir, RDSfile = NULL) {
 #' @rdname update_KEGG
 #'
 update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir = NULL) {
-  type <- match.arg(type, c("ko", "module", "pathway", "compound"))
+  type <- match.arg(type, c("ko", "module", "enzyme", "pathway", "compound"))
 
   pack_dir <- tools::R_user_dir("ReporterScore")
   if (!dir.exists(pack_dir)) dir.create(pack_dir, recursive = TRUE)
@@ -175,6 +175,31 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
 
     attributes(Module_htable)$download_time <- attributes(Module_htable)$build_time <- Sys.time()
     save(Module_htable, file = paste0(pack_dir, "/new_Module_htable.rda"))
+  }
+  if (type == "enzyme") {
+    br_id <- "ko01000"
+    if (!is.null(keg_file)) {
+      if (!grepl(br_id, keg_file)) stop("keg_file should be path of ", br_id, ".keg.")
+      lines <- readLines(keg_file, warn = FALSE)
+    } else {
+      # https://rest.kegg.jp/get/br:ko01000
+      KEGGREST::keggGet(paste0("br:", br_id)) -> a
+      if (download) {
+        writeLines(a, con = file.path(dd, paste0(br_id, "_", gsub("[: ]", "_", Sys.time()), ".keg")), sep = "")
+        pcutils::dabiao("Download done")
+      }
+      lines <- strsplit(a, "\n")[[1]]
+    }
+    df_res <- brite2df(lines)
+
+    Enzyme_htable <- df_res
+    colnames(Enzyme_htable) <- c(
+      "Enzyme1_name", "Enzyme2_name",
+      "Enzyme3_name", "Enzyme4_name", "Module_id", "Module_name"
+    )
+
+    attributes(Enzyme_htable)$download_time <- attributes(Enzyme_htable)$build_time <- Sys.time()
+    save(Enzyme_htable, file = paste0(pack_dir, "/new_Enzyme_htable.rda"))
   }
   if (type == "pathway") {
     br_id <- "br08901"
@@ -260,13 +285,16 @@ update_htable <- function(type, keg_file = NULL, download = FALSE, download_dir 
 #' head(Pathway_htable)
 load_htable <- function(type, verbose = TRUE) {
   envir <- environment()
-  type <- match.arg(type, c("ko", "module", "pathway", "compound"))
+  type <- match.arg(type, c("ko", "module", "enzyme", "pathway", "compound"))
   switch(type,
     "ko" = {
       prefix <- "KO_htable"
     },
     "module" = {
       prefix <- "Module_htable"
+    },
+    "enzyme" = {
+      prefix <- "Enzyme_htable"
     },
     "pathway" = {
       prefix <- "Pathway_htable"
@@ -311,7 +339,7 @@ load_something <- function(prefix, verbose = TRUE) {
     pcutils::dabiao("load ", prefix)
     if (!is.null(attributes(res)$"download_time")) {
       pcutils::dabiao(paste0(prefix, " download time: ", attributes(res)$"download_time"))
-      message("If you want to update ", prefix, ", use `update_GOlist()`")
+      message("If you want to update ", prefix, ", use `update_", prefix, "()`")
     }
   }
   return(res)
@@ -399,6 +427,16 @@ load_KO_htable <- function(verbose = TRUE) {
 #' @return Pathway_htable
 load_Pathway_htable <- function(verbose = TRUE) {
   load_htable(type = "pathway", verbose = verbose)
+}
+
+#' Load the Enzyme_htable (from 'KEGG')
+#'
+#' @rdname load_htable
+#'
+#' @export
+#' @return Enzyme_htable
+load_Enzyme_htable <- function(verbose = TRUE) {
+  load_htable(type = "enzyme", verbose = verbose)
 }
 
 #' Load the Module_htable (from 'KEGG')
@@ -818,7 +856,7 @@ load_GOinfo <- function(verbose = TRUE) {
 #' update CARDinfo from (from 'CARD' database)
 #'
 #' @param download_dir download_dir
-#' @param card_data card_data from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2
+#' @param card_data card_data from https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2
 #'
 #' @export
 #' @return No value
@@ -829,15 +867,15 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
   if (is.null(card_data)) {
     if (is.null(download_dir)) stop("Please set download_dir when card_data is NULL.")
     if (!dir.exists(download_dir)) dir.create(download_dir, recursive = TRUE)
-    pcutils::dabiao("Trying to download files from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2 ")
+    pcutils::dabiao("Trying to download files from https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2 ")
     ori_time <- getOption("timeout")
     on.exit(options(timeout = ori_time))
 
     options(timeout = 300)
     tryCatch(expr = {
-      download.file("https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2", destfile = file.path(download_dir, "card-data.tar.bz2"))
+      download.file("https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2", destfile = file.path(download_dir, "card-data.tar.bz2"))
     }, error = function(e) {
-      stop("Try download yourself from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2 ")
+      stop("Try download yourself from https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2 ")
     })
     card_data <- file.path(download_dir, "card-data.tar.bz2")
   } else {
@@ -845,7 +883,7 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
   }
   lib_ps("R.utils", library = FALSE)
   R.utils::bunzip2(card_data, destname = file.path(download_dir, "card-data.tar"), remove = FALSE, overwrite = TRUE)
-  utils::untar(tarfile = file.path(download_dir, "card-data.tar"), exdir = file.path(download_dir, "card-data"))
+  utils::untar(tarfile = file.path(download_dir, "card-data.tar"), exdir = normalizePath(file.path(download_dir, "card-data")))
 
   {
     ARO_index <- readr::read_delim(file.path(download_dir, "card-data", "aro_index.tsv"), delim = "\t", progress = FALSE) %>% as.data.frame()
@@ -854,13 +892,37 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
     antibiotics <- readr::read_delim(file.path(download_dir, "card-data", "shortname_antibiotics.tsv"), delim = "\t") %>% as.data.frame()
   } %>% suppressMessages()
 
+  lapply(list.files(file.path(download_dir, "card-data"), "nucleotide", full.names = TRUE), pcutils::read_fasta) %>% do.call(rbind, .) -> tmp_fa
+  tmp_fa <- mutate(tmp_fa, `ARO Accession` = gsub(".*(ARO:\\d+)\\|.*", "\\1", Sequence_ID), length = nchar(Sequence))
+
   `ARO Accession` <- NULL
-  ARO_index <- dplyr::distinct(ARO_index, `ARO Accession`, .keep_all = TRUE)
+  ARO_index <- dplyr::left_join(ARO_index, tmp_fa[, 3:4])
+  ARO_index <- dplyr::distinct(ARO_index, `ARO Accession`, .keep_all = TRUE) %>% as.data.frame()
   rownames(ARO_index) <- gsub("ARO:", "", (ARO_index$`ARO Accession`))
+
+  ARO_index <- pre_drug_class(ARO_index)
+
   CARDinfo <- list(ARO_index = ARO_index, antibiotics = antibiotics)
   attributes(CARDinfo)$download_time <- Sys.time()
   save(CARDinfo, file = paste0(pack_dir, "/new_CARDinfo.rda"))
   pcutils::dabiao(paste0("Update done at ", Sys.time()))
+}
+
+pre_drug_class <- function(ARO_index) {
+  pcutils::explode(ARO_index[, c("ARO Accession", "Drug Class")], 2, ";") -> tmp_drug
+  tmp_drug <- mutate(tmp_drug, Drug_Class = gsub(" antibiotic", "", `Drug Class`))
+  tmp_drug$Drug_Class <- ifelse(grepl("streptogramin|macrolide|lincosamide", tmp_drug$Drug_Class), "MLS", tmp_drug$Drug_Class)
+  tmp_drug$Drug_Class <- ifelse(grepl("penicillin|penam|cephalosporin|carbapenem|cephamycin|penem|monobactam", tmp_drug$Drug_Class), "beta-lactams", tmp_drug$Drug_Class)
+
+  dplyr::distinct(tmp_drug, `ARO Accession`, Drug_Class) %>%
+    dplyr::group_by(`ARO Accession`) %>%
+    dplyr::summarise(Drug_Class = ifelse(dplyr::n() > 1, "Multidrug", Drug_Class)) %>%
+    as.data.frame() -> tmp_drug2
+  rownames(tmp_drug2) <- gsub("ARO:", "", (tmp_drug2$`ARO Accession`))
+  substr(tmp_drug2$`Drug_Class`, 1, 1) <- toupper(substr(tmp_drug2$`Drug_Class`, 1, 1))
+
+  ARO_index$Drug_Class <- tmp_drug2[rownames(ARO_index), "Drug_Class"]
+  ARO_index
 }
 
 #' Load the CARDinfo (from CARD database)
@@ -871,4 +933,283 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
 #' @return CARDinfo
 load_CARDinfo <- function(verbose = TRUE) {
   return(load_something("CARDinfo", verbose = verbose))
+}
+
+
+#' Update CAZy_info from CAZy database
+#'
+#' @param download_dir Directory to download the CAZy data files. If NULL, a temporary directory will be used.
+#' @param fam_activities_file the CAZy family activities file.
+#' @param fam_subfam_ec_file the CAZy family-subfamily-EC file.
+#'
+#' @export
+#' @return No value
+update_CAZy_info <- function(download_dir = NULL,
+                             fam_activities_file = NULL,
+                             fam_subfam_ec_file = NULL) {
+  # Set download directory
+  if (is.null(download_dir)) {
+    download_dir <- tempdir()
+  }
+  if (!dir.exists(download_dir)) {
+    dir.create(download_dir, recursive = TRUE)
+  }
+
+  fam_activities_url <- "https://bcb.unl.edu/dbCAN2/download/Databases/V12/CAZyDB.08062022.fam-activities.txt"
+  fam_subfam_ec_url <- "https://bcb.unl.edu/dbCAN2/download/Databases/V12/CAZyDB.08062022.fam.subfam.ec.txt"
+
+  ori_time <- getOption("timeout")
+  on.exit(options(timeout = ori_time))
+  options(timeout = 300)
+
+  # Download or use provided files
+  if (is.null(fam_activities_file)) {
+    fam_activities_file <- file.path(download_dir, "CAZyDB.fam-activities.txt")
+    pcutils::dabiao("Downloading CAZyDB.fam-activities.txt...")
+    tryCatch(
+      {
+        download.file(fam_activities_url, destfile = fam_activities_file)
+      },
+      error = function(e) {
+        stop("Failed to CAZyDB.fam-activities.txt. Please check the URL or download manually.")
+      }
+    )
+  } else {
+    if (!file.exists(fam_activities_file)) stop("File not found: ", fam_activities_file)
+  }
+
+  if (is.null(fam_subfam_ec_file)) {
+    fam_subfam_ec_file <- file.path(download_dir, "CAZyDB.fam.subfam.ec.txt")
+    pcutils::dabiao("Downloading CAZyDB.fam.subfam.ec.txt...")
+    tryCatch(
+      {
+        download.file(fam_subfam_ec_url, destfile = fam_subfam_ec_file)
+      },
+      error = function(e) {
+        stop("Failed to download CAZyDB.fam.subfam.ec.txt. Please check the URL or download manually.")
+      }
+    )
+  } else {
+    if (!file.exists(fam_subfam_ec_file)) stop("File not found: ", fam_subfam_ec_file)
+  }
+
+  # Read and process data
+  pcutils::dabiao("Reading and processing CAZy data...")
+  fam_activities <- readr::read_delim(fam_activities_file, delim = "\t", col_names = c("Family", "Description"), progress = FALSE, skip = 1) %>% as.data.frame()
+  fam_subfam_ec <- readr::read_delim(fam_subfam_ec_file, delim = "\t", col_names = c("Sub_family", "Accession", "EC"), progress = FALSE) %>% as.data.frame()
+
+  # Save as CAZy_info object
+  CAZy_info <- list(fam_activities = fam_activities, fam_subfam_ec = fam_subfam_ec)
+  attributes(CAZy_info)$download_time <- Sys.time()
+
+  pack_dir <- tools::R_user_dir("ReporterScore")
+  if (!dir.exists(pack_dir)) {
+    dir.create(pack_dir, recursive = TRUE)
+  }
+  save(CAZy_info, file = file.path(pack_dir, "new_CAZy_info.rda"))
+
+  pcutils::dabiao(paste0("CAZy data update completed at ", Sys.time()))
+}
+
+#' Load the CAZy_info (from CAZy database)
+#'
+#' @param verbose logical
+#'
+#' @export
+#' @return CAZy_info
+load_CAZy_info <- function(verbose = TRUE) {
+  return(load_something("CAZy_info", verbose = verbose))
+}
+
+
+#' Update Enzyme_info from ExPASy Enzyme database
+#'
+#' @param download_dir Directory to download the Enzyme data files. If NULL, a temporary directory will be used.
+#' @param enzyme_dat_file Path to the manually downloaded `enzyme.dat` file. If NULL, the file will be downloaded.
+#' @param enzclass_file Path to the manually downloaded `enzclass.txt` file. If NULL, the file will be downloaded.
+#'
+#' @export
+#' @return No value
+update_Enzyme_info <- function(download_dir = NULL,
+                               enzyme_dat_file = NULL,
+                               enzclass_file = NULL) {
+  # Set download directory
+  if (is.null(download_dir)) {
+    download_dir <- tempdir()
+  }
+  if (!dir.exists(download_dir)) {
+    dir.create(download_dir, recursive = TRUE)
+  }
+
+  # URLs for the Enzyme data files
+  enzyme_dat_url <- "https://ftp.expasy.org/databases/enzyme/enzyme.dat"
+  enzclass_url <- "https://ftp.expasy.org/databases/enzyme/enzclass.txt"
+
+  ori_time <- getOption("timeout")
+  on.exit(options(timeout = ori_time))
+  options(timeout = 300)
+
+  # Download or use provided files
+  if (is.null(enzyme_dat_file)) {
+    enzyme_dat_file <- file.path(download_dir, "enzyme.dat")
+    pcutils::dabiao("Downloading enzyme.dat...")
+    tryCatch(
+      {
+        download.file(enzyme_dat_url, destfile = enzyme_dat_file)
+      },
+      error = function(e) {
+        stop("Failed to download enzyme.dat. Please check the URL or download manually.")
+      }
+    )
+  } else {
+    if (!file.exists(enzyme_dat_file)) stop("File not found: ", enzyme_dat_file)
+  }
+
+  if (is.null(enzclass_file)) {
+    enzclass_file <- file.path(download_dir, "enzclass.txt")
+    pcutils::dabiao("Downloading enzclass.txt...")
+    tryCatch(
+      {
+        download.file(enzclass_url, destfile = enzclass_file)
+      },
+      error = function(e) {
+        stop("Failed to download enzclass.txt. Please check the URL or download manually.")
+      }
+    )
+  } else {
+    if (!file.exists(enzclass_file)) stop("File not found: ", enzclass_file)
+  }
+
+  # Read and process data
+  pcutils::dabiao("Reading and processing Enzyme data...")
+  enzyme_df <- parse_enzyme_dat(enzyme_dat_file)
+  enzclass <- readr::read_lines(enzclass_file)
+  enzclass <- enzclass[grep("^\\d", enzclass)]
+  enzclass_df <- data.frame(
+    EC = gsub("(^\\d+.*- )(.*)", "\\1", enzclass) %>% gsub(" ", "", .),
+    Description = gsub("(^\\d+.*- )(.*)\\.", "\\2", enzclass) %>% trimws()
+  )
+
+  # Save as Enzyme_info object
+  Enzyme_info <- list(enzyme_df = enzyme_df, enzclass_df = enzclass_df)
+  attributes(Enzyme_info)$download_time <- Sys.time()
+
+  pack_dir <- tools::R_user_dir("ReporterScore")
+  if (!dir.exists(pack_dir)) {
+    dir.create(pack_dir, recursive = TRUE)
+  }
+  save(Enzyme_info, file = file.path(pack_dir, "new_Enzyme_info.rda"))
+
+  pcutils::dabiao(paste0("Enzyme data update completed at ", Sys.time()))
+}
+
+#' Load the Enzyme_info (from ExPASy Enzyme database)
+#'
+#' @param verbose logical
+#'
+#' @export
+#' @return Enzyme_info
+load_Enzyme_info <- function(verbose = TRUE) {
+  return(load_something("Enzyme_info", verbose = verbose))
+}
+
+
+#' Parse enzyme.dat file into a structured data frame
+#'
+#' @param file_path Path to the enzyme.dat file.
+#'
+#' @return A data frame with columns: EC, Name, Aliases, Reaction, Comments, SwissProt_Refs.
+parse_enzyme_dat <- function(file_path) {
+  pcutils::dabiao("Parsing enzyme.dat")
+  # Read the file line by line
+  lines <- readr::read_lines(file_path)
+
+  first_idx <- grep("^ID", lines)[1]
+
+  db_info <- trimws(substr(lines[1:first_idx - 1], 3, nchar(lines[1:first_idx - 1])))
+  db_info <- paste0(db_info, collapse = "\n")
+  # Initialize variables to store parsed data
+  entries <- list()
+  current_entry <- NULL
+  lines <- lines[first_idx:length(lines)]
+
+  # Loop through each line
+  for (line in lines) {
+    # Skip empty lines
+    if (nchar(trimws(line)) == 0) next
+
+    # Extract the line code (first 2 characters)
+    line_code <- substr(line, 1, 2)
+
+    # Extract the content (from character 6 onwards)
+    content <- trimws(substr(line, 6, nchar(line)))
+
+    # Process based on line code
+    if (line_code == "ID") {
+      # Start a new entry
+      if (!is.null(current_entry)) {
+        entries <- append(entries, list(current_entry))
+      }
+      current_entry <- list(
+        EC = content,
+        Name = NA,
+        Aliases = NA,
+        Reaction = NA,
+        Comments = NA,
+        SwissProt_Refs = NA
+      )
+    } else if (line_code == "DE") {
+      # Set the enzyme name
+      current_entry$Name <- gsub("\\.$", "", content)
+    } else if (line_code == "AN") {
+      # Append aliases
+      if (is.na(current_entry$Aliases)) {
+        current_entry$Aliases <- gsub("\\.$", "", content)
+      } else {
+        current_entry$Aliases <- paste(current_entry$Aliases, gsub("\\.$", "", content), sep = "; ")
+      }
+    } else if (line_code == "CA") {
+      # Append catalytic reaction
+      if (is.na(current_entry$Reaction)) {
+        current_entry$Reaction <- gsub("\\.$", "", content)
+      } else {
+        current_entry$Reaction <- paste(current_entry$Reaction, gsub("\\.$", "", content), sep = "; ")
+      }
+    } else if (line_code == "CC") {
+      # Append comments
+      if (is.na(current_entry$Comments)) {
+        current_entry$Comments <- content
+      } else {
+        current_entry$Comments <- paste(current_entry$Comments, content, sep = " ")
+      }
+    } else if (line_code == "DR") {
+      # Append Swiss-Prot references
+      if (is.na(current_entry$SwissProt_Refs)) {
+        current_entry$SwissProt_Refs <- content
+      } else {
+        current_entry$SwissProt_Refs <- paste(current_entry$SwissProt_Refs, content, sep = "")
+      }
+    } else if (line_code == "//") {
+      # End of entry, add to the list
+      entries <- append(entries, list(current_entry))
+      current_entry <- NULL
+    }
+  }
+
+  # Convert the list of entries to a data frame
+  enzyme_df <- dplyr::bind_rows(entries)
+
+  # Clean up columns
+  enzyme_df <- enzyme_df %>%
+    dplyr::mutate(
+      Aliases = ifelse(Aliases == "NA", NA, Aliases),
+      Reaction = ifelse(Reaction == "NA", NA, Reaction),
+      Comments = ifelse(Comments == "NA", NA, Comments),
+      SwissProt_Refs = ifelse(SwissProt_Refs == "NA", NA, SwissProt_Refs)
+    ) %>%
+    data.frame()
+  enzyme_df$Comments <- gsub("-!- ", "\n", enzyme_df$Comments) %>% trimws()
+  enzyme_df$SwissProt_Refs <- gsub("\\s*;\\s*", "; ", enzyme_df$SwissProt_Refs)
+  attributes(enzyme_df)$db_info <- db_info
+  return(enzyme_df)
 }

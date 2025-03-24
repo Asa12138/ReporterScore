@@ -1,3 +1,9 @@
+# ReporterScore v0.2.1 Notes
+
+## Added
+
+- added `load_CARDinfo`, `load_CAZy_info`, and `load_Enzyme_info` functinos. <2025-03-24, Mon>
+
 # ReporterScore v0.1.9 Notes
 
 ## Fixed

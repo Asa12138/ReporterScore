@@ -15,7 +15,7 @@
 [![](http://cranlogs.r-pkg.org/badges/last-month/ReporterScore)](https://cran.r-project.org/package=ReporterScore)
 
 [![](https://www.r-pkg.org/badges/version/ReporterScore?color=green)](https://cran.r-project.org/package=ReporterScore)
-[![](https://img.shields.io/badge/devel%20version-0.1.8-green.svg)](https://github.com/Asa12138/ReporterScore)
+[![](https://img.shields.io/badge/devel%20version-0.2.1-green.svg)](https://github.com/Asa12138/ReporterScore)
 <!-- badges: end -->
 
 Inspired by the classic ‘RSA’, we developed the improved ‘Generalized
@@ -756,7 +756,7 @@ pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) +
 ### CARD for ARGs
 
 For convenience, I also included the CARD database from
-<https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2>.
+<https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2> .
 
 ``` r
 CARDinfo <- load_CARDinfo()
@@ -807,6 +807,57 @@ head(CARDinfo$ARO_index)
 #> 3002526      antibiotic inactivation      AAC(2')-Id
 #> 3002527      antibiotic inactivation      AAC(2')-Ie
 ```
+
+### CAZy for CAZymes
+
+For convenience, I also included the CAZy database from
+<https://bcb.unl.edu/dbCAN2/download/Databases/V12/> .
+
+``` r
+CAZy_info <- load_CAZy_info()
+#> =================================load CAZy_info=================================
+#> ==================CAZy_info download time: 2025-03-14 01:10:20==================
+#> If you want to update CAZy_info, use `update_CAZy_info()`
+head(CAZy_info$fam_subfam_ec)
+#>   Sub_family  Accession       EC
+#> 1      AA1_1 AAA33103.1 1.10.3.2
+#> 2      AA1_1 AAA33104.1 1.10.3.2
+#> 3      AA1_1 AAA86659.1 1.10.3.2
+#> 4      AA1_1 AAC41686.1 1.10.3.2
+#> 5      AA1_1 AAC41687.1 1.10.3.2
+#> 6      AA1_1 AAC49828.1 1.10.3.2
+```
+
+### Enzymes
+
+For convenience, I also included the Enzymes database from
+<https://ftp.expasy.org/databases/enzyme/> .
+
+``` r
+Enzyme_info <- load_Enzyme_info()
+#> ================================load Enzyme_info================================
+#> =================Enzyme_info download time: 2025-03-24 14:51:45=================
+#> If you want to update Enzyme_info, use `update_Enzyme_info()`
+head(Enzyme_info$enzclass_df)
+#>        EC                         Description
+#> 1 1.-.-.-                     Oxidoreductases
+#> 2 1.1.-.- Acting on the CH-OH group of donors
+#> 3 1.1.1.-  With NAD(+) or NADP(+) as acceptor
+#> 4 1.1.2.-       With a cytochrome as acceptor
+#> 5 1.1.3.-             With oxygen as acceptor
+#> 6 1.1.4.-        With a disulfide as acceptor
+```
+
+Or use the KEGG enzyme htable:
+
+``` r
+load_Enzyme_htable() -> Enzyme_htable
+library(pctax)
+ann_tree(distinct(Enzyme_htable[, 1:3])) -> Enzyme_tr
+easy_tree(Enzyme_tr, highlight = "Enzyme1_name", add_abundance = F, add_tiplab = F)
+```
+
+<img src="man/figures/README-unnamed-chunk-31-1.png" width="100%" />
 
 # Reference
 

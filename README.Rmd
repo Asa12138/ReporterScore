@@ -514,12 +514,41 @@ pcutils::stackplot(KO_level1[-which(rownames(KO_level1) == "Unknown"), ]) +
 
 ### CARD for ARGs
 
-For convenience, I also included the CARD database from https://card.mcmaster.ca/download/0/broadstreet-v3.2.8.tar.bz2.
+For convenience, I also included the CARD database from https://card.mcmaster.ca/download/0/broadstreet-v4.0.0.tar.bz2 .
 
 ```{r}
 CARDinfo <- load_CARDinfo()
 head(CARDinfo$ARO_index)
 ```
+
+### CAZy for CAZymes
+
+For convenience, I also included the CAZy database from https://bcb.unl.edu/dbCAN2/download/Databases/V12/ .
+
+```{r}
+CAZy_info <- load_CAZy_info()
+head(CAZy_info$fam_subfam_ec)
+```
+
+### Enzymes
+
+For convenience, I also included the Enzymes database from https://ftp.expasy.org/databases/enzyme/ .
+
+```{r}
+Enzyme_info <- load_Enzyme_info()
+head(Enzyme_info$enzclass_df)
+```
+
+Or use the KEGG enzyme htable:
+
+```{r message=FALSE,warning=FALSE}
+load_Enzyme_htable() -> Enzyme_htable
+library(pctax)
+ann_tree(distinct(Enzyme_htable[, 1:3])) -> Enzyme_tr
+easy_tree(Enzyme_tr, highlight = "Enzyme1_name", add_abundance = F, add_tiplab = F)
+```
+
+
 
 # Reference
 
