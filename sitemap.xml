@@ -25,12 +25,14 @@
 <url><loc>/reference/RSA_by_cm.html</loc></url>
 <url><loc>/reference/ReporterScore-package.html</loc></url>
 <url><loc>/reference/c_means.html</loc></url>
+<url><loc>/reference/c_net_from_pathway_xml.html</loc></url>
 <url><loc>/reference/combine_rs_res.html</loc></url>
 <url><loc>/reference/custom_modulelist.html</loc></url>
 <url><loc>/reference/custom_modulelist_from_org.html</loc></url>
 <url><loc>/reference/export_report_table.html</loc></url>
 <url><loc>/reference/gene2ko.html</loc></url>
 <url><loc>/reference/genedf.html</loc></url>
+<url><loc>/reference/get_all_pathway_net_index.html</loc></url>
 <url><loc>/reference/get_features.html</loc></url>
 <url><loc>/reference/get_reporter_score.html</loc></url>
 <url><loc>/reference/hsa_kegg_pathway.html</loc></url>
@@ -44,6 +46,7 @@
 <url><loc>/reference/mmu_kegg_pathway.html</loc></url>
 <url><loc>/reference/modify_description.html</loc></url>
 <url><loc>/reference/parse_enzyme_dat.html</loc></url>
+<url><loc>/reference/pathway_net_index.html</loc></url>
 <url><loc>/reference/pipe.html</loc></url>
 <url><loc>/reference/plot.cm_res.html</loc></url>
 <url><loc>/reference/plot_KEGG_map.html</loc></url>
@@ -54,6 +57,7 @@
 <url><loc>/reference/plot_features_in_pathway.html</loc></url>
 <url><loc>/reference/plot_features_network.html</loc></url>
 <url><loc>/reference/plot_htable.html</loc></url>
+<url><loc>/reference/plot_pathway_net.html</loc></url>
 <url><loc>/reference/plot_report.html</loc></url>
 <url><loc>/reference/plot_report_circle_packing.html</loc></url>
 <url><loc>/reference/plot_significance.html</loc></url>
@@ -68,5 +72,6 @@
 <url><loc>/reference/update_Enzyme_info.html</loc></url>
 <url><loc>/reference/update_GOlist.html</loc></url>
 <url><loc>/reference/update_KEGG.html</loc></url>
+<url><loc>/reference/update_pathway_xml_ls.html</loc></url>
 </urlset>
 
