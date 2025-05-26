@@ -38,6 +38,7 @@ Suggests:
     readr,
     R.utils,
     KEGGREST,
+    ggkegg,
     clusterProfiler,
     enrichplot,
     pathview,

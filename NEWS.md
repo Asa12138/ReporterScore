@@ -2,6 +2,8 @@
 
 ## Added
 
+- added `plot_pathway_net`, `pathway_net_index` function <2025-05-27, Tue>
+- added `update_pathway_xml_ls`, `c_net_from_pathway_xml` function <2025-05-27, Tue>
 - added `load_CARDinfo`, `load_CAZy_info`, and `load_Enzyme_info` functinos. <2025-03-24, Mon>
 
 # ReporterScore v0.1.9 Notes

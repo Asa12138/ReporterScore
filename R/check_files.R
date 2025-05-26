@@ -324,8 +324,12 @@ load_htable <- function(type, verbose = TRUE) {
   return(res)
 }
 
-load_something <- function(prefix, verbose = TRUE) {
-  new_file <- file.path(tools::R_user_dir("ReporterScore"), paste0("new_", prefix, ".rda"))
+load_something <- function(prefix, verbose = TRUE, with_new = TRUE) {
+  if (with_new) {
+    new_file <- file.path(tools::R_user_dir("ReporterScore"), paste0("new_", prefix, ".rda"))
+  } else {
+    new_file <- file.path(tools::R_user_dir("ReporterScore"), paste0(prefix, ".rda"))
+  }
   envir <- environment()
 
   if (file.exists(new_file)) {
