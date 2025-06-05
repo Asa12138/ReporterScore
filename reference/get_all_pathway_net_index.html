@@ -95,7 +95,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_all_pathway_net_index</span><span class="op">(</span>pathway_xml_ls <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_all_pathway_net_index</span><span class="op">(</span>pathway_xml_ls <span class="op">=</span> <span class="cn">NULL</span>, org <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -104,6 +104,10 @@
 
 <dl><dt id="arg-pathway-xml-ls">pathway_xml_ls<a class="anchor" aria-label="anchor" href="#arg-pathway-xml-ls"></a></dt>
 <dd><p>A list of KEGG pathway XML files, where each element is a `tbl_graph` or `igraph` object.</p></dd>
+
+
+<dt id="arg-org">org<a class="anchor" aria-label="anchor" href="#arg-org"></a></dt>
+<dd><p>Character, the KEGG organism code (e.g., "hsa" for human). If `NULL`, uses "ko" as the default prefix for pathway IDs.</p></dd>
 
 </dl></div>
     <div id="value">
