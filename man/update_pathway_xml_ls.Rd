@@ -4,10 +4,12 @@
 \alias{update_pathway_xml_ls}
 \title{Download KEGG pathway XML files and create networks}
 \usage{
-update_pathway_xml_ls(download_dir)
+update_pathway_xml_ls(download_dir, org = NULL)
 }
 \arguments{
 \item{download_dir}{Directory to save the downloaded XML files.}
+
+\item{org}{kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa", default NULL means ko.}
 }
 \value{
 No value

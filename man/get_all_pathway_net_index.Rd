@@ -4,10 +4,12 @@
 \alias{get_all_pathway_net_index}
 \title{Create an index for all KEGG pathway networks}
 \usage{
-get_all_pathway_net_index(pathway_xml_ls = NULL)
+get_all_pathway_net_index(pathway_xml_ls = NULL, org = NULL)
 }
 \arguments{
 \item{pathway_xml_ls}{A list of KEGG pathway XML files, where each element is a `tbl_graph` or `igraph` object.}
+
+\item{org}{Character, the KEGG organism code (e.g., "hsa" for human). If `NULL`, uses "ko" as the default prefix for pathway IDs.}
 }
 \value{
 A data frame containing indices for all pathways, including pathway IDs and their attributes.

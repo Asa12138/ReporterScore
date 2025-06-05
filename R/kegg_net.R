@@ -1,11 +1,12 @@
 #' Download KEGG pathway XML files and create networks
 #'
 #' @param download_dir Directory to save the downloaded XML files.
+#' @param org kegg organism, listed in https://www.genome.jp/kegg/catalog/org_list.html such as "hsa", default NULL means ko.
 #'
 #' @returns No value
 #' @export
 #'
-update_pathway_xml_ls <- function(download_dir) {
+update_pathway_xml_ls <- function(download_dir, org = NULL) {
   # 检查依赖包
   if (!requireNamespace("ggkegg", quietly = TRUE)) {
     stop("Package 'ggkegg' is required but not installed. Run: install.packages('ggkegg')")
@@ -19,8 +20,16 @@ update_pathway_xml_ls <- function(download_dir) {
   if (!dir.exists(pack_dir)) dir.create(pack_dir, recursive = TRUE)
 
   # 加载通路ID表
-  Pathway_htable <- load_Pathway_htable() # 假设该函数已定义
-  pathway_ids <- gsub("map", "ko", Pathway_htable$Pathway_id)
+  if (is.null(org)) {
+    Pathway_htable <- load_Pathway_htable()
+    pathway_ids <- gsub("map", "ko", Pathway_htable$Pathway_id)
+  } else {
+    org_pathway <- KEGGREST::keggList("pathway", org) # 获取'KEGG'数据库中所有人类通路
+    if (is.null(org_pathway)) {
+      stop("No pathways found for organism: ", org)
+    }
+    pathway_ids <- names(org_pathway)
+  }
 
   # 初始化结果列表和失败记录
   pathway_xml_ls <- list()
@@ -47,8 +56,12 @@ update_pathway_xml_ls <- function(download_dir) {
   # 保存结果（含失败记录）
   attributes(pathway_xml_ls)$download_time <- Sys.time()
   attributes(pathway_xml_ls)$failed_paths <- failed_paths
+  if (is.null(org)) {
+    save_path <- paste0(pack_dir, "/pathway_xml_ls.rda")
+  } else {
+    save_path <- paste0(pack_dir, "/", org, "_pathway_xml_ls.rda")
+  }
 
-  save_path <- paste0(pack_dir, "/pathway_xml_ls.rda")
   save(pathway_xml_ls, file = save_path)
   message("\nResults saved to: ", save_path)
 
@@ -59,6 +72,47 @@ update_pathway_xml_ls <- function(download_dir) {
       paste(failed_paths, collapse = ", ")
     )
   }
+}
+
+#' Load KEGG pathway XML file list
+#'
+#' @inheritParams update_pathway_xml_ls
+#' @param verbose Logical, whether to print messages about the loading process. Default is `TRUE`.
+#'
+#' @returns A list of KEGG pathway XML files, where each element is a `tbl_graph` or `igraph` object.
+#' @export
+load_pathway_xml_ls <- function(org = NULL, verbose = TRUE) {
+  # 加载KEGG通路XML文件列表
+  pack_dir <- tools::R_user_dir("ReporterScore")
+  prefix <- "pathway_xml_ls"
+
+  if (is.null(org)) {
+    file_path <- paste0(pack_dir, "/", prefix, ".rda")
+  } else {
+    file_path <- paste0(pack_dir, "/", org, "_", prefix, ".rda")
+  }
+
+  if (!file.exists(file_path)) {
+    stop("Pathway XML list not found. Please run update_pathway_xml_ls() first.")
+  }
+
+  envir <- environment()
+  if (file.exists(file_path)) {
+    load(file_path, envir = envir)
+  } else {
+    message("Not find ", prefix, ", please run `update_pathway_xml_ls()` first!")
+    return(invisible())
+  }
+  res <- get(prefix, envir = envir)
+
+  if (verbose) {
+    pcutils::dabiao("load ", prefix)
+    if (!is.null(attributes(res)$"download_time")) {
+      pcutils::dabiao(paste0(prefix, " download time: ", attributes(res)$"download_time"))
+      message("If you want to update ", prefix, ", use `update_pathway_xml_ls()`")
+    }
+  }
+  return(res)
 }
 
 #' Create a network from KEGG pathway XML files
@@ -87,7 +141,6 @@ c_net_from_pathway_xml <- function(pathway_xml) {
   node1 <- as.data.frame(g)
   pathway_id <- unique(node1$pathway_id)[1]
   edge1 <- igraph::as_data_frame(g, what = "edges")
-
 
   path_gene_compound <- dplyr::filter(node1, type %in% c("ortholog", "gene", "compound")) %>%
     dplyr::distinct(name, .keep_all = TRUE)
@@ -140,7 +193,7 @@ plot_pathway_net <- function(path_net_c, simplify = FALSE, plot_depth = FALSE, .
 
   default_arg <- list(
     labels_num = "all", main = attributes(path_net_c)$pathway_id,
-    edge.arrow.size = 0.3, edge.arrow.width = 0.8
+    vertex.shape = c("rectangle", "circle"), vertex_size_range = list(c(12, 12), c(8, 8))
   )
 
   if (plot_depth) {
@@ -197,19 +250,24 @@ pathway_net_index <- function(path_net_c) {
 #' Create an index for all KEGG pathway networks
 #'
 #' @param pathway_xml_ls A list of KEGG pathway XML files, where each element is a `tbl_graph` or `igraph` object.
+#' @param org Character, the KEGG organism code (e.g., "hsa" for human). If `NULL`, uses "ko" as the default prefix for pathway IDs.
 #'
 #' @returns A data frame containing indices for all pathways, including pathway IDs and their attributes.
 #' @export
 #'
-get_all_pathway_net_index <- function(pathway_xml_ls = NULL) {
+get_all_pathway_net_index <- function(pathway_xml_ls = NULL, org = NULL) {
   lib_ps("MetaNet", "igraph", library = FALSE)
-  if (is.null(pathway_xml_ls)) pathway_xml_ls <- load_something("pathway_xml_ls", with_new = FALSE)
+  if (is.null(pathway_xml_ls)) pathway_xml_ls <- load_pathway_xml_ls(org = org, verbose = FALSE)
 
   load_Pathway_htable(verbose = FALSE) -> Pathway_htable
-  Pathway_htable$Pathway_id <- gsub("map", "ko", Pathway_htable$Pathway_id)
+  tmp_prefix <- "ko"
+  if (!is.null(org)) {
+    tmp_prefix <- org
+  }
+  Pathway_htable$Pathway_id <- gsub("map", tmp_prefix, Pathway_htable$Pathway_id)
   Pathway_htable2 <- filter(Pathway_htable, !level2_name %in% c("Global and overview maps"))
 
-  Pathway_htable2$Pathway_id -> pathway_ids
+  intersect(Pathway_htable2$Pathway_id, names(pathway_xml_ls)) -> pathway_ids
 
   pathway_net <- list()
   pathway_index_list <- list()
