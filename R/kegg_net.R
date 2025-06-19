@@ -235,6 +235,12 @@ pathway_net_index <- function(path_net_c) {
   path_net_index$Out_degree <- igraph::degree(path_net_c2, mode = "out")
   attributes(path_net_index)$pathway_id <- attributes(path_net_c)$pathway_id
 
+  # 计算下游节点数
+  for (node in path_net_index$name) {
+    neighbors <- MetaNet::c_net_neighbors(path_net_c2, node, order = 1000, mode = "out")
+    path_net_index$down_num[path_net_index$name == node] <- length(neighbors) - 1
+  }
+
   # 计算深度
   igraph::layout_as_tree(path_net_c) -> layout_tree
 
@@ -258,6 +264,7 @@ pathway_net_index <- function(path_net_c) {
 get_all_pathway_net_index <- function(pathway_xml_ls = NULL, org = NULL) {
   lib_ps("MetaNet", "igraph", library = FALSE)
   if (is.null(pathway_xml_ls)) pathway_xml_ls <- load_pathway_xml_ls(org = org, verbose = FALSE)
+  level2_name <- NULL
 
   load_Pathway_htable(verbose = FALSE) -> Pathway_htable
   tmp_prefix <- "ko"
@@ -282,4 +289,166 @@ get_all_pathway_net_index <- function(pathway_xml_ls = NULL, org = NULL) {
   }
   do.call(rbind, pathway_index_list) -> all_pathway_index
   all_pathway_index
+}
+
+
+#' Calculate the NS (Node Score) for KEGG pathway networks
+#'
+#' @param path_index data.frame from `pathway_net_index`
+#' @param lambda Numeric, a parameter for weighting the normalized degree and downstream node count. Default is `0.5`.
+#'
+#' @returns A data frame with additional columns for normalized degree, normalized downstream node count, and NS score.
+#' @export
+#'
+calculate_NS <- function(path_index, lambda = 0.5) {
+  Pathway_id <- Degree <- down_num <- down_num_degree <- SDegree <- Sdown_num <- Sdown_num_degree <- NS <- NULL
+  # 计算下游节点数与度数的差值
+  path_index$down_num_degree <- with(path_index, down_num - Degree)
+
+  # 定义归一化函数
+  normalize <- function(x) {
+    if (length(unique(x)) > 1) {
+      (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+    } else {
+      NA
+    }
+  }
+
+  # 使用dplyr进行分组计算
+  path_index <- path_index %>%
+    group_by(Pathway_id) %>%
+    mutate(
+      Degree = as.numeric(Degree),
+      SDegree = normalize(Degree),
+      Sdown_num = normalize(down_num),
+      Sdown_num_degree = normalize(down_num_degree),
+      NS = lambda * SDegree + (1 - lambda) * Sdown_num_degree
+    ) %>%
+    ungroup()
+
+  return(as.data.frame(path_index))
+}
+
+#' Update all KEGG pathway networks and calculate their NS scores
+#'
+#' @param pathway_xml_ls A list of KEGG pathway XML files, where each element is a `tbl_graph` or `igraph` object. If `NULL`, it will load the existing XML files.
+#' @param org Character, the KEGG organism code (e.g., "hsa" for human). If `NULL`, uses "ko" as the default prefix for pathway IDs.
+#' @inheritParams calculate_NS
+#' @seealso calculate_NS
+#' @export
+update_all_pathway_NS <- function(pathway_xml_ls = NULL, org = NULL, lambda = 0.5) {
+  all_pathway_index <- get_all_pathway_net_index(pathway_xml_ls, org = org)
+  all_NS_res <- calculate_NS(all_pathway_index, lambda = lambda)
+
+  attributes(all_NS_res)$time <- Sys.time()
+  # 保存结果
+  pack_dir <- tools::R_user_dir("ReporterScore")
+  if (is.null(org)) {
+    save_path <- paste0(pack_dir, "/all_pathway_NS.rda")
+  } else {
+    save_path <- paste0(pack_dir, "/", org, "_all_pathway_NS.rda")
+  }
+  save(all_NS_res, file = save_path)
+  message("All pathway NS results saved to: ", save_path)
+}
+#' Load all KEGG pathway NS results
+#'
+#' @param org Character, the KEGG organism code (e.g., "hsa" for human). If `NULL`, uses "ko" as the default prefix for pathway IDs.
+#' @param verbose Logical, whether to print messages about the loading process. Default is `TRUE`.
+#' @returns A data frame containing the NS scores for all pathways, with columns: Pathway_id, name, NS.
+#' @export
+#' @seealso calculate_NS
+load_all_pathway_NS <- function(org = NULL, verbose = TRUE) {
+  pack_dir <- tools::R_user_dir("ReporterScore")
+  prefix <- "all_pathway_NS"
+  if (is.null(org)) {
+    file_path <- paste0(pack_dir, "/", prefix, ".rda")
+  } else {
+    file_path <- paste0(pack_dir, "/", org, "_", prefix, ".rda")
+  }
+
+  if (!file.exists(file_path)) {
+    stop("All pathway NS results not found. Please run update_all_pathway_NS() first.")
+  }
+
+  envir <- environment()
+  load(file_path, envir = envir)
+  res <- get("all_NS_res", envir = envir)
+
+  if (verbose) {
+    pcutils::dabiao("load ", prefix)
+    if (!is.null(attributes(res)$"time")) {
+      pcutils::dabiao(paste0(prefix, " time: ", attributes(res)$"time"))
+      message("If you want to update ", prefix, ", use `update_all_pathway_NS()`")
+    }
+  }
+  return(res)
+}
+
+#' Calculate ZN Scores for Pathways
+#'
+#' This function calculates ZN scores, p-values, and secondary p-values for each pathway
+#' based on correlation data and NS values.
+#'
+#' @param all_NS_res A data frame containing pathway information with columns:
+#'   Pathway_id, name, and NS.
+#' @param cor_df A data frame containing correlation data with columns: name and cor.
+#' @return A data frame with columns: Pathway_id, ZN_score, p_value, p_value2.
+#' @seealso calculate_NS
+calculate_ZN_score <- function(all_NS_res, cor_df) {
+  name <- Pathway_id <- NS <- cor <- ZN_score <- p_value <- p_value2 <- NULL
+  # 初始化结果数据框（预分配内存提高效率）
+  unique_paths <- unique(all_NS_res$Pathway_id)
+  n_paths <- length(unique_paths)
+
+  ZN_scores <- data.frame(
+    Pathway_id = character(n_paths),
+    K_num = numeric(n_paths),
+    Exist_K_num = numeric(n_paths),
+    ZN_score = numeric(n_paths),
+    p_value = numeric(n_paths),
+    p_value2 = numeric(n_paths),
+    stringsAsFactors = FALSE
+  )
+
+  # 主计算循环
+  for (i in seq_along(unique_paths)) {
+    path <- unique_paths[i]
+
+    # 过滤当前pathway的数据
+    NS_res <- dplyr::filter(all_NS_res, Pathway_id == path) %>%
+      dplyr::select(name, NS)
+    tmp_K_num <- nrow(NS_res)
+    # 合并相关性数据
+    NS_cor_df <- dplyr::inner_join(cor_df, NS_res, by = "name")
+    # 计算存在的KOs数量
+    tmp_exist_K_num <- nrow(NS_cor_df)
+    # 处理无匹配项的情况
+    if (nrow(NS_cor_df) == 0) {
+      ZN_scores[i, ] <- list(path, tmp_K_num, tmp_exist_K_num, NA_real_, NA_real_, NA_real_)
+      next
+    }
+
+    # 计算ZN_score
+    ZN_score <- mean(abs(NS_cor_df$cor) * NS_cor_df$NS, na.rm = TRUE)
+
+    # Bootstrap计算p_value（从当前pathway的cor中重采样）
+    zn_index_null <- replicate(999, {
+      mean(sample(abs(NS_cor_df$cor), nrow(NS_cor_df), replace = TRUE) *
+        NS_cor_df$NS, na.rm = TRUE)
+    })
+    p_value <- (sum(zn_index_null >= ZN_score) + 1) / 1000
+
+    # Bootstrap计算p_value2（从全局cor_df中重采样）
+    zn_index_null2 <- replicate(999, {
+      mean(sample(abs(cor_df$cor), nrow(NS_cor_df), replace = TRUE) *
+        NS_cor_df$NS, na.rm = TRUE)
+    })
+    p_value2 <- (sum(zn_index_null2 >= ZN_score) + 1) / 1000
+
+    # 存储结果
+    ZN_scores[i, ] <- list(path, tmp_K_num, tmp_exist_K_num, ZN_score, p_value, p_value2)
+  }
+
+  return(ZN_scores)
 }

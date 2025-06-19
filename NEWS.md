@@ -1,3 +1,9 @@
+# ReporterScore v0.2.2 Notes
+
+## Added
+
+- added `calculate_NS`, `update_all_pathway_NS`, `calculate_ZN_score` function <2025-06-20, Fri>
+
 # ReporterScore v0.2.1 Notes
 
 ## Added
