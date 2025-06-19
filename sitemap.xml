@@ -26,6 +26,8 @@
 <url><loc>/reference/ReporterScore-package.html</loc></url>
 <url><loc>/reference/c_means.html</loc></url>
 <url><loc>/reference/c_net_from_pathway_xml.html</loc></url>
+<url><loc>/reference/calculate_NS.html</loc></url>
+<url><loc>/reference/calculate_ZN_score.html</loc></url>
 <url><loc>/reference/combine_rs_res.html</loc></url>
 <url><loc>/reference/custom_modulelist.html</loc></url>
 <url><loc>/reference/custom_modulelist_from_org.html</loc></url>
@@ -42,6 +44,7 @@
 <url><loc>/reference/load_CAZy_info.html</loc></url>
 <url><loc>/reference/load_Enzyme_info.html</loc></url>
 <url><loc>/reference/load_GOlist.html</loc></url>
+<url><loc>/reference/load_all_pathway_NS.html</loc></url>
 <url><loc>/reference/load_htable.html</loc></url>
 <url><loc>/reference/load_pathway_xml_ls.html</loc></url>
 <url><loc>/reference/mmu_kegg_pathway.html</loc></url>
@@ -73,6 +76,7 @@
 <url><loc>/reference/update_Enzyme_info.html</loc></url>
 <url><loc>/reference/update_GOlist.html</loc></url>
 <url><loc>/reference/update_KEGG.html</loc></url>
+<url><loc>/reference/update_all_pathway_NS.html</loc></url>
 <url><loc>/reference/update_pathway_xml_ls.html</loc></url>
 </urlset>
 
