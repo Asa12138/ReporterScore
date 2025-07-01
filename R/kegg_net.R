@@ -303,12 +303,12 @@ get_all_pathway_net_index <- function(pathway_xml_ls = NULL, org = NULL) {
 calculate_NS <- function(path_index, lambda = 0.5) {
   Pathway_id <- Degree <- down_num <- down_num_degree <- SDegree <- Sdown_num <- Sdown_num_degree <- NS <- NULL
   # 计算下游节点数与度数的差值
-  path_index$down_num_degree <- with(path_index, down_num - Degree)
+  path_index$down_num_degree <- with(path_index, down_num - Out_degree)
 
   # 定义归一化函数
   normalize <- function(x) {
     if (length(unique(x)) > 1) {
-      (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+      (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE)) + 1
     } else {
       NA
     }
