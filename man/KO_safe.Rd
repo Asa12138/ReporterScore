@@ -32,18 +32,6 @@ A data frame containing SAFE results for KO enrichment.
 \description{
 Perform Significance Analysis of Function and Expression
 }
-\examples{
-\donttest{
-## use `safe` from the `safe` package.
-if (requireNamespace("safe")) {
-  data("reporter_score_res")
-  safe_res <- KO_safe(reporter_score_res,
-    verbose = TRUE,
-    perm = 200, p.adjust.method = "none"
-  )
-}
-}
-}
 \seealso{
 Other common_enrich: 
 \code{\link{KO_enrich}()},

@@ -29,15 +29,6 @@ enrich_res
 \description{
 Perform Gene Set Variation Analysis
 }
-\examples{
-\donttest{
-## use `gsva` from the `GSVA` package.
-if (requireNamespace("GSVA")) {
-  data("reporter_score_res")
-  gsva_res <- KO_gsva(reporter_score_res, p.adjust.method = "none")
-}
-}
-}
 \seealso{
 Other common_enrich: 
 \code{\link{KO_enrich}()},

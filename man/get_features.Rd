@@ -25,7 +25,7 @@ get_features(map_id = "map00010")
 }
 \seealso{
 Other modulelist: 
-\code{\link{custom_modulelist_from_org}()},
-\code{\link{custom_modulelist}()}
+\code{\link{custom_modulelist}()},
+\code{\link{custom_modulelist_from_org}()}
 }
 \concept{modulelist}

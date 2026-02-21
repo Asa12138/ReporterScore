@@ -866,6 +866,7 @@ load_GOinfo <- function(verbose = TRUE) {
 #' @return No value
 update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
   pack_dir <- tools::R_user_dir("ReporterScore")
+  Sequence_ID <- Sequence <- NULL
   if (!dir.exists(pack_dir)) dir.create(pack_dir, recursive = TRUE)
 
   if (is.null(card_data)) {
@@ -913,6 +914,7 @@ update_CARDinfo <- function(download_dir = NULL, card_data = NULL) {
 }
 
 pre_drug_class <- function(ARO_index) {
+  `Drug Class` <- `ARO Accession` <- Drug_Class <- NULL
   pcutils::explode(ARO_index[, c("ARO Accession", "Drug Class")], 2, ";") -> tmp_drug
   tmp_drug <- mutate(tmp_drug, Drug_Class = gsub(" antibiotic", "", `Drug Class`))
   tmp_drug$Drug_Class <- ifelse(grepl("streptogramin|macrolide|lincosamide", tmp_drug$Drug_Class), "MLS", tmp_drug$Drug_Class)
@@ -1125,6 +1127,7 @@ load_Enzyme_info <- function(verbose = TRUE) {
 #' @return A data frame with columns: EC, Name, Aliases, Reaction, Comments, SwissProt_Refs.
 parse_enzyme_dat <- function(file_path) {
   pcutils::dabiao("Parsing enzyme.dat")
+  Aliases <- Reaction <- Comments <- SwissProt_Refs <- NULL
   # Read the file line by line
   lines <- readr::read_lines(file_path)
 

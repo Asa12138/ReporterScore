@@ -31,18 +31,6 @@ A data frame with columns "ID," "Description," "K_num," "Exist_K_num," "p.value,
 \description{
 Perform Pathway Analysis with Down-weighting of Overlapping Genes (PADOG)
 }
-\examples{
-\donttest{
-## use `PADOG` from the `PADOG` package.
-if (requireNamespace("PADOG")) {
-  data("reporter_score_res")
-  padog_res <- KO_padog(reporter_score_res,
-    verbose = TRUE,
-    perm = 200, p.adjust.method = "none"
-  )
-}
-}
-}
 \seealso{
 Other common_enrich: 
 \code{\link{KO_enrich}()},
