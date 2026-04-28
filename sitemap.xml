@@ -23,6 +23,7 @@
 <url><loc>/reference/Module_htable.html</loc></url>
 <url><loc>/reference/Pathway_htable.html</loc></url>
 <url><loc>/reference/RSA_by_cm.html</loc></url>
+<url><loc>/reference/RSA_by_mg.html</loc></url>
 <url><loc>/reference/ReporterScore-package.html</loc></url>
 <url><loc>/reference/c_means.html</loc></url>
 <url><loc>/reference/c_net_from_pathway_xml.html</loc></url>
@@ -64,6 +65,7 @@
 <url><loc>/reference/plot_significance.html</loc></url>
 <url><loc>/reference/print.reporter_score.html</loc></url>
 <url><loc>/reference/print.rs_by_cm.html</loc></url>
+<url><loc>/reference/print.rs_by_mg.html</loc></url>
 <url><loc>/reference/pvalue2zs.html</loc></url>
 <url><loc>/reference/reporter_score.html</loc></url>
 <url><loc>/reference/reporter_score_res.html</loc></url>
