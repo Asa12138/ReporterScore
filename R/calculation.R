@@ -65,10 +65,11 @@
 #' )
 #' }
 reporter_score <- function(
-    kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL,
-    p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
-    feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH",
-    modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600) {
+  kodf, group, metadata = NULL, method = "wilcox.test", pattern = NULL,
+  p.adjust.method1 = "none", mode = c("directed", "mixed")[1], verbose = TRUE,
+  feature = "ko", type = c("pathway", "module")[1], p.adjust.method2 = "BH",
+  modulelist = NULL, threads = 1, perm = 4999, min_exist_KO = 3, max_exist_KO = 600
+) {
   check_kodf_modulelist(kodf, type, feature, modulelist, verbose, mode = 1)
 
   stopifnot(mode %in% c("mixed", "directed"))
@@ -675,10 +676,11 @@ get_modulelist <- function(type, feature, gene = "symbol", verbose = TRUE, chr =
 #' reporter_s1 <- get_reporter_score(ko_stat, perm = 499)
 #' }
 get_reporter_score <- function(
-    ko_stat, type = c("pathway", "module")[1], feature = "ko",
-    threads = 1, modulelist = NULL, perm = 4999,
-    verbose = TRUE, p.adjust.method2 = "BH",
-    min_exist_KO = 3, max_exist_KO = 600) {
+  ko_stat, type = c("pathway", "module")[1], feature = "ko",
+  threads = 1, modulelist = NULL, perm = 4999,
+  verbose = TRUE, p.adjust.method2 = "BH",
+  min_exist_KO = 3, max_exist_KO = 600
+) {
   ReporterScore <- KOlist <- i <- NULL
   type_flag <- FALSE
   t1 <- Sys.time()
@@ -857,8 +859,7 @@ check_kodf_modulelist <- function(ko_stat, type, feature, modulelist, verbose, m
       return(invisible())
     }
   }
-  if (mode == 1) {
-  } else {
+  if (mode == 1) {} else {
     if (!all(c("KO_id", "Z_score") %in% colnames(ko_stat))) {
       stop("Some wrong with ko_stat, please check if the colnames of ko_stat contains KO_id and Z_score?")
     }
@@ -1189,7 +1190,6 @@ if (FALSE) {
 }
 
 
-
 #' Test the proper clusters k for c_means
 #'
 #' @param otu_group grouped otutab
@@ -1396,4 +1396,70 @@ extract_cluster <- function(rsa_cm_res, cluster = 1) {
   res <- append(rsa_cm_res[[paste0("Cluster", cluster[1])]], rsa_cm_res[c("kodf", "modulelist", "group", "metadata")])
   class(res) <- "reporter_score"
   res
+}
+
+
+#' Reporter score analysis by pairwise comparison in multi-group
+#'
+#' @param kodf KO_abundance table, rowname is ko id (e.g. K00001),colnames is samples.
+#' @param group The comparison groups (at least two categories) in your data, one column name of metadata when metadata exist or a vector whose length equal to columns number of kodf. And you can use factor levels to change order.
+#' @param metadata sample information data.frame contains group
+#' @param verbose verbose
+#' @param method method from \code{\link{reporter_score}}
+#' @param ... additional arguments for \code{\link{reporter_score}}
+#'
+#' @return rs_by_mg
+#' @export
+#'
+#' @examples
+#' message("The following example require some time to run:")
+#' \donttest{
+#' data("KO_abundance_test")
+#' rsa_mg_res <- RSA_by_mg(KO_abundance, "Group2", metadata,
+#'   method = "pearson", perm = 199
+#' )
+#' }
+RSA_by_mg <- function(kodf, group, metadata = NULL, verbose = TRUE, method = "t.test", ...) {
+  if (verbose) {
+    pcutils::dabiao("Checking group")
+  }
+  if (!is.null(metadata)) {
+    if (length(group) != 1) {
+      stop("'group' should be one column name of metadata when metadata exsit!")
+    }
+    idx <- rownames(metadata) %in% colnames(kodf)
+    metadata <- metadata[idx, , drop = FALSE]
+    kodf <- kodf[, rownames(metadata), drop = FALSE]
+    if (verbose) {
+      message(nrow(metadata), " samples are matched for next step.")
+    }
+    if (length(idx) < 2) {
+      stop("too less common samples")
+    }
+    sampFile <- data.frame(group = metadata[, group], row.names = row.names(metadata))
+  } else {
+    if (length(group) != ncol(kodf)) {
+      stop("'group' length should equal to columns number of kodf when metadata is NULL!")
+    }
+    sampFile <- data.frame(row.names = colnames(kodf), group = group)
+  }
+
+
+  if (verbose) {
+    pcutils::dabiao("Get ReporterScore for each group")
+  }
+
+  rsa_mg_res <- list()
+  for (each_group in levels(factor(sampFile$group))) {
+    if (verbose) {
+      pcutils::dabiao("For group ", each_group)
+    }
+    metadata2 <- data.frame(row.names = rownames(sampFile), ID = rownames(sampFile))
+    metadata2$`Group` <- ifelse(sampFile$group %in% each_group, sampFile$group, "_Others")
+    metadata2$`Group` <- factor(metadata2$`Group`, levels = c("_Others", each_group))
+
+    rsa_mg_res[[each_group]] <- reporter_score(kodf, "Group", metadata2, method = method, mode = "directed", verbose = verbose, ...)
+  }
+  class(rsa_mg_res) <- "rs_by_mg"
+  rsa_mg_res
 }

@@ -1,3 +1,10 @@
+# ReporterScore v0.2.6 Notes
+
+## Added
+
+- added `RSA_by_mg` function <2026-03-24, Tue>
+- `plot_report` function for multi-groups result <2026-03-24, Tue>
+
 # ReporterScore v0.2.5 Notes
 
 ## Others

@@ -70,10 +70,17 @@ plot_report <- function(reporter_res, rs_threshold = 1.64, mode = 1, y_text_size
 
   reporter_res <- pre_reporter_res(reporter_res, rs_threshold)
   flag <- attributes(reporter_res)$flag
+  # 产生后续要用的reporter_res2
   filter_report(reporter_res, rs_threshold)
 
   if (flag) {
-    reporter_res2$Group <- reporter_res2$Cluster
+    if (isTRUE(attributes(reporter_res)$rs_by_cm)) {
+      reporter_res2$Group <- reporter_res2$Cluster
+    } else if (isTRUE(attributes(reporter_res)$rs_by_mg)) {
+      reporter_res2 <- dplyr::filter(reporter_res2, ReporterScore > 0)
+    } else {
+      reporter_res2$Group <- paste0(reporter_res2$Cluster, "|", reporter_res2$Group)
+    }
     cols1 <- setNames(
       pcutils::get_cols(length(unique(reporter_res2$Group))),
       unique(reporter_res2$Group)
@@ -181,6 +188,7 @@ pre_reporter_res <- function(reporter_res, rs_threshold) {
       do.call(rbind, .)
     attributes(reporter_res) <- pcutils::update_param(attributes(rsa_cm_res[["Cluster1"]]$reporter_s), attributes(reporter_res))
     attributes(reporter_res)$flag <- TRUE
+    attributes(reporter_res)$rs_by_cm <- TRUE
   } else if (all(vapply(reporter_res, \(i){
     inherits(i, "reporter_score")
   }, logical(1)))) {
@@ -198,8 +206,10 @@ pre_reporter_res <- function(reporter_res, rs_threshold) {
     ) %>%
       do.call(rbind, .)
     attributes(reporter_res) <- pcutils::update_param(attributes(multi_reporter_res[[clusters_name[1]]]$reporter_s), attributes(reporter_res))
-
+    attributes(reporter_res)$vs_group <- NULL
     attributes(reporter_res)$flag <- TRUE
+    attributes(reporter_res)$multi_res <- TRUE
+    if (inherits(multi_reporter_res, "rs_by_mg")) attributes(reporter_res)$rs_by_mg <- TRUE
   }
   return(reporter_res)
 }
@@ -239,6 +249,8 @@ filter_report <- function(reporter_res, rs_threshold) {
     breaks <- c(scales::breaks_extended(3)(range(c(0, reporter_res2$ReporterScore))), rs_threshold[2])
   }
 
+  if (isTRUE(attributes(reporter_res)$multi_res)) reporter_res2 <- reporter_res
+  if (title == "") title <- NULL
   envir <- parent.frame()
   assign("reporter_res2", reporter_res2, envir)
   assign("cols1", cols1, envir)

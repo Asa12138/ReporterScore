@@ -55,3 +55,29 @@ print.rs_by_cm <- function(x, ...) {
   pcutils::dabiao("parameter", print = TRUE)
   cat("use method: ", attributes(rsa_cm_res$Cluster1$reporter_s)$method, "; the feature: ", attributes(rsa_cm_res$Cluster1$reporter_s)$feature, sep = "")
 }
+
+
+#' Print rs_by_mg
+#'
+#' @param x rs_by_mg
+#' @param ... add
+#'
+#' @return No value
+#' @exportS3Method
+#' @method print rs_by_mg
+#'
+print.rs_by_mg <- function(x, ...) {
+  rsa_mg_res <- x
+  pcutils::dabiao("Pairwise comparison RSA result with ", length(rsa_mg_res), " groups", print = TRUE)
+
+  pcutils::dabiao("KO abundance table", print = TRUE)
+  cat("With ", nrow(rsa_mg_res[[1]]$kodf), " KOs and ", ncol(rsa_mg_res[[1]]$kodf), " samples.\n")
+  pcutils::dabiao("group", print = TRUE)
+  vs_group <- names(rsa_mg_res)
+
+  title <- paste0(vs_group, collapse = "/ ")
+  cat("vs group: ", title, "\n", sep = "")
+
+  pcutils::dabiao("parameter", print = TRUE)
+  cat("use method: ", attributes(rsa_mg_res[[1]]$reporter_s)$method, "; the feature: ", attributes(rsa_mg_res[[1]]$reporter_s)$feature, sep = "")
+}
