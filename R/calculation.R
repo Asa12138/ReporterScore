@@ -357,14 +357,14 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
 
   {
     if (threads > 1) {
-      pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+      pcutils::lib_ps("foreach", "doSNOW", library = FALSE)
       if (verbose) {
         pb <- utils::txtProgressBar(max = reps, style = 3)
         opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
       } else {
         opts <- NULL
       }
-      cl <- snow::makeCluster(threads)
+      cl <- parallel::makeCluster(threads)
       doSNOW::registerDoSNOW(cl)
       res <- foreach::`%dopar%`(
         foreach::foreach(
@@ -373,7 +373,7 @@ ko.test <- function(kodf, group, metadata = NULL, method = "wilcox.test", patter
         ),
         suppressWarnings(loop(i))
       )
-      snow::stopCluster(cl)
+      parallel::stopCluster(cl)
       gc()
     } else {
       res <- suppressWarnings(lapply(seq_len(reps), loop))
@@ -777,14 +777,14 @@ get_reporter_score <- function(
   }
   {
     if (threads > 1) {
-      pcutils::lib_ps("foreach", "doSNOW", "snow", library = FALSE)
+      pcutils::lib_ps("foreach", "doSNOW", library = FALSE)
       if (verbose) {
         pb <- utils::txtProgressBar(max = reps, style = 3)
         opts <- list(progress = function(n) utils::setTxtProgressBar(pb, n))
       } else {
         opts <- NULL
       }
-      cl <- snow::makeCluster(threads)
+      cl <- parallel::makeCluster(threads)
       doSNOW::registerDoSNOW(cl)
       res <- foreach::`%dopar%`(
         foreach::foreach(
@@ -793,7 +793,7 @@ get_reporter_score <- function(
         ),
         loop(i)
       )
-      snow::stopCluster(cl)
+      parallel::stopCluster(cl)
       gc()
     } else {
       res <- lapply(seq_len(reps), loop)
