@@ -32,7 +32,7 @@ Suggests:
     plyr,
     e1071,
     factoextra,
-    snow,
+    parallel,
     doSNOW,
     pheatmap,
     readr,
